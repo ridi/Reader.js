@@ -20,7 +20,7 @@ var epub = {
     },
 
     // 넘겨받은 element가 A태그로 링크가 걸려있는 경우 해당 링크 주소 리턴
-	getLinkOfElement : function(element) {
+    getLinkOfElement : function(element) {
         while (element) {
             if (element && element.nodeName == 'A') {
                 return element.href;
@@ -90,7 +90,7 @@ var epub = {
     // element에 붙어 있는 모든 텍스트, 이미지 노드를 구한다.
     findTextAndImageNodes: function(element) {
         var filter = function(node) {
-        	// 주의! topNodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
+            // 주의! topNodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
             return node.nodeType == Node.TEXT_NODE || (node.nodeType == Node.ELEMENT_NODE && node.nodeName.toLowerCase() == "img");
         };
 
@@ -157,21 +157,21 @@ var MutableClientRect = function(rect) {
 };
 
 var ridi = {
-	startSelectionMode: function(x, y) {
+    startSelectionMode: function(x, y) {
 
     },
 
-	changeInitialSelection: function(x, y) {
-
-	},
-
-	extendUpperSelection: function(x, y) {
+    changeInitialSelection: function(x, y) {
 
     },
 
-	extendLowerSelection: function(x, y) {
+    extendUpperSelection: function(x, y) {
 
-	},
+    },
+
+    extendLowerSelection: function(x, y) {
+
+    },
 
     getOffsetOfAnchorElement: function(anchor) {
         var el = document.getElementById(anchor);
@@ -205,11 +205,11 @@ var ridi = {
         return -1;
     },
 
-	getPageFromElementRect: function(rect) {
+    getPageFromElementRect: function(rect) {
         
     },
 
-	getRangeFromSerializedRange: function(serializedRange) {
+    getRangeFromSerializedRange: function(serializedRange) {
         var tmpRange = rangy.deserializeRange(serializedRange, document.body);
         
         var range = document.createRange();
@@ -221,9 +221,9 @@ var ridi = {
         return range;
     },
 
-	rectsOfRange: function(serializedRange) {
+    rectsOfRange: function(serializedRange) {
 
-	},
+    },
 
     expandRangeByWord: function(range) {
         var startContainer = range.startContainer;
