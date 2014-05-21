@@ -84,6 +84,23 @@
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
 
+var TTSRegex = {
+    makeRgex: function(prefix, pattern, suffix, flags) {
+        prefix = typeof prefix === 'string' ? prefix : "";
+        suffix = typeof suffix === 'string' ? suffix : "";
+        flags = typeof option === 'string' ? flags : "gm";
+        return new RegExp(prefix + pattern + suffix, flags);
+    },
+
+    whitespace: function(prefix, suffix, flags) {
+        return TTSRegex.makeRgex(prefix, "[^\\s\\r\\n\\t]", suffix, flags);
+    },
+
+    sentence: function(prefix, suffix, flags) {
+        return TTSRegex.makeRgex(prefix, "[.|。|?|!|\"|”|'|’|」|\\]]", suffix, flags);
+    }
+};
+
 var TTSRange = function(startOffset, endOffset) {
     this.startOffset = startOffset;
     this.endOffset = endOffset;
@@ -92,56 +109,14 @@ var TTSRange = function(startOffset, endOffset) {
 var TTSChunk = function(pieces) {
     this.id = tts.chunks.length;
     this.pieces = pieces;
-    for (var i = 0; i < this.pieces.length; i++) {
-        this.pieces[i].prevPiece = i > 0 ? this.pieces[i - 1] : null;
-        this.pieces[i].nextPiece = i + 1 < this.pieces.length ? this.pieces[i + 1] : null;
-    }
+    this.range = new TTSRange(0, this.getText().length);
 };
 
 TTSChunk.prototype = {
     range: null,
 
     isLeadNextPage: function() {
-        var windowInnerWidth = window.innerWidth;
-        if (windowInnerWidth === 0)
-            windowInnerWidth = ridi.appPassedWidth;
 
-        var piece;
-        if (this.range === null) {
-            piece = this.pieces.length > 0 ? this.pieces[this.pieces.length - 1] : null;
-        } else {
-            piece = this.getPiece(this.range.endOffset);
-        }
-
-        if (piece === null) {
-            return false;
-        }
-
-        var node = piece.node;
-        var range = document.createRange();
-        range.selectNodeContents(node);
-        if (!piece.isImage()) {
-            try {
-                if (this.range === null || piece.length < this.range.endOffset) {
-                    range.setStart(node, range.endOffset - 1);
-                    range.setEnd(node, range.endOffset);
-                } else {
-                    range.setStart(node, this.range.endOffset - 1);
-                    range.setEnd(node, this.range.endOffset);
-                }
-            } catch (e) {
-                console.log("TTSChunk:isCrossingPage() Error!! " + e.toString());
-                return false;
-            }
-        }
-
-        var rect = epub.getBoundingClientRect(range);
-        var origin = rect.left + rect.width;
-        if (origin < windowInnerWidth) {
-            return false;
-        }
-
-        return true;
     },
 
     getText: function() {
@@ -170,50 +145,8 @@ TTSChunk.prototype = {
         return null;
     },
 
-    // TDD - 만들다 말았음.
     getClientRects: function() {
-        var rects = [];
-        var startOffset, endOffset, offset = 0;
-        for (var i = 0; i < this.pieces.length; i++) {
-            var text = this.pieces[i].text;
-            var textLength = text.length;
-            var node = this.pieces[i].node;
-            var range = document.createRange();
-            range.selectNodeContents(node);
-            if (this.range !== null) {
-                // 55
-                // 0 1 1 354
-                // 0 ~ 74 ~ 152 ~ 210 ~ 273 ~ 354
-                this.range.startOffset += this.pieces[i].range.startOffset;
-                this.range.endOffset += this.pieces[i].range.startOffset;
-                if (this.range.startOffset <= (offset + textLength) && offset <= this.range.endOffset) {
-                    startOffset = Math.max(this.range.startOffset - offset, 0);
-                    if (startOffset + textLength <= this.range.endOffset) {
-                        endOffset = startOffset + textLength - 1;
-                    } else {
-                        endOffset = this.range.endOffset - 1;
-                    }
-                } else {
-                    offset += textLength;
-                    continue;
-                }
-            } else {
-                startOffset = 0 + this.pieces[i].startOffset;
-                endOffset = textLength - 1 + this.pieces[i].startOffset;
-            }
-            range.setStart(node, startOffset);
-            range.setEnd(node, endOffset);
-            range.expand('word');
-            offset += textLength;
 
-            var textNodeRects = range.getClientRects();
-            if (textNodeRects !== null) {
-                for (var j = 0; j < textNodeRects.length; j++) {
-                    rects.push(textNodeRects[j]);
-                }
-            }
-        }
-        return rects;
     },
 
     copy: function(range) {
@@ -235,15 +168,12 @@ TTSPiece.prototype = {
     text: null,
     length: 0,
 
-    prevPiece: null,    // TTSPiece가 TTSChunk로 들어갈 때 대입된다.
-    nextPiece: null,    //
-
     // 다음 형제노드가 br 태그인지.
     // textAndImageNodes를 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
     // TopNodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
     isNextSiblingToBr: false,
 
-    range: null,
+    leftPadding: 0,
 
     init: function(nodeIndex, wordIndex) {
         if (nodeIndex == -1 || epub.textAndImageNodes === null || epub.textAndImageNodes.length - 1 < nodeIndex || (this.node = epub.textAndImageNodes[nodeIndex]) === null) {
@@ -259,7 +189,6 @@ TTSPiece.prototype = {
 
         if (typeof this.node.nodeValue == 'string') {
             this.text = this.node.nodeValue;
-            var startOffset = 0, endOffset = this.text.length - 1;
             if (this.wordIndex !== null && this.wordIndex > 0) {
                 var words = this.text.split(new RegExp(" "));
                 if (this.wordIndex < words.length) {
@@ -268,10 +197,9 @@ TTSPiece.prototype = {
                         if (this.wordIndex <= i) {
                             this.text += (words[i] + ((i < words.length - 1) ? " " : ""));
                         } else {
-                            startOffset += (words[i].length + 1);
+                            this.leftPadding += (words[i].length + 1);
                         }
                     }
-                    this.range = new TTSRange(startOffset, endOffset);
                 } else {
                     this.text = null;
                 }
@@ -318,11 +246,11 @@ TTSPiece.prototype = {
     },
 
     isWhitespace: function() {
-        return this.text.match(/[^\s\r\n\t]/gm) === null ? true : false;
+        return this.text.match(TTSRegex.whitespace()) === null ? true : false;
     },
 
     isSentence: function() {
-        return this.text.trim().match(/[.|。|?|!|"|”|'|’|」|\]]$/gm) !== null ? true : false;
+        return this.text.trim().match(TTSRegex.sentence(null, "$")) !== null ? true : false;
     },
 };
 
@@ -332,10 +260,17 @@ var tts = {
     SEND_DELAY_IN_MSC: 10,
 
     didFinishSpeech: function(chunkId) {
-        var chunk = tts.chunks[chunkId];
-        if (tts.chunks.length - 1 <= chunkId || chunk.isLeadNextPage()) {
-            android.viewNextPage();
-        }
+
+    },
+
+    testHighlightAndAutoPaging: function(chunkId) {
+        setTimeout(function() {
+            tts.didFinishSpeech(chunkId);
+            tts.updateHighlight(chunkId);
+            if (chunkId + 1 < tts.chunks.length) {
+                tts.testHighlightAndAutoPaging(chunkId + 1);
+            }
+        }, 600);
     },
 
     flush: function() {
@@ -501,8 +436,8 @@ var tts = {
                         }
                     }// end for
                 } else {
-                    // TDD - 마침표 앞뒤로 숫자나 영문이 존재할 때는 나누지 않는다.
                     if (subText.match(/[.]$/gm) !== null && isDigitOrAlpha(subText[Math.max(subText.length - 2, 0)]) && i + 1 < tokens.length && isDigitOrAlpha(tokens[i + 1][0])) {
+                        // TDD - 마침표 앞뒤에 숫자 또는 영문이 있을 때는 나누지 않는다.
                         continue;
                     }
                     tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
@@ -523,13 +458,7 @@ var tts = {
 
     // TDD - Webkit 스레드가 바쁘면 setTimeout이 그만큼 지체될텐데 괜찮을까?
     sendChunk: function(chunkId) {
-        if (tts.chunks.length - 1 < chunkId) {
-            tts.sendTimer = null;
-            return;
-        }
-        var chunk = tts.chunks[chunkId];
-        android.addUtterance(chunk.id, chunk.getText());
-        tts.sendTimer = setTimeout(function() { tts.sendChunk(chunkId + 1); }, tts.SEND_DELAY_IN_MSC);
+
     },
 
     clearHighlight: function() {
@@ -540,33 +469,33 @@ var tts = {
     },
 
     updateHighlight: function(chunkId) {
-        // tts.clearHighlight();
+        tts.clearHighlight();
 
-        // var chunk = tts.chunks[chunkId];
-        // var rects = chunk.getClientRects();
+        var chunk = tts.chunks[chunkId];
+        var rects = chunk.getClientRects();
 
-        // var startOffset = 0; // 임시
-        // var basedLeft = true; // 임시
+        var startOffset = 0; // 임시
+        var basedLeft = true; // 임시
 
-        // for (var i = 0; i < rects.length; i++) {
-        //     var rect = rects[i];
-        //     var highlightNode = document.createElement("span");
-        //     highlightNode.setAttribute("class", "RidiTTSHighlight");
-        //     var left =
-        //     basedLeft ? (rect.left + (startOffset ? 0 : document.body.scrollLeft))
-        //               : (document.body.scrollLeft + (rect.left < 0 ? (document.body.scrollLeft + rect.left) : rect.left));
-        //     var top = basedLeft ? rect.top : (rect.top - startOffset);
-        //     highlightNode.style.cssText =
-        //         "position: absolute !important;" +
-        //         "background-color: green !important;" +
-        //         "left: " + left + "px !important;" +
-        //         "top: " + top + "px !important;" +
-        //         "width: " + (rect.width ? rect.width : 3) + "px !important;" +
-        //         "height: " + rect.height + "px !important;" +
-        //         "display: block !important;" +
-        //         "opacity: 0.2 !important;" +
-        //         "z-index: 99 !important";
-        //     document.body.appendChild(highlightNode);
-        // }
+        for (var i = 0; i < rects.length; i++) {
+            var rect = rects[i];
+            var highlightNode = document.createElement("span");
+            highlightNode.setAttribute("class", "RidiTTSHighlight");
+            var left =
+            basedLeft ? (rect.left + (startOffset ? 0 : document.body.scrollLeft))
+                      : (document.body.scrollLeft + (rect.left < 0 ? (document.body.scrollLeft + rect.left) : rect.left));
+            var top = basedLeft ? rect.top : (rect.top - startOffset);
+            highlightNode.style.cssText =
+                "position: absolute !important;" +
+                "background-color: blue !important;" +
+                "left: " + left + "px !important;" +
+                "top: " + top + "px !important;" +
+                "width: " + (rect.width ? rect.width : 3) + "px !important;" +
+                "height: " + rect.height + "px !important;" +
+                "display: block !important;" +
+                "opacity: 0.2 !important;" +
+                "z-index: 99 !important";
+            document.body.appendChild(highlightNode);
+        }
     },
 };
