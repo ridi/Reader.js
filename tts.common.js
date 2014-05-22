@@ -84,6 +84,143 @@
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
 
+var TTSTextModifier = {
+    modify: function(text) {
+        text = TTSTextModifier.removeNewline(text);
+        text = TTSTextModifier.removeHanja(text);
+        text = TTSTextModifier.removeLatin(text);
+
+        return text;
+    },
+
+    // 소괄호 안에 뉴라인 문자가 있으면 읽지 않게 설정을해도 읽어버린다.
+    removeNewline: function(text) {
+        return text.replace(/[\n|\r]/, "");
+    },
+
+    // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 지운다.
+    // TDD - 한자 단독으로 쓰일 때는 어떻게 할껀가.
+    removeHanja: function(text) {
+        for (var i = 0; i < text.length; i++) {
+            var code = text.charCodeAt(i);
+            if (TTSTextModifier.isChineseCode(code)) {
+                text = text.replace(text.substr(i, 1), " ");
+            }
+        }
+        return text;
+    },
+
+    // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영어를 제거한다.
+    // 예) 따르던 브로이어Josef Breuer는 안나 오라는 -> 따르던 브로이어는 안나 오라는
+    //    세일즈란 화이트칼라white collar들의 깨끗한 -> 세일즈란 화이트칼라들의 깨끗한
+    //    비판매 세일즈Non-Sales Selling 활동이 -> 비판매 세일즈 활동이
+    //    정신분석 기법psychoanalytic therapy은 -> 정신분석 기법은
+    //    떠올리는 이름, 프로이트Sigmund Freud. -> 떠올리는 이름, 프로이트.
+    //    학문이 앎Sophos을 사랑하는Philo 것이 -> 학문이 앎을 사랑하는 것이
+    //    미디벌 타임즈Mefieval Times -> 미디벌 타임즈
+    //    존F. 케네디 -> 존F. 케네디
+    // 좀 더 생각해야할 구조들.
+    //    발터 벤야민 Walter Benjamin 드림.
+    //    전작인 <아이리더십The Steve Jobs Way>에서
+    //    책의 저자는 ‘조 KJoe K’였다.
+    //    지금 밥 딜런(Bob Dylan)의 노래
+    removeLatin: function(text) {
+        var removeList = [];
+        var textLength = text.length;
+        var startOffset = -1, endOffset = -1;
+        for (var i = 0; i < textLength; i++) {
+            var code = text.charCodeAt(i);
+            var ch = text.charAt(i);
+            if (startOffset == -1) {
+                if (0 < i && TTSTextModifier.isLatinCode(code)) {
+                    var prevCode = text.charCodeAt(i - 1);
+                    if (TTSTextModifier.isHangulCode(prevCode)) {
+                        startOffset = i;
+                    }
+                }
+            } else {
+                if (i < text.length - 1 && TTSTextModifier.isLatinCode(code)) {
+                    var nextCode = text.charCodeAt(i + 1);
+                    var nextCh = text.charAt(i + 1);
+                    if (TTSTextModifier.isSpaceCode(nextCode)) {
+                        for (var j = i + 2; j < textLength; j++) {
+                            var otherCode = text.charCodeAt(j);
+                            if (TTSTextModifier.isSpaceCode(otherCode) || TTSTextModifier.isLatinCode(otherCode)) {
+                                i = j;
+                                break;
+                            } else {
+                                removeList.push({startOffset: startOffset, endOffset: j - 1});
+                                startOffset = -1;
+                                break;
+                            }
+                        }
+                    } else if (TTSTextModifier.isHangulCode(nextCode) || TTSTextModifier.isSentenceSuffix(nextCh)) {
+                        removeList.push({startOffset: startOffset, endOffset: i + 1});
+                        startOffset = -1;
+                    }
+                } else if (TTSTextModifier.isSentenceSuffix(ch) || TTSTextModifier.isHangulCode(code)) {
+                    // 한글자 영문은 보존하도록 한다.
+                    startOffset = -1;
+                } else if (textLength - 1 <= i) {
+                    // 텍스트의 끝이 영문일 때는 끝까지 지운다.
+                    removeList.push({startOffset: startOffset, endOffset: textLength});
+                }
+            }
+        }// end for
+
+        var result = "";
+        for (var j = 0, startOffset = 0, endOffset = 0; j < removeList.length; j++) {
+            endOffset = removeList[j].startOffset;
+            result += text.substring(startOffset, endOffset);
+            startOffset = removeList[j].endOffset;
+        }
+        result += text.substring(startOffset, textLength);
+        return result;
+    },
+
+    isContain: function(code, table) {
+        for (var i = 0; i < table.length; i += 2) {
+            if (table[i] <= code && code <= table[i + 1]) {
+                return true;
+            }
+        }
+        return false;
+    },
+
+    isDigitCode: function(code) {
+        var digitTable = [0x0030, 0x0039];
+        return TTSTextModifier.isContain(code, digitTable);
+    },
+
+    isSpaceCode: function(code) {
+        return code == 0x0020;
+    },
+
+    isHangulCode: function(code) {
+        var jamoTable = [0x3130, 0x318F, 0xA960, 0xA97F, 0xD7B0, 0xD7FF];
+        var hangulTable = [0xAC00, 0xD7AF];
+        return TTSTextModifier.isContain(code, hangulTable);
+    },
+
+    isLatinCode: function(code) {
+        var latinTable = [0x0041, 0x005A, 0x0061, 0x007A, 0x00C0, 0x00D6, 0x00D8, 0x00F6, 0x00F8, 0x00FF, 0x0100, 0x017F, 0x0180, 0x024F];
+        return TTSTextModifier.isContain(code, latinTable);
+    },
+
+    isChineseCode: function(code) {
+        var CJKHanjaTable = [0x4E00, 0x9FBF, 0xF900, 0xFAFF, 0x3400, 0x4DBF, 0x20000, 0x2A6DF, 0x2A700, 0x2B73F, 0x2B740, 0x2B81F, 0x2F800, 0x2FA1F];
+        return TTSTextModifier.isContain(code, CJKHanjaTable);
+    },
+
+    isSentenceSuffix: function(ch) {
+        return ch.match(TTSRegex.sentence()) !== null;
+    },
+ 
+    makeLatinNumeric: function(numericString) {
+
+    },
+};
+
 var TTSRegex = {
     makeRgex: function(prefix, pattern, suffix, flags) {
         prefix = typeof prefix === 'string' ? prefix : "";
