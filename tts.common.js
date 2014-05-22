@@ -256,12 +256,6 @@ TTSPiece.prototype = {
 
 var tts = {
     chunks: [],
-    sendTimer: null,
-    SEND_DELAY_IN_MSC: 10,
-
-    didFinishSpeech: function(chunkId) {
-
-    },
 
     testHighlightAndAutoPaging: function(chunkId) {
         setTimeout(function() {
@@ -274,11 +268,7 @@ var tts = {
     },
 
     flush: function() {
-        if (tts.sendTimer !== null) {
-            clearTimeout(tts.sendTimer);
-        }
-        tts.chunks = [];
-        tts.sendTimer = null;
+
     },
 
     makeChunksByRange: function(serializedRange) {
@@ -312,51 +302,7 @@ var tts = {
     },
 
     makeChunksByNodeLocation: function(nodeIndex, wordIndex) {
-        if (nodeIndex == -1 || wordIndex == -1 || epub.textAndImageNodes === null) {
-            return;
-        }
 
-        tts.flush();
-
-        for ( ; nodeIndex < epub.textAndImageNodes.length; nodeIndex++, wordIndex = 0) {
-            var piece = new TTSPiece(nodeIndex, wordIndex);
-            if (piece.node === null) {
-                break;
-            }
-
-            var pieces = [piece];
-            if (!piece.isValid() || piece.isWhitespace()) {
-                continue;
-            } else {
-                if (nodeIndex == epub.textAndImageNodes.length - 1 || piece.isImage() || piece.isSentence() || piece.isNextSiblingToBr) {
-                    tts.addChunk(pieces);
-                } else {
-                    var nextPiece = null;
-                    while ((nextPiece = new TTSPiece(++nodeIndex)).nodeIndex !== null) {
-                        if (!nextPiece.isValid()) {
-                            // not working
-                        } else if (nextPiece.isImage() || nextPiece.isWhitespace()) {
-                            tts.addChunk(pieces);
-                            nodeIndex--;
-                            break;
-                        } else {
-                            pieces.push(nextPiece);
-                            if (nextPiece.isSentence()) {
-                                tts.addChunk(pieces);
-                                break;
-                            }
-                        }
-                        if (nodeIndex == epub.textAndImageNodes.length - 1) {
-                            tts.addChunk(pieces);
-                        }
-                    }// end while
-                }
-            }
-        }// end for
-
-        if (tts.chunks.length) {
-            tts.sendTimer = setTimeout(function() { tts.sendChunk(0); }, tts.SEND_DELAY_IN_MSC);
-        }
     },
 
     addChunk: function(pieces) {
@@ -456,11 +402,6 @@ var tts = {
         }
     },
 
-    // TDD - Webkit 스레드가 바쁘면 setTimeout이 그만큼 지체될텐데 괜찮을까?
-    sendChunk: function(chunkId) {
-
-    },
-
     clearHighlight: function() {
         var highlightElements = document.getElementsByClassName("RidiTTSHighlight");
         for (var i = highlightElements.length - 1; i >= 0; i--) {
@@ -494,7 +435,7 @@ var tts = {
                 "height: " + rect.height + "px !important;" +
                 "display: block !important;" +
                 "opacity: 0.2 !important;" +
-                "z-index: 99 !important";
+                "z-index: 2147483647 !important";
             document.body.appendChild(highlightNode);
         }
     },
