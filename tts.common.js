@@ -95,7 +95,7 @@ var TTSTextModifier = {
 
     // 소괄호 안에 뉴라인 문자가 있으면 읽지 않게 설정을해도 읽어버린다.
     removeNewline: function(text) {
-        return text.replace(/[\n|\r]/, "");
+        return text.replace(/[\n|\r]/, " ");
     },
 
     // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 지운다.
@@ -127,8 +127,8 @@ var TTSTextModifier = {
     removeLatin: function(text) {
         var removeList = [];
         var textLength = text.length;
-        var startOffset = -1, endOffset = -1;
-        for (var i = 0; i < textLength; i++) {
+        var startOffset = -1, endOffset = -1, i;
+        for (i = 0; i < textLength; i++) {
             var code = text.charCodeAt(i);
             var ch = text.charAt(i);
             if (startOffset == -1) {
@@ -169,10 +169,10 @@ var TTSTextModifier = {
         }// end for
 
         var result = "";
-        for (var j = 0, startOffset = 0, endOffset = 0; j < removeList.length; j++) {
-            endOffset = removeList[j].startOffset;
+        for (i = 0, startOffset = 0, endOffset = 0; i < removeList.length; i++) {
+            endOffset = removeList[i].startOffset;
             result += text.substring(startOffset, endOffset);
-            startOffset = removeList[j].endOffset;
+            startOffset = removeList[i].endOffset;
         }
         result += text.substring(startOffset, textLength);
         return result;
@@ -312,6 +312,8 @@ TTSPiece.prototype = {
 
     leftPadding: 0,
 
+    readImage: false,
+
     init: function(nodeIndex, wordIndex) {
         if (nodeIndex == -1 || epub.textAndImageNodes === null || epub.textAndImageNodes.length - 1 < nodeIndex || (this.node = epub.textAndImageNodes[nodeIndex]) === null) {
             return;
@@ -341,7 +343,7 @@ TTSPiece.prototype = {
                     this.text = null;
                 }
             }
-        } else if (this.isImage() && typeof this.node.alt == 'string' && this.node.alt.length > 0) {
+        } else if (this.readImage && this.isImage() && typeof this.node.alt == 'string' && this.node.alt.length > 0) {
             this.text = this.node.alt;
             if (this.node.src.indexOf(this.text)) {
                 // TDD - alt 값에 파일명이 들어간 경우가 있다.
