@@ -89,6 +89,8 @@ var TTSTextModifier = {
         text = TTSTextModifier.removeNewline(text);
         text = TTSTextModifier.removeHanja(text);
         text = TTSTextModifier.removeLatin(text);
+        text = TTSTextModifier.replaceTilde(text);
+        text = TTSTextModifier.replaceColon(text);
 
         return text;
     },
@@ -110,7 +112,7 @@ var TTSTextModifier = {
         return text;
     },
 
-    // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영어를 제거한다.
+    // TDD - 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영어를 제거한다.
     // 예) 따르던 브로이어Josef Breuer는 안나 오라는 -> 따르던 브로이어는 안나 오라는
     //    세일즈란 화이트칼라white collar들의 깨끗한 -> 세일즈란 화이트칼라들의 깨끗한
     //    비판매 세일즈Non-Sales Selling 활동이 -> 비판매 세일즈 활동이
@@ -178,6 +180,44 @@ var TTSTextModifier = {
         return result;
     },
 
+    // TDD - 틸드 문자 앞뒤로 공백이 있을때는 변수가 너무 많은데.
+    // TDD - 그냥 없애버리는 것도 방법이지 않을까.
+    replaceTilde: function (text) {
+        var extendTable = ["아", "에", "아", "에", "어", "에", "어", "에", "오", "아", "에", "에", "오", "우", "어", "에", "이", "우", "으", "으", "이"];
+        var textLength = text.length;
+        for (var i = 0; i < textLength; i++) {
+            var code = text.charCodeAt(i);
+            if (TTSTextModifier.isTildeCode(code)) {
+                if (i > 0) {
+                    for (var j = i - 1; j >= 0; j--) {
+                        var prevCode = text.charCodeAt(j);
+                        /* if (TTSTextModifier.isSpaceCode(prevCode)) {
+                            continue;
+                        } else */ if (TTSTextModifier.isHangulCode(prevCode)) {
+                            var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
+                            text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
+                            break;
+                        } else {
+                            break;
+                        }
+                    }// end for
+                }
+            }
+        }// end for
+        return text;
+    },
+
+    replaceColon: function(text) {
+        var findColon = text.match(/[\d][\s]{0,}:[\s]{0,}[\d]/gm);
+        if (findColon !== null) {
+            for (var i = 0; i < findColon.length; i++) {
+                var str = findColon[i].replace(":", "대");
+                text = text.replace(findColon[i], str);
+            }
+        }
+        return text;
+    },
+
     isContain: function(code, table) {
         for (var i = 0; i < table.length; i += 2) {
             if (table[i] <= code && code <= table[i + 1]) {
@@ -194,6 +234,10 @@ var TTSTextModifier = {
 
     isSpaceCode: function(code) {
         return code == 0x0020;
+    },
+
+    isTildeCode: function(code) {
+        return code == 0x007E;
     },
 
     isHangulCode: function(code) {
@@ -214,6 +258,33 @@ var TTSTextModifier = {
 
     isSentenceSuffix: function(ch) {
         return ch.match(TTSRegex.sentence()) !== null;
+    },
+
+    getInitialCodeInHangulCode: function(code) {
+        //      ㄱ  ㄲ ㄴ  ㄷ  ㄸ ㄹ  ㅁ ㅂ  ㅃ  ㅅ ㅆ  ㅇ ㅈ  ㅉ ㅊ  ㅋ ㅌ  ㅍ ㅎ
+        // 0x31 31 32 34 37 38 39 41 42 43 45 46 47 48 49 4A 4B 4C 4D 4E 
+        var initialCodes = [0x31, 0x32, 0x34, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E];
+        return 0x3100 + initialCodes[((((code - 0xAC00) - (code - 0xAC00) % 28)) / 28) / 21];
+    },
+
+    getMedialCodeIndexInHangulCode: function(code) {
+        return ((((code - 0xAC00) - (code - 0xAC00) % 28)) / 28) % 21;
+    },
+
+    getMedialCodeInHangulCode: function(code) {
+        //      ㅏ  ㅐ  ㅑ ㅒ  ㅓ ㅔ  ㅕ ㅖ  ㅗ  ㅘ ㅙ  ㅚ ㅛ ㅜ  ㅝ  ㅞ ㅟ  ㅠ ㅡ  ㅢ  ㅣ
+        // 0x31 4F 50 51 52 53 54 55 56 57 58 59 5A 5B 5C 5D 5E 5F 60 61 62 63
+        var medialCodes = [0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F, 0x60, 0x61, 0x62, 0x63];
+        var index = TTSTextModifier.getMedialCodeIndexInHangulCode(code);
+        return 0x3100 + medialCodes[index];
+    },
+
+    getFinalCodeInHangulCode: function(code) {
+        //             ㄱ  ㄲ ㄳ  ㄴ ㄵ  ㄶ  ㄷ ㄹ  ㄺ ㄻ  ㄼ  ㄽ ㄾ  ㄿ ㅀ  ㅁ ㅂ  ㅄ  ㅅ ㅆ  ㅇ ㅈ  ㅊ ㅋ  ㅌ  ㅍ ㅎ
+        // 0x0000 0x31 31 32 33 34 35 36 37 39 3A 3B 3C 3D 3E 3F 40 41 42 44 45 46 47 48 4A 4B 4C 4D 4E
+        var finalCodes = [0x00, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x44, 0x45, 0x46, 0x47, 0x48, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E];
+        var index = (code - 0xAC00) % 28;
+        return (index === 0 ? 0x0000 : 0x3100) + finalCodes[index];
     },
  
     makeLatinNumeric: function(numericString) {
