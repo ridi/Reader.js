@@ -645,14 +645,11 @@ var tts = {
         }
     },
 
-    updateHighlight: function(chunkId) {
+    updateHighlight: function(chunkId, startOffset, basedLeft) {
         tts.clearHighlight();
 
         var chunk = tts.chunks[chunkId];
         var rects = chunk.getClientRects();
-
-        var startOffset = 0; // 임시
-        var basedLeft = true; // 임시
 
         for (var i = 0; i < rects.length; i++) {
             var rect = rects[i];
