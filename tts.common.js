@@ -182,9 +182,10 @@ var TTSTextModifier = {
 
     // TDD - 틸드 문자 앞뒤로 공백이 있을때는 변수가 너무 많은데.
     // TDD - 그냥 없애버리는 것도 방법이지 않을까.
-    replaceTilde: function (text) {
+    replaceTilde: function(text) {
         var extendTable = ["아", "에", "아", "에", "어", "에", "어", "에", "오", "아", "에", "에", "오", "우", "어", "에", "이", "우", "으", "으", "이"];
         var textLength = text.length;
+        var offset = -1;
         for (var i = 0; i < textLength; i++) {
             var code = text.charCodeAt(i);
             if (TTSTextModifier.isTildeCode(code)) {
@@ -196,6 +197,7 @@ var TTSTextModifier = {
                         } else */ if (TTSTextModifier.isHangulCode(prevCode)) {
                             var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
                             text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
+                            offset = i;
                             break;
                         } else {
                             break;
@@ -204,6 +206,28 @@ var TTSTextModifier = {
                 }
             }
         }// end for
+
+        // 쉼표를 줘서 다음 문장 또는 단어와 바로 이어지지 않도록 한다.
+        if (offset != -1) {
+            var k;
+            var insertRest = true;
+            for (k = offset + 1; k < textLength; k++) {
+                if (TTSTextModifier.isHangulCode(text.charCodeAt(k))) {
+                    insertRest = false;
+                    break;
+                } else if (text[k] != "?" && text[k] != "!") {
+                    break;
+                }
+            }
+            if (insertRest) {
+                if (textLength <= k) {
+                    text += ",";
+                } else {
+                    text = text.substr(0, k) + "," + text.substr(k);
+                }
+            }
+        }
+
         return text;
     },
 
