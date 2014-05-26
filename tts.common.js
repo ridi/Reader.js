@@ -452,7 +452,9 @@ TTSPiece.prototype = {
         var valid = true;
         var element = (this.node.nodeType == Node.TEXT_NODE ? this.node.parentElement : this.node);
         var nodeName = element.nodeName.toLowerCase();
-        if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
+        if (element.style.display == "none" || element.clientWidth === 0 || element.clientHeight === 0) {
+            valid = false;
+        } else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
             valid = false;
         } else if (nodeName == "sub" || nodeName == "sup") {
             if (element.children.length && element.children.getElementsByTagName !== undefined && element.children.getElementsByTagName("a") !== null) {
