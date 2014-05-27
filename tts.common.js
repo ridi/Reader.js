@@ -261,7 +261,9 @@ var TTSTextModifier = {
     },
 
     isTildeCode: function(code) {
-        return code == 0x007E;
+        // 0x007E : ~
+        // 0x223C : ∼
+        return code == 0x007E || code == 0x223C;
     },
 
     isHangulCode: function(code) {
@@ -457,19 +459,24 @@ TTSPiece.prototype = {
         } else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
             valid = false;
         } else if (nodeName == "sub" || nodeName == "sup") {
-            if (element.children.length && element.children.getElementsByTagName !== undefined && element.children.getElementsByTagName("a") !== null) {
+            if (element.getElementsByTagName("a").length > 0) {
                 valid = false;
-            } else if (element.textContent !== undefined && element.textContent.match(/[^\d]/) === null) {
+            } else if (element.textContent !== undefined && element.textContent.trim().match(/[^\d]/) === null) {
                 // TDD - 링크가 없어도 숫자만 있을 때는 주석으로 간주한다. (수학적으로 쓰일 경우는 어짜쓰까)
                 valid = false;
             }
         } else if (nodeName == "a") {
-            while ((element = element.parentElement) !== null) {
-                nodeName = element.nodeName.toLowerCase();
+            var pElement = element.parentElement;
+            while (pElement !== null) {
+                nodeName = pElement.nodeName.toLowerCase();
                 if (nodeName == "sub" || nodeName == "sup") {
                     valid = false;
                     break;
                 }
+                pElement = pElement.parentElement;
+            }
+            if (element.getElementsByTagName("sub").length > 0 || element.getElementsByTagName("sup") > 0) {
+                valid = false;
             }
         } else if (this.text === null) {
             valid = false;
@@ -543,8 +550,8 @@ var tts = {
 
     addChunk: function(pieces) {
         var split = function(text) {
-            var result = text.match(/[\w\W\s\S]*?[.|。|?|!]/gm);
-            return result !== null ? result : [];
+            text = text.replace(/([.|。|?|!])/gm, "$1[RidiDelimiter]");
+            return text.split("[RidiDelimiter]");
         };
 
         var getOpenBracket = function(text) {
