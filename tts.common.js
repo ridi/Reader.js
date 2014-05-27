@@ -452,7 +452,7 @@ TTSPiece.prototype = {
         var valid = true;
         var element = (this.node.nodeType == Node.TEXT_NODE ? this.node.parentElement : this.node);
         var nodeName = element.nodeName.toLowerCase();
-        if (element.style.display == "none" || element.clientWidth === 0 || element.clientHeight === 0) {
+        if (element.style.display == "none" || element.offsetWidth === 0) {
             valid = false;
         } else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
             valid = false;
@@ -641,7 +641,7 @@ var tts = {
     clearHighlight: function() {
         var highlightElements = document.getElementsByClassName("RidiTTSHighlight");
         for (var i = highlightElements.length - 1; i >= 0; i--) {
-            highlightElements[i].remove();
+            document.body.removeChild(highlightElements[i]);
         }
     },
 
