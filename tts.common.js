@@ -148,7 +148,7 @@ var TTSTextModifier = {
                         for (var j = i + 2; j < textLength; j++) {
                             var otherCode = text.charCodeAt(j);
                             if (TTSTextModifier.isSpaceCode(otherCode) || TTSTextModifier.isLatinCode(otherCode)) {
-                                i = j;
+                                i = j - 1;
                                 break;
                             } else {
                                 removeList.push({startOffset: startOffset, endOffset: j - 1});
@@ -331,7 +331,7 @@ var TTSRegex = {
     },
 
     sentence: function(prefix, suffix, flags) {
-        return TTSRegex.makeRgex(prefix, "[.|。|?|!|\"|”|'|’|」|\\]]", suffix, flags);
+        return TTSRegex.makeRgex(prefix, "[.|。|?|!|\"|”|'|’|」]", suffix, flags);
     }
 };
 
@@ -459,12 +459,7 @@ TTSPiece.prototype = {
         } else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
             valid = false;
         } else if (nodeName == "sub" || nodeName == "sup") {
-            if (element.getElementsByTagName("a").length > 0) {
-                valid = false;
-            } else if (element.textContent !== undefined && element.textContent.trim().match(/[^\d]/) === null) {
-                // TDD - 링크가 없어도 숫자만 있을 때는 주석으로 간주한다. (수학적으로 쓰일 경우는 어짜쓰까)
-                valid = false;
-            }
+            valid = false;
         } else if (nodeName == "a") {
             var pElement = element.parentElement;
             while (pElement !== null) {
@@ -592,6 +587,15 @@ var tts = {
             }
         };
 
+        var isPointOrName = function(text, nextText) {
+            // TDD - 마침표 앞뒤에 숫자 또는 영문이 있을 때는 나누지 않는다.
+            return text.match(/[.]$/gm) !== null && isDigitOrAlpha(text[Math.max(text.length - 2, 0)]) && nextText !== undefined && isDigitOrAlpha(nextText[0]);
+        };
+
+        var isNotEndOfSentence = function(nextText) {
+            return nextText !== undefined && nextText.match(TTSRegex.sentence("^")) !== null;
+        };
+
         var call = function(num) {// Test Code
             console.log((tts.chunks.length - 1) + ", #" + num + " " + tts.chunks[tts.chunks.length - 1].getText());
         };
@@ -607,6 +611,7 @@ var tts = {
                 subText += token;
                 offset += token.length;
                 if ((openBracket = getOpenBracket(token)) !== null) {
+                    var isLast = false;
                     for (var j = i; j < tokens.length; j++) {
                         var nextToken = tokens[j];
                         if (i < j) {
@@ -617,7 +622,14 @@ var tts = {
                         if ((closeBracket = getCloseBracket(nextToken)) !== null && isOnePair(openBracket, closeBracket)) {
                             if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.indexOf(openBracket)) {
                                 continue;
+                            } else if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+                                isLast = true;
+                                continue;
+                            } else {
+                                isLast = true;
                             }
+                        }
+                        if (isLast) {
                             tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
                             subText = "";
                             startOffset = offset;
@@ -627,8 +639,7 @@ var tts = {
                         }
                     }// end for
                 } else {
-                    if (subText.match(/[.]$/gm) !== null && isDigitOrAlpha(subText[Math.max(subText.length - 2, 0)]) && i + 1 < tokens.length && isDigitOrAlpha(tokens[i + 1][0])) {
-                        // TDD - 마침표 앞뒤에 숫자 또는 영문이 있을 때는 나누지 않는다.
+                    if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
                         continue;
                     }
                     tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
