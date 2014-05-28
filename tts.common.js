@@ -500,6 +500,8 @@ TTSPiece.prototype = {
 var tts = {
     chunks: [],
 
+    chunkLengthLimit: 0,
+
     testHighlightAndAutoPaging: function(chunkId) {
         setTimeout(function() {
             tts.didFinishSpeech(chunkId);
@@ -645,38 +647,64 @@ var tts = {
         }
     },
 
+    highlightBody: null,
+    HIGHLIGHT_COUNT: 10,
+
     clearHighlight: function() {
-        var highlightElements = document.getElementsByClassName("RidiTTSHighlight");
-        for (var i = highlightElements.length - 1; i >= 0; i--) {
-            document.body.removeChild(highlightElements[i]);
+        if (tts.highlightBody !== null) {
+            for (var i = 0; i < tts.HIGHLIGHT_COUNT; i++) {
+                var highlightNode = tts.highlightBody.children[i];
+                highlightNode.style.setProperty("display", "none", "important");
+            }
+        }
+    },
+
+    setUpHighlightBody: function() {
+        if (tts.highlightBody === null) {
+            tts.highlightBody = document.createElement("div");
+            tts.highlightBody.setAttribute("class", "RidiTTSHighlightBody");
+            var fragment = document.createDocumentFragment();
+            for (var j = 0; j < tts.HIGHLIGHT_COUNT; j++) {
+                var highlightNode = document.createElement("span");
+                highlightNode.setAttribute("class", "RidiTTSHighlight");
+                fragment.appendChild(highlightNode);
+            }
+            tts.highlightBody.appendChild(fragment);
+            document.body.appendChild(tts.highlightBody);
         }
     },
 
     updateHighlight: function(chunkId, startOffset, basedLeft) {
-        tts.clearHighlight();
+        tts.setUpHighlightBody();
 
         var chunk = tts.chunks[chunkId];
         var rects = chunk.getClientRects();
+        var scrollLeft = document.body.scrollLeft;
 
-        for (var i = 0; i < rects.length; i++) {
+        for (var i = 0; i < tts.HIGHLIGHT_COUNT; i++) {
             var rect = rects[i];
-            var highlightNode = document.createElement("span");
-            highlightNode.setAttribute("class", "RidiTTSHighlight");
-            var left =
-            basedLeft ? (rect.left + (startOffset ? 0 : document.body.scrollLeft))
-                      : (document.body.scrollLeft + (rect.left < 0 ? (document.body.scrollLeft + rect.left) : rect.left));
-            var top = basedLeft ? rect.top : (rect.top - startOffset);
-            highlightNode.style.cssText =
-                "position: absolute !important;" +
-                "background-color: blue !important;" +
-                "left: " + left + "px !important;" +
-                "top: " + top + "px !important;" +
-                "width: " + (rect.width ? rect.width : 3) + "px !important;" +
-                "height: " + rect.height + "px !important;" +
-                "display: block !important;" +
-                "opacity: 0.2 !important;" +
-                "z-index: 2147483647 !important";
-            document.body.appendChild(highlightNode);
-        }
+            var highlightNode = tts.highlightBody.children[i];
+            if (rect === undefined) {
+                if (highlightNode.style.display != "none") {
+                    highlightNode.style.setProperty("display", "none", "important");
+                }
+            } else {
+                var left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
+                                     : (scrollLeft + (rect.left < 0 ? (scrollLeft + rect.left) : rect.left));
+                var top = basedLeft ? rect.top : (rect.top - startOffset);
+                var width = rect.width ? rect.width : 3;
+                var height = rect.height;
+                highlightNode.style.cssText =
+                    "position: absolute !important;" +
+                    "background-color: blue !important;" +
+                    "left: " + left + "px !important;" +
+                    "top: " + top + "px !important;" +
+                    "width: " + width + "px !important;" +
+                    "height: " + height + "px !important;" +
+                    "display: block !important;" +
+                    "opacity: 0.2 !important;" +
+                    "z-index: 2147483647 !important";
+            }
+        }// end for
     },
 };
