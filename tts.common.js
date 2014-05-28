@@ -90,7 +90,6 @@ var TTSTextModifier = {
         text = TTSTextModifier.removeHanja(text);
         text = TTSTextModifier.removeLatin(text);
         text = TTSTextModifier.replaceTilde(text);
-        text = TTSTextModifier.replaceColon(text);
 
         return text;
     },
@@ -112,20 +111,7 @@ var TTSTextModifier = {
         return text;
     },
 
-    // TDD - 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영어를 제거한다.
-    // 예) 따르던 브로이어Josef Breuer는 안나 오라는 -> 따르던 브로이어는 안나 오라는
-    //    세일즈란 화이트칼라white collar들의 깨끗한 -> 세일즈란 화이트칼라들의 깨끗한
-    //    비판매 세일즈Non-Sales Selling 활동이 -> 비판매 세일즈 활동이
-    //    정신분석 기법psychoanalytic therapy은 -> 정신분석 기법은
-    //    떠올리는 이름, 프로이트Sigmund Freud. -> 떠올리는 이름, 프로이트.
-    //    학문이 앎Sophos을 사랑하는Philo 것이 -> 학문이 앎을 사랑하는 것이
-    //    미디벌 타임즈Mefieval Times -> 미디벌 타임즈
-    //    존F. 케네디 -> 존F. 케네디
-    // 좀 더 생각해야할 구조들.
-    //    발터 벤야민 Walter Benjamin 드림.
-    //    전작인 <아이리더십The Steve Jobs Way>에서
-    //    책의 저자는 ‘조 KJoe K’였다.
-    //    지금 밥 딜런(Bob Dylan)의 노래
+    // TDD - 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
     removeLatin: function(text) {
         var removeList = [];
         var textLength = text.length;
@@ -140,7 +126,8 @@ var TTSTextModifier = {
                         startOffset = i;
                     }
                 }
-            } else {
+            }
+            else {
                 if (i < text.length - 1 && TTSTextModifier.isLatinCode(code)) {
                     var nextCode = text.charCodeAt(i + 1);
                     var nextCh = text.charAt(i + 1);
@@ -150,20 +137,24 @@ var TTSTextModifier = {
                             if (TTSTextModifier.isSpaceCode(otherCode) || TTSTextModifier.isLatinCode(otherCode)) {
                                 i = j - 1;
                                 break;
-                            } else {
+                            }
+                            else {
                                 removeList.push({startOffset: startOffset, endOffset: j - 1});
                                 startOffset = -1;
                                 break;
                             }
                         }
-                    } else if (TTSTextModifier.isHangulCode(nextCode) || TTSTextModifier.isSentenceSuffix(nextCh)) {
+                    }
+                    else if (TTSTextModifier.isHangulCode(nextCode) || TTSTextModifier.isSentenceSuffix(nextCh)) {
                         removeList.push({startOffset: startOffset, endOffset: i + 1});
                         startOffset = -1;
                     }
-                } else if (TTSTextModifier.isSentenceSuffix(ch) || TTSTextModifier.isHangulCode(code)) {
+                }
+                else if (TTSTextModifier.isSentenceSuffix(ch) || TTSTextModifier.isHangulCode(code)) {
                     // 한글자 영문은 보존하도록 한다.
                     startOffset = -1;
-                } else if (textLength - 1 <= i) {
+                }
+                else if (textLength - 1 <= i) {
                     // 텍스트의 끝이 영문일 때는 끝까지 지운다.
                     removeList.push({startOffset: startOffset, endOffset: textLength});
                 }
@@ -194,12 +185,14 @@ var TTSTextModifier = {
                         var prevCode = text.charCodeAt(j);
                         /* if (TTSTextModifier.isSpaceCode(prevCode)) {
                             continue;
-                        } else */ if (TTSTextModifier.isHangulCode(prevCode)) {
+                        }
+                        else */ if (TTSTextModifier.isHangulCode(prevCode)) {
                             var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
                             text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
                             offset = i;
                             break;
-                        } else {
+                        }
+                        else {
                             break;
                         }
                     }// end for
@@ -215,30 +208,21 @@ var TTSTextModifier = {
                 if (TTSTextModifier.isHangulCode(text.charCodeAt(k))) {
                     insertRest = false;
                     break;
-                } else if (text[k] != "?" && text[k] != "!") {
+                }
+                else if (text[k] != "?" && text[k] != "!") {
                     break;
                 }
             }
             if (insertRest) {
                 if (textLength <= k) {
                     text += ",";
-                } else {
+                }
+                else {
                     text = text.substr(0, k) + "," + text.substr(k);
                 }
             }
         }
 
-        return text;
-    },
-
-    replaceColon: function(text) {
-        var findColon = text.match(/[\d][\s]{0,}:[\s]{0,}[\d]/gm);
-        if (findColon !== null) {
-            for (var i = 0; i < findColon.length; i++) {
-                var str = findColon[i].replace(":", "대");
-                text = text.replace(findColon[i], str);
-            }
-        }
         return text;
     },
 
@@ -267,7 +251,6 @@ var TTSTextModifier = {
     },
 
     isHangulCode: function(code) {
-        var jamoTable = [0x3130, 0x318F, 0xA960, 0xA97F, 0xD7B0, 0xD7FF];
         var hangulTable = [0xAC00, 0xD7AF];
         return TTSTextModifier.isContain(code, hangulTable);
     },
@@ -311,10 +294,6 @@ var TTSTextModifier = {
         var finalCodes = [0x00, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x44, 0x45, 0x46, 0x47, 0x48, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E];
         var index = (code - 0xAC00) % 28;
         return (index === 0 ? 0x0000 : 0x3100) + finalCodes[index];
-    },
- 
-    makeLatinNumeric: function(numericString) {
-
     },
 };
 
@@ -363,7 +342,8 @@ TTSChunk.prototype = {
         }
         if (this.range !== null) {
             return fullText.substring(this.range.startOffset, this.range.endOffset);
-        } else {
+        }
+        else {
             return fullText;
         }
     },
@@ -409,7 +389,7 @@ TTSPiece.prototype = {
 
     leftPadding: 0,
 
-    readImage: false,
+    readImage: false,   // 이미지를 읽고싶다면 true
 
     init: function(nodeIndex, wordIndex) {
         if (nodeIndex == -1 || epub.textAndImageNodes === null || epub.textAndImageNodes.length - 1 < nodeIndex || (this.node = epub.textAndImageNodes[nodeIndex]) === null) {
@@ -432,18 +412,20 @@ TTSPiece.prototype = {
                     for (var i = 0; i < words.length; i++) {
                         if (this.wordIndex <= i) {
                             this.text += (words[i] + ((i < words.length - 1) ? " " : ""));
-                        } else {
+                        }
+                        else {
                             this.leftPadding += (words[i].length + 1);
                         }
                     }
-                } else {
+                }
+                else {
                     this.text = null;
                 }
             }
-        } else if (this.readImage && this.isImage() && typeof this.node.alt == 'string' && this.node.alt.length > 0) {
+        }
+        else if (this.readImage && this.isImage() && typeof this.node.alt == 'string' && this.node.alt.length > 0) {
             this.text = this.node.alt;
-            if (this.node.src.indexOf(this.text)) {
-                // TDD - alt 값에 파일명이 들어간 경우가 있다.
+            if (this.node.src.indexOf(this.text) || this.text.trim() == "이미지") {
                 this.text = null;
             }
         }
@@ -456,11 +438,14 @@ TTSPiece.prototype = {
         var nodeName = element.nodeName.toLowerCase();
         if (element.style.display == "none" || element.offsetWidth === 0) {
             valid = false;
-        } else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
+        }
+        else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
             valid = false;
-        } else if (nodeName == "sub" || nodeName == "sup") {
+        }
+        else if (nodeName == "sub" || nodeName == "sup") {
             valid = false;
-        } else if (nodeName == "a") {
+        }
+        else if (nodeName == "a") {
             var pElement = element.parentElement;
             while (pElement !== null) {
                 nodeName = pElement.nodeName.toLowerCase();
@@ -473,7 +458,8 @@ TTSPiece.prototype = {
             if (element.getElementsByTagName("sub").length > 0 || element.getElementsByTagName("sup") > 0) {
                 valid = false;
             }
-        } else if (this.text === null) {
+        }
+        else if (this.text === null) {
             valid = false;
         }
         return valid;
@@ -497,16 +483,6 @@ var tts = {
 
     chunkLengthLimit: 0,
 
-    testHighlightAndAutoPaging: function(chunkId) {
-        setTimeout(function() {
-            tts.didFinishSpeech(chunkId);
-            tts.updateHighlight(chunkId);
-            if (chunkId + 1 < tts.chunks.length) {
-                tts.testHighlightAndAutoPaging(chunkId + 1);
-            }
-        }, 600);
-    },
-
     flush: function() {
 
     },
@@ -529,7 +505,8 @@ var tts = {
                     for ( ; wordIndex < words.length; wordIndex++) {
                         if (range.startOffset <= offset) {
                             break;
-                        } else {
+                        }
+                        else {
                             offset += (words[wordIndex].length + 1);
                         }
                     }
@@ -574,7 +551,8 @@ var tts = {
                 (openBracket == "{" && closeBracket == "}") ||
                 (openBracket == "[" && closeBracket == "]")) {
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         };
@@ -582,7 +560,8 @@ var tts = {
         var isDigitOrAlpha = function(ch) {
             if (ch === null || ch === undefined) {
                 return false;
-            } else {
+            }
+            else {
                 return ch.match(/[0-9a-zA-Z]/) !== null;
             }
         };
@@ -622,10 +601,12 @@ var tts = {
                         if ((closeBracket = getCloseBracket(nextToken)) !== null && isOnePair(openBracket, closeBracket)) {
                             if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.indexOf(openBracket)) {
                                 continue;
-                            } else if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+                            }
+                            else if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
                                 isLast = true;
                                 continue;
-                            } else {
+                            }
+                            else {
                                 isLast = true;
                             }
                         }
@@ -638,7 +619,8 @@ var tts = {
                             break;
                         }
                     }// end for
-                } else {
+                }
+                else {
                     if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
                         continue;
                     }
@@ -699,7 +681,8 @@ var tts = {
                 if (highlightNode.style.display != "none") {
                     highlightNode.style.setProperty("display", "none", "important");
                 }
-            } else {
+            }
+            else {
                 var left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
                                      : (scrollLeft + (rect.left < 0 ? (scrollLeft + rect.left) : rect.left));
                 var top = basedLeft ? rect.top : (rect.top - startOffset);
@@ -718,4 +701,5 @@ var tts = {
             }
         }// end for
     },
+    
 };
