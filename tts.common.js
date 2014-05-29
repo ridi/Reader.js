@@ -24,7 +24,7 @@
 //             예) <sup><a id="comment_1">(1)</a></sup>
 //    7. 한 문장 이상의 문장을 포함한 노드는 Chunk로 만든다.
 //        - 단, 다수의 문장일 때는 문장 하나당 Chunk 하나로 만든다.
-//        - 마지막 글자가 .|。|?|!|"|”|'|’|」|] 중 하나일 때 문장이라고 본다.
+//        - 마지막 글자가 .|。|?|!|"|”|'|’|」 중 하나일 때 문장이라고 본다.
 //    8. 다수의 문장을 나눌 때 사용되는 기준은 .|。|?|! 이렇게 네 개이다.
 //        - 단, 기준이 발견된 문자의 다음 문자가 .|。|,|"|”|'|’|」|\]|\)|\r|\n 중 하나일 때는 문장으로 생각하지 않는다. (이는 대화체나 마침표가 반복적으로 사용된 문장을 잘라먹을 우려가 있기 때문이다)
 //             예) <p>그가 '알았다고.' 말했잖아요?</p>
@@ -361,7 +361,125 @@ TTSChunk.prototype = {
     },
 
     getClientRects: function() {
+        var rects = [];
+        var startOffset, endOffset, offset = 0, length = 0;
+        var beginPiece = this.getPiece(this.range.startOffset);
+        for (var i = 0; i < this.pieces.length; i++, offset += length) {
+            var piece = this.pieces[i];
+            var text = piece.text;
+            var node = piece.node;
 
+            var range = document.createRange();
+            range.selectNodeContents(node);
+            if (piece.isImage()) {
+                length = 0;
+
+                var rect = epub.getBoundingClientRect(range);
+                if (rect !== null) {
+                    rects.push(rect);
+                }
+            }
+            else {
+                length = piece.length;
+
+                var chunkRange = this.range;
+                var pieceRange = new TTSRange(offset, offset + piece.length);
+
+                if (chunkRange.startOffset <= pieceRange.startOffset) {
+                    if (pieceRange.endOffset <= chunkRange.endOffset) {
+                        // Case 1
+                        //   Chunk |        |
+                        //   Piece |   |
+                        //   Piece   |   |
+                        //   Piece     |    |
+                        startOffset = pieceRange.startOffset;
+                        endOffset = pieceRange.endOffset;
+                    }
+                    else {
+                        if (chunkRange.endOffset <= pieceRange.startOffset) {
+                            // Case 2
+                            //   Chunk |   |
+                            //   Piece        |    |
+                            continue;
+                        }
+                        else {
+                            // Case 3
+                            //   Chunk |     |
+                            //   Piece    |       |
+                            startOffset = pieceRange.startOffset;
+                            endOffset = this.range.endOffset;
+                        }
+                    }
+                }
+                else if (chunkRange.endOffset <= pieceRange.endOffset) {
+                    // Case 4
+                    //   Chunk    |   |
+                    //   Piece |          |
+                    //   Piece   |    |
+                    startOffset = this.range.startOffset;
+                    endOffset = this.range.endOffset;
+                }
+                else {
+                    if (pieceRange.endOffset <= chunkRange.startOffset) {
+                        // Case 5
+                        //   Chunk         |   |
+                        //   Piece |    |
+                        continue;
+                    }
+                    else {
+                        // Case 6
+                        //   Chunk     |       |
+                        //   Piece |      |
+                        startOffset = this.range.startOffset;
+                        endOffset = pieceRange.endOffset;
+                    }
+                }
+
+                startOffset = Math.max(startOffset - offset + piece.leftPadding, 0);
+                endOffset = Math.max(endOffset - offset + piece.leftPadding, 0);
+                if (endOffset === 0) {
+                    endOffset = length;
+                }
+                while (true) {
+                    try {
+                        range.setStart(node, startOffset);
+                        range.setEnd(node, endOffset);
+                        range.expand('character');
+                    }
+                    catch(e) {
+                        console.log("TTSChunk:getClientRects() Error!! " + e.toString());
+                        console.log("=> {chunkId: " + this.id + ", startOffset: " + startOffset + ", endOffset: " + endOffset + ", offset: " + offset + ", nodeIndex: " + piece.nodeIndex + ", wordIndex: " + piece.wordIndex + "}");
+                        break;
+                    }
+
+                    var string = range.toString();
+                    if (beginPiece.nodeIndex == piece.nodeIndex && 
+                        (string.match(TTSRegex.whitespace("^")) === null || string.match(TTSRegex.sentence("^")) !== null)) {
+                        if (length <= startOffset + 1) {
+                            break;
+                        }
+                        startOffset++;
+                    }
+                    else if (string.match(TTSRegex.whitespace(null, "$")) === null) {
+                        if (endOffset - 1 < 0) {
+                            break;
+                        }
+                        endOffset--;
+                    }
+                    else {
+                        break;
+                    }
+                }// end while
+
+                var textNodeRects = range.getClientRects();
+                if (textNodeRects !== null) {
+                    for (var j = 0; j < textNodeRects.length; j++) {
+                        rects.push(textNodeRects[j]);
+                    }
+                }
+            }
+        }// end for
+        return rects;
     },
 
     copy: function(range) {
@@ -481,10 +599,13 @@ TTSPiece.prototype = {
 
 var tts = {
     chunks: [],
-
     chunkLengthLimit: 0,
 
-    flush: function() {
+    didFinishSpeech: function(chunkId) {
+
+    },
+
+    didFinishMakeChunks: function(index) {
 
     },
 
@@ -520,7 +641,53 @@ var tts = {
     },
 
     makeChunksByNodeLocation: function(nodeIndex, wordIndex) {
+        if (nodeIndex == -1 || wordIndex == -1 || epub.textAndImageNodes === null) {
+            return;
+        }
 
+        var index = Math.max(tts.chunks.length - 1, 0);
+        tts.chunkLengthLimit = Math.min(nodeIndex + 100, epub.textAndImageNodes.length);
+
+        for ( ; nodeIndex < tts.chunkLengthLimit; nodeIndex++, wordIndex = 0) {
+            var piece = new TTSPiece(nodeIndex, wordIndex);
+            if (piece.node === null) {
+                break;
+            }
+
+            var pieces = [piece];
+            if (!piece.isValid() || piece.isWhitespace()) {
+                continue;
+            } else {
+                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || piece.isSentence() || piece.isNextSiblingToBr) {
+                    tts.addChunk(pieces);
+                } else {
+                    var nextPiece = null;
+                    while ((nextPiece = new TTSPiece(++nodeIndex)).nodeIndex !== null) {
+                        if (!nextPiece.isValid()) {
+                            // not working
+                        } else if (nextPiece.isImage() || nextPiece.isWhitespace()) {
+                            tts.addChunk(pieces);
+                            nodeIndex--;
+                            break;
+                        } else {
+                            pieces.push(nextPiece);
+                            if (nextPiece.isSentence()) {
+                                tts.addChunk(pieces);
+                                break;
+                            }
+                        }
+                        if (nodeIndex == epub.textAndImageNodes.length - 1) {
+                            tts.addChunk(pieces);
+                        }
+                    }// end while
+                }
+                if (tts.chunkLengthLimit < nodeIndex) {
+                    tts.chunkLengthLimit = nodeIndex;
+                }
+            }
+        }// end for
+
+        tts.didFinishMakeChunks(index);
     },
 
     addChunk: function(pieces) {
@@ -643,6 +810,10 @@ var tts = {
             tts.chunks.push(chunk);
             call(4);
         }
+    },
+
+    flush: function() {
+
     },
 
     highlightBody: null,
