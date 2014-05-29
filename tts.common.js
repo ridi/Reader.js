@@ -90,6 +90,7 @@ var TTSTextModifier = {
         text = TTSTextModifier.removeHanja(text);
         text = TTSTextModifier.removeLatin(text);
         text = TTSTextModifier.replaceTilde(text);
+        text = TTSTextModifier.replaceNumeric(text);
 
         return text;
     },
@@ -227,6 +228,145 @@ var TTSTextModifier = {
         text = text.replace("∼", "에서");
 
         return text;
+    },
+
+    replaceNumeric: function(text) {
+        // 영문 + 숫자 + 영문
+        // 영문 + 숫자 + 끝
+        // 시작 + 숫자 + 한글(장)
+
+        var NONE = -1;
+        var LATION = 0;
+        var HANGUL = 1;
+
+        var textLength = text.length;
+        var match, pattern = /[\d]{1,}/gm;
+        var i, code;
+        while ((match = pattern.exec(text)) !== null) {
+            var startOffset = match.index;
+            var endOffset = pattern.lastIndex;
+            var type = (startOffset === 0 ? HANGUL : NONE);
+            var spaceCount = 0;
+            for (i = startOffset - 1; i >= 0; i--) {
+                code = text.charCodeAt(i);
+                if (TTSTextModifier.isSpaceCode(code)) {
+                    spaceCount++;
+                    continue;
+                }
+                else if (TTSTextModifier.isLatinCode(code)) {
+                    type = LATION;
+                    break;
+                }
+                else {
+                    type = NONE;
+                    break;
+                }
+            }
+            if (spaceCount == startOffset) {
+                type = HANGUL;
+            }
+            for (i = endOffset; i < textLength; i++) {
+                code = text.charCodeAt(i);
+                if (TTSTextModifier.isSpaceCode(code)) {
+                    continue;
+                }
+                else if (type == LATION || TTSTextModifier.isLatinCode(code)) {
+                    type = LATION;
+                    break;
+                }
+                else if (type == HANGUL && text.charAt(i) == "장") {
+                    break;
+                }
+                else {
+                    type = NONE;
+                    break;
+                }
+            }
+            if (type != NONE) {
+                var numeric = parseInt(text.substring(startOffset, endOffset));
+                var notationString = TTSTextModifier.numericToNotationString(numeric, type);
+                text = text.substr(0, startOffset) + notationString + text.substr(endOffset);
+            }
+        }
+
+        return text;
+    },
+
+    numericToNotationString: function(num, isHangul) {
+        var ones, tens, teens;
+        if (isHangul) {
+            ones = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+            tens = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+            teens = ['십', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        }
+        else {
+            ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+            tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+            teens = ['ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        }
+
+        var convertTens = function(num) {
+            if (num < 10) {
+                return ones[num];
+            }
+            else if (!isHangul && num >= 10 && num < 20) {
+                return teens[num - 10];
+            }
+            else {
+                if (isHangul && num < 10 * 2) {
+                    return "십" + ones[num % 10];
+                }
+                return tens[Math.floor(num / 10)] + (isHangul ? "십" : " ") + ones[num % 10];
+            }
+        };
+
+        var convertHundreds = function(num) {
+            if (num > 99) {
+                if (isHangul && num < 100 * 2) {
+                    return "백" + convertTens(num % 100);
+                }
+                return ones[Math.floor(num / 100)] + (isHangul ? "백" : " hundred ") + convertTens(num % 100);
+            }
+            else {
+                return convertTens(num);
+            }
+        };
+
+        var convertThousands = function(num) {
+            if (num >= 1000) {
+                if (isHangul && num < 1000 * 2) {
+                    return "천" + convertHundreds(num % 1000);
+                }
+                return convertThousands(Math.floor(num / 1000)) + (isHangul ? "천" : " thousand ") + convertHundreds(num % 1000);
+            }
+            else {
+                return convertHundreds(num);
+            }
+        };
+
+        var convertMillions = function(num) {
+            var base = isHangul ? 10000 : 1000000;
+            if (num >= base) {
+                if (isHangul && num < base * 2) {
+                    return "만" + convertThousands(num % base);
+                }
+                return convertMillions(Math.floor(num / base)) + (isHangul ? "만" : " million ") + convertThousands(num % base);
+            }
+            else {
+                return convertThousands(num);
+            }
+        };
+
+        if (num === 0) {
+            return isHangul ? "영" : "zero";
+        }
+        else {
+            return convertMillions(num).trim();
+        }
+    },
+
+    numericToOrdinalString: function(num, isHangul) {
+
     },
 
     isContain: function(code, table) {
