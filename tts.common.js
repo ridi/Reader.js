@@ -223,6 +223,9 @@ var TTSTextModifier = {
             }
         }
 
+        // '~'가 아닌 '∼'는 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
+        text = text.replace("∼", "에서");
+
         return text;
     },
 
@@ -245,9 +248,7 @@ var TTSTextModifier = {
     },
 
     isTildeCode: function(code) {
-        // 0x007E : ~
-        // 0x223C : ∼
-        return code == 0x007E || code == 0x223C;
+        return code == 0x007E || code == 0x223C;// ~, ∼
     },
 
     isHangulCode: function(code) {
@@ -586,7 +587,7 @@ var tts = {
             var subText = "";
             for (var i = 0; i < tokens.length; i++) {
                 var token = tokens[i];
-                var openBracket, closeBracket;
+                var openBracket, closeBracket, otherOpenBracket;
                 subText += token;
                 offset += token.length;
                 if ((openBracket = getOpenBracket(token)) !== null) {
@@ -600,6 +601,10 @@ var tts = {
                         // TDD - 괄호가 섞였을 때는 어쩔건가. 예) [{~~~]}
                         if ((closeBracket = getCloseBracket(nextToken)) !== null && isOnePair(openBracket, closeBracket)) {
                             if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.indexOf(openBracket)) {
+                                continue;
+                            }
+                            else if (i < j && (otherOpenBracket = getOpenBracket(nextToken)) !== null) {
+                                openBracket = otherOpenBracket;
                                 continue;
                             }
                             else if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
@@ -641,7 +646,7 @@ var tts = {
     },
 
     highlightBody: null,
-    HIGHLIGHT_COUNT: 10,
+    HIGHLIGHT_COUNT: 25,
 
     clearHighlight: function() {
         if (tts.highlightBody !== null) {
