@@ -469,10 +469,6 @@ var TTSChunk = function(pieces) {
 TTSChunk.prototype = {
     range: null,
 
-    isLeadNextPage: function() {
-
-    },
-
     getText: function() {
         var fullText = "";
         for (var i = 0; i < this.pieces.length; i++) {
@@ -740,6 +736,52 @@ TTSPiece.prototype = {
 var tts = {
     chunks: [],
     chunkLengthLimit: 0,
+
+    shouldNextPage: function(chunkId, baseOffset) {
+        var getOffset = function(chunk, isEndOfChunk) {
+            var piece = chunk.getPiece(isEndOfChunk ? chunk.range.endOffset : chunk.range.startOffset);
+            if (piece === null) {
+                return 0;
+            }
+
+            var node = piece.node;
+            var range = document.createRange();
+            range.selectNodeContents(node);
+            if (!piece.isImage() && isEndOfChunk) {
+                try {
+                    if (piece.length < chunk.range.endOffset) {
+                        range.setStart(node, range.endOffset - 1);
+                        range.setEnd(node, range.endOffset);
+                    }
+                    else {
+                        range.setStart(node, chunk.range.endOffset - 1);
+                        range.setEnd(node, chunk.range.endOffset);
+                    }
+                }
+                catch (e) {
+                    console.log("tts:shouldNextPage:getRect() Error!! " + e.toString());
+                    console.log("=> {nodeIndex: " + piece.nodeIndex + ", wordIndex: " + piece.wordIndex + "}");
+                    return 0;
+                }
+            }
+
+            return epub.getBoundingClientRect(range).left;
+        };
+
+        var chunk = tts.chunks[chunkId];
+        if (chunk === undefined) {
+            return false;
+        }
+
+        if (getOffset(chunk, true) <= baseOffset) {
+            var nextChunk = tts.chunks[chunkId + 1];
+            if (nextChunk !== undefined && getOffset(nextChunk, false) < baseOffset) {
+                return false;
+            }
+        }
+
+        return true;
+    },
 
     didFinishSpeech: function(chunkId) {
 
