@@ -24,7 +24,7 @@
 //             예) <sup><a id="comment_1">(1)</a></sup>
 //    7. 한 문장 이상의 문장을 포함한 노드는 Chunk로 만든다.
 //        - 단, 다수의 문장일 때는 문장 하나당 Chunk 하나로 만든다.
-//        - 마지막 글자가 .|。|?|!|"|”|'|’|」 중 하나일 때 문장이라고 본다.
+//        - 마지막 글자가 .|。|?|!|"|”|'|’|」|』 중 하나일 때 문장이라고 본다.
 //    8. 다수의 문장을 나눌 때 사용되는 기준은 .|。|?|! 이렇게 네 개이다.
 //        - 단, 기준이 발견된 문자의 다음 문자가 .|。|,|"|”|'|’|」|\]|\)|\r|\n 중 하나일 때는 문장으로 생각하지 않는다. (이는 대화체나 마침표가 반복적으로 사용된 문장을 잘라먹을 우려가 있기 때문이다)
 //             예) <p>그가 '알았다고.' 말했잖아요?</p>
@@ -146,7 +146,7 @@ var TTSTextModifier = {
                             }
                         }
                     }
-                    else if (TTSTextModifier.isHangulCode(nextCode) || TTSTextModifier.isSentenceSuffix(nextCh)) {
+                    else if (TTSTextModifier.isHangulCode(nextCode) || TTSTextModifier.isSentenceSuffix(nextCh) || nextCh == ",") {
                         removeList.push({startOffset: startOffset, endOffset: i + 1});
                         startOffset = -1;
                     }
@@ -253,7 +253,7 @@ var TTSTextModifier = {
                     spaceCount++;
                     continue;
                 }
-                else if (TTSTextModifier.isLatinCode(code)) {
+                else if (i < startOffset - 1 && TTSTextModifier.isLatinCode(code)) {
                     type = LATION;
                     break;
                 }
@@ -270,7 +270,7 @@ var TTSTextModifier = {
                 if (TTSTextModifier.isSpaceCode(code)) {
                     continue;
                 }
-                else if (type == LATION || TTSTextModifier.isLatinCode(code)) {
+                else if (endOffset < i && (type == LATION || TTSTextModifier.isLatinCode(code))) {
                     type = LATION;
                     break;
                 }
@@ -451,7 +451,7 @@ var TTSRegex = {
     },
 
     sentence: function(prefix, suffix, flags) {
-        return TTSRegex.makeRgex(prefix, "[.|。|?|!|\"|”|'|’|」]", suffix, flags);
+        return TTSRegex.makeRgex(prefix, "[.|。|?|!|\"|”|'|’|」|』]", suffix, flags);
     }
 };
 
@@ -798,7 +798,7 @@ var tts = {
             if (!piece.isValid() || piece.isWhitespace()) {
                 continue;
             } else {
-                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || piece.isSentence() || piece.isNextSiblingToBr) {
+                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || (piece.length > 1 && piece.isSentence()) || piece.isNextSiblingToBr) {
                     tts.addChunk(pieces);
                 } else {
                     var nextPiece = null;
@@ -811,7 +811,7 @@ var tts = {
                             break;
                         } else {
                             pieces.push(nextPiece);
-                            if (nextPiece.isSentence()) {
+                            if (nextPiece.length > 1 && nextPiece.isSentence()) {
                                 tts.addChunk(pieces);
                                 break;
                             }
@@ -914,13 +914,13 @@ var tts = {
                                 openBracket = otherOpenBracket;
                                 continue;
                             }
-                            else if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
-                                isLast = true;
-                                continue;
-                            }
                             else {
                                 isLast = true;
                             }
+                        }
+                        if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+                            isLast = true;
+                            continue;
                         }
                         if (isLast) {
                             tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
