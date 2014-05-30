@@ -28,7 +28,7 @@
 //    8. 다수의 문장을 나눌 때 사용되는 기준은 .|。|?|! 이렇게 네 개이다.
 //        - 단, 기준이 발견된 문자의 다음 문자가 .|。|,|"|”|'|’|」|\]|\)|\r|\n 중 하나일 때는 문장으로 생각하지 않는다. (이는 대화체나 마침표가 반복적으로 사용된 문장을 잘라먹을 우려가 있기 때문이다)
 //             예) <p>그가 '알았다고.' 말했잖아요?</p>
-//    9. 한 문장이 되지 못하는 노드는 다음 노드와 합친다. 
+//    9. 한 문장이 되지 못하는 노드는 다음 노드와 합친다.
 //        - 문장에서 특정 단어에 태그를 입혔을 때 그 단어 하나만 문장으로 구성될 우려가 있기 때문이다.
 //             예) <p>제가 <b>하쿠나 마타타</b>라고 말하면 가는 겁니다.</p>
 //        - 다음 노드에 대해서도 1~6번을 따른다.
@@ -412,7 +412,7 @@ var TTSTextModifier = {
 
     getInitialCodeInHangulCode: function(code) {
         //      ㄱ  ㄲ ㄴ  ㄷ  ㄸ ㄹ  ㅁ ㅂ  ㅃ  ㅅ ㅆ  ㅇ ㅈ  ㅉ ㅊ  ㅋ ㅌ  ㅍ ㅎ
-        // 0x31 31 32 34 37 38 39 41 42 43 45 46 47 48 49 4A 4B 4C 4D 4E 
+        // 0x31 31 32 34 37 38 39 41 42 43 45 46 47 48 49 4A 4B 4C 4D 4E
         var initialCodes = [0x31, 0x32, 0x34, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E];
         return 0x3100 + initialCodes[((((code - 0xAC00) - (code - 0xAC00) % 28)) / 28) / 21];
     },
@@ -589,7 +589,7 @@ TTSChunk.prototype = {
                     }
 
                     var string = range.toString();
-                    if (beginPiece.nodeIndex == piece.nodeIndex && 
+                    if (beginPiece.nodeIndex == piece.nodeIndex &&
                         (string.match(TTSRegex.whitespace("^")) === null || string.match(TTSRegex.sentence("^")) !== null)) {
                         if (length <= startOffset + 1) {
                             break;
@@ -1046,18 +1046,19 @@ var tts = {
                 var top = basedLeft ? rect.top : (rect.top - startOffset);
                 var width = rect.width ? rect.width : 3;
                 var height = rect.height;
-                highlightNode.style.cssText =
+                var cssText =
                     "position: absolute !important;" +
-                    "background-color: blue !important;" +
+                    "background-color: #1e91e4 !important;" +
                     "left: " + left + "px !important;" +
                     "top: " + top + "px !important;" +
                     "width: " + width + "px !important;" +
                     "height: " + height + "px !important;" +
                     "display: block !important;" +
                     "opacity: 0.2 !important;" +
-                    "z-index: 2147483647 !important";
+                    "z-index: 2147483647 !important;";
+
+                highlightNode.style.cssText = cssText;
             }
         }// end for
     },
-    
 };
