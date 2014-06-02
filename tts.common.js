@@ -568,6 +568,7 @@ TTSChunk.prototype = {
     getClientRects: function() {
         var rects = [];
         var startOffset, endOffset, offset = 0, length = 0;
+        var string = null;
         var beginPiece = this.getPiece(this.range.startOffset);
         for (var i = 0; i < this.pieces.length; i++, offset += length) {
             var piece = this.pieces[i];
@@ -657,10 +658,10 @@ TTSChunk.prototype = {
                         break;
                     }
 
-                    var string = range.toString();
+                    string = range.toString();
                     if (beginPiece.nodeIndex == piece.nodeIndex &&
                         (string.match(TTSRegex.whitespace("^")) === null || string.match(TTSRegex.sentence("^")) !== null)) {
-                        if (length <= startOffset + 1) {
+                        if (length < startOffset + 1) {
                             break;
                         }
                         startOffset++;
@@ -676,10 +677,13 @@ TTSChunk.prototype = {
                     }
                 }// end while
 
-                var textNodeRects = range.getClientRects();
-                if (textNodeRects !== null) {
-                    for (var j = 0; j < textNodeRects.length; j++) {
-                        rects.push(textNodeRects[j]);
+
+                if (string.length > 0) {
+                    var textNodeRects = range.getClientRects();
+                    if (textNodeRects !== null) {
+                        for (var j = 0; j < textNodeRects.length; j++) {
+                            rects.push(textNodeRects[j]);
+                        }
                     }
                 }
             }
@@ -839,17 +843,18 @@ var tts = {
 
         var chunk = tts.chunks[chunkId];
         if (chunk === undefined) {
-            return false;
+            return 0;
         }
 
-        if (getOffset(chunk, true) <= baseOffset) {
+        var offset = 0;
+        if ((offset = getOffset(chunk, true)) <= baseOffset) {
             var nextChunk = tts.chunks[chunkId + 1];
-            if (nextChunk !== undefined && getOffset(nextChunk, false) < baseOffset) {
-                return false;
+            if (nextChunk !== undefined && (offset = getOffset(nextChunk, false)) < baseOffset) {
+                return 0;
             }
         }
 
-        return true;
+        return Math.floor(offset / baseOffset);
     },
 
     didFinishSpeech: function(chunkId) {
@@ -1113,7 +1118,7 @@ var tts = {
                 var left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
                                      : (scrollLeft + (rect.left < 0 ? (scrollLeft + rect.left) : rect.left));
                 var top = basedLeft ? rect.top : (rect.top - startOffset);
-                var width = rect.width ? rect.width : 3;
+                var width = rect.width;
                 var height = rect.height;
                 var cssText =
                     "position: absolute !important;" +
