@@ -112,57 +112,79 @@ var TTSTextModifier = {
         return text;
     },
 
-    // TDD - 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
+    // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
     removeLatin: function(text) {
         var removeList = [];
         var textLength = text.length;
-        var startOffset = -1, endOffset = -1, i;
-        for (i = 0; i < textLength; i++) {
-            var code = text.charCodeAt(i);
-            var ch = text.charAt(i);
-            if (startOffset == -1) {
-                if (0 < i && TTSTextModifier.isLatinCode(code)) {
-                    var isAbbr = false;
-                    var prevCode = text.charCodeAt(i - 1);
-                    if (i + 1 < textLength) {
-                        var nextCode = text.charCodeAt(i + 1);
-                        isAbbr = TTSTextModifier.isLatinCode(code, "u") & TTSTextModifier.isLatinCode(nextCode, "u");
-                    }
-                    if (!isAbbr && TTSTextModifier.isHangulCode(prevCode)) {
-                        startOffset = i;
-                    }
-                }
+        var startOffset = -1, endOffset = -1, i, j, k;
+        var ch, nextCh;
+        var prevCode, code, nextCode;
+
+        var add = function(start, end) {
+            if (end - start > 1) {
+                // 한글자 이상일 때만 지운다.
+                removeList.push({startOffset: start, endOffset: end});
             }
-            else {
-                if (i < text.length - 1 && TTSTextModifier.isLatinCode(code)) {
-                    var nextCode = text.charCodeAt(i + 1);
-                    var nextCh = text.charAt(i + 1);
-                    if (TTSTextModifier.isSpaceCode(nextCode)) {
-                        for (var j = i + 2; j < textLength; j++) {
-                            var otherCode = text.charCodeAt(j);
-                            if (TTSTextModifier.isSpaceCode(otherCode) || TTSTextModifier.isLatinCode(otherCode)) {
-                                i = j - 1;
-                                break;
-                            }
-                            else {
-                                removeList.push({startOffset: startOffset, endOffset: j - 1});
-                                startOffset = -1;
-                                break;
+            startOffset = -1;
+        };
+
+        for (i = 0; i < textLength; i++) {
+            code = text.charCodeAt(i);
+            if (0 < i && TTSTextModifier.isLatinCode(code)) {
+                var isAbbr = false;
+                prevCode = text.charCodeAt(i - 1);
+                if (i + 1 < textLength) {
+                    // 한글 옆에 붙은애는 알고보니 축약어였다!? -> 야는 지워선 안된다.
+                    nextCode = text.charCodeAt(i + 1);
+                    isAbbr = TTSTextModifier.isLatinCode(code, "u") & TTSTextModifier.isLatinCode(nextCode, "u");
+                }
+                if (!isAbbr && TTSTextModifier.isHangulCode(prevCode)) {
+                    startOffset = i;
+                }
+                if (startOffset > 0) {
+                    for (j = i + 1; j < textLength; j++) {
+                        code = text.charCodeAt(j);
+                        ch = text.charAt(j);
+                        if (TTSTextModifier.isSpaceCode(code) || TTSTextModifier.isSentenceSuffix(ch)) {
+                            if (j + 1 < textLength) {
+                                var spaceCount = 1;
+                                for (k = j + 1; k < textLength; k++) {
+                                    nextCode = text.charCodeAt(k);
+                                    if (TTSTextModifier.isSpaceCode(nextCode)) {
+                                        spaceCount++;
+                                        continue;
+                                    }
+                                    else if (TTSTextModifier.isLatinCode(nextCode)) {
+                                        j = k;
+                                        break;
+                                    }
+                                    else {
+                                        add(startOffset, k - spaceCount);
+                                        j = k - spaceCount;
+                                        break;
+                                    }
+                                }// end for
+                            } else {
+                                add(startOffset, j);
                             }
                         }
+                        else if (!TTSTextModifier.isLatinCode(code)) {
+                            if (j + 1 < textLength) {
+                                nextCode = text.charCodeAt(j + 1);
+                                if (TTSTextModifier.isLatinCode(nextCode)) {
+                                    j++;
+                                    continue;
+                                }
+                            }
+                            add(startOffset, j);
+                        }
+                        if (startOffset == -1) {
+                            break;
+                        }
+                    }// end for
+                    if (startOffset != -1) {
+                        add(startOffset, textLength);
                     }
-                    else if (TTSTextModifier.isHangulCode(nextCode) || TTSTextModifier.isSentenceSuffix(nextCh) || nextCh == ",") {
-                        removeList.push({startOffset: startOffset, endOffset: i + 1});
-                        startOffset = -1;
-                    }
-                }
-                else if (TTSTextModifier.isSentenceSuffix(ch) || TTSTextModifier.isHangulCode(code)) {
-                    // 한글자 영문은 보존하도록 한다.
-                    startOffset = -1;
-                }
-                else if (textLength - 1 <= i) {
-                    // 텍스트의 끝이 영문일 때는 끝까지 지운다.
-                    removeList.push({startOffset: startOffset, endOffset: textLength});
                 }
             }
         }// end for
