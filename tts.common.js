@@ -122,8 +122,13 @@ var TTSTextModifier = {
             var ch = text.charAt(i);
             if (startOffset == -1) {
                 if (0 < i && TTSTextModifier.isLatinCode(code)) {
+                    var isAbbr = false;
                     var prevCode = text.charCodeAt(i - 1);
-                    if (TTSTextModifier.isHangulCode(prevCode)) {
+                    if (i + 1 < textLength) {
+                        var nextCode = text.charCodeAt(i + 1);
+                        isAbbr = TTSTextModifier.isLatinCode(code, "u") & TTSTextModifier.isLatinCode(nextCode, "u");
+                    }
+                    if (!isAbbr && TTSTextModifier.isHangulCode(prevCode)) {
                         startOffset = i;
                     }
                 }
@@ -396,9 +401,51 @@ var TTSTextModifier = {
         return TTSTextModifier.isContain(code, hangulTable);
     },
 
-    isLatinCode: function(code) {
-        var latinTable = [0x0041, 0x005A, 0x0061, 0x007A, 0x00C0, 0x00D6, 0x00D8, 0x00F6, 0x00F8, 0x00FF, 0x0100, 0x017F, 0x0180, 0x024F];
-        return TTSTextModifier.isContain(code, latinTable);
+    isLatinCode: function(code, flag) {
+        var uppercaseTable = [0x0041, 0x005A, 0x00C0, 0x00D6, 0x00D8, 0x00DE];
+        var lowercaseTable = [0x0061, 0x007A, 0x00DF, 0x00F6, 0x00F8, 0x00FF];
+
+        if (code >= 0x0100 && code <= 0x017F) {
+            // Latin Extended-A
+            if (flag == "u") {
+                if ((code >= 0x0100 && code <= 0x0137 && code % 2 === 0) || (code >= 0x014A && code <= 0x0177 && code % 2 === 0) ||
+                    (code >= 0x0139 && code <= 0x0148 && code % 2 == 1) || (code >= 0x0179 && code <= 0x017E && code % 2 == 1)) {
+                    return true;
+                }
+                else if (code == 0x0178) {
+                    return true;
+                }
+            }
+            else if (flag == "l") {
+                if ((code >= 0x0100 && code <= 0x0137 && code % 2 == 1) || (code >= 0x014A && code <= 0x0177 && code % 2 == 1) ||
+                    (code >= 0x0139 && code <= 0x0148 && code % 2 === 0) || (code >= 0x0179 && code <= 0x017E && code % 2 === 0)) {
+                    return true;
+                }
+                else if (code == 0x0138 || code == 0x0149 || code == 0x017F) {
+                    return true;
+                }
+            }
+            return true;
+        }
+        else if (code >= 0x0180 && code <= 0x024F) {
+            // Latin Extended-B... 대소문자가 섞여있고 편집문자까지 들어가 있다...
+            return true;
+        }
+        else {
+            // Latin Basic
+            if (flag == "u") {
+                return TTSTextModifier.isContain(code, uppercaseTable);
+            }
+            else if (flag == "l") {
+                return TTSTextModifier.isContain(code, lowercaseTable);
+            }
+            else {
+                var latinTable = [];
+                latinTable = latinTable.concat(uppercaseTable);
+                latinTable = latinTable.concat(lowercaseTable);
+                return TTSTextModifier.isContain(code, latinTable);
+            }
+        }
     },
 
     isChineseCode: function(code) {
