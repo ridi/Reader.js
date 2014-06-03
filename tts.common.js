@@ -91,6 +91,7 @@ var TTSTextModifier = {
         text = TTSTextModifier.removeLatin(text);
         text = TTSTextModifier.replaceTilde(text);
         text = TTSTextModifier.replaceNumeric(text);
+        text = TTSTextModifier.replaceBracket(text);
 
         return text;
     },
@@ -199,8 +200,7 @@ var TTSTextModifier = {
         return result;
     },
 
-    // TDD - 틸드 문자 앞뒤로 공백이 있을때는 변수가 너무 많은데.
-    // TDD - 그냥 없애버리는 것도 방법이지 않을까.
+    // 한글에 틸드 문자가 붙을 경우 소리를 늘리는 의미기에 자모에 맞춰 늘려준다.
     replaceTilde: function(text) {
         var extendTable = ["아", "에", "아", "에", "어", "에", "어", "에", "오", "아", "에", "에", "오", "우", "어", "에", "이", "우", "으", "으", "이"];
         var textLength = text.length;
@@ -211,10 +211,7 @@ var TTSTextModifier = {
                 if (i > 0) {
                     for (var j = i - 1; j >= 0; j--) {
                         var prevCode = text.charCodeAt(j);
-                        /* if (TTSTextModifier.isSpaceCode(prevCode)) {
-                            continue;
-                        }
-                        else */ if (TTSTextModifier.isHangulCode(prevCode)) {
+                        if (TTSTextModifier.isHangulCode(prevCode)) {
                             var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
                             text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
                             offset = i;
@@ -257,11 +254,8 @@ var TTSTextModifier = {
         return text;
     },
 
+    // 숫자를 문맥상에 맞게 변환해준다.
     replaceNumeric: function(text) {
-        // 영문 + 숫자 + 영문
-        // 영문 + 숫자 + 끝
-        // 시작 + 숫자 + 한글(장)
-
         var NONE = -1;
         var LATION = 0;
         var HANGUL = 1;
@@ -317,6 +311,11 @@ var TTSTextModifier = {
         }
 
         return text;
+    },
+
+    // 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
+    replaceBracket: function(text) {
+        return text.replace(/\(([\d]{1,})\)/gm, "[$1]");
     },
 
     numericToNotationString: function(num, isHangul) {
