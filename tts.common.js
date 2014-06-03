@@ -676,13 +676,10 @@ TTSChunk.prototype = {
                     }
                 }// end while
 
-
-                if (string.length > 0) {
-                    var textNodeRects = range.getClientRects();
-                    if (textNodeRects !== null) {
-                        for (var j = 0; j < textNodeRects.length; j++) {
-                            rects.push(textNodeRects[j]);
-                        }
+                var textNodeRects = range.getClientRects();
+                if (textNodeRects !== null) {
+                    for (var j = 0; j < textNodeRects.length; j++) {
+                        rects.push(textNodeRects[j]);
                     }
                 }
             }
@@ -1072,7 +1069,7 @@ var tts = {
     },
 
     highlightBody: null,
-    HIGHLIGHT_COUNT: 25,
+    HIGHLIGHT_COUNT: 50,
 
     clearHighlight: function() {
         if (tts.highlightBody !== null) {
@@ -1084,7 +1081,8 @@ var tts = {
     },
 
     setUpHighlightBody: function() {
-        if (tts.highlightBody === null) {
+        tts.highlightBody = document.body.getElementsByClassName("RidiTTSHighlightBody")[0];
+        if (tts.highlightBody === undefined) {
             tts.highlightBody = document.createElement("div");
             tts.highlightBody.setAttribute("class", "RidiTTSHighlightBody");
             var fragment = document.createDocumentFragment();
