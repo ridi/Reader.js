@@ -318,6 +318,7 @@ var TTSTextModifier = {
         return text.replace(/\(([\d]{1,})\)/gm, "[$1]");
     },
 
+    // 기(양)수사 : 수량을 쓸 때 쓰는 수사
     numericToNotationString: function(num, isHangul) {
         var ones, tens, teens;
         if (isHangul) {
@@ -391,8 +392,12 @@ var TTSTextModifier = {
         }
     },
 
+    // 서수사 : 순서를 나타내는 수사
     numericToOrdinalString: function(num, isHangul) {
-
+        // 명, 분, 사람, 번, 개, 대, 돈, 벌, 살, 손, 죽, 채, 켤래, 쾌, 자루, 마리 
+        //
+        // 첫/한/하나, 둘/두, 셋/세, 넷/네, 다섯, 여섯, 일곱, 여덟, 아홉
+        // 열, 스물, 서른, 마흔, 쉰, 예순, 일흔, 여든, 아흔, 백(온), 천(즈믄)
     },
 
     isContain: function(code, table) {
