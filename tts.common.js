@@ -855,7 +855,12 @@ var tts = {
             }
         }
 
-        return Math.floor(offset / baseOffset);
+        var page = Math.floor(offset / baseOffset);
+        if (isNaN(page)) {
+            page = 0;
+        }
+
+        return page;
     },
 
     didFinishSpeech: function(chunkId) {
@@ -903,7 +908,7 @@ var tts = {
         }
 
         var index = Math.max(tts.chunks.length - 1, 0);
-        tts.chunkLengthLimit = Math.min(nodeIndex + 100, epub.textAndImageNodes.length);
+        tts.chunkLengthLimit = Math.min(nodeIndex + 50, epub.textAndImageNodes.length);
 
         for ( ; nodeIndex < tts.chunkLengthLimit; nodeIndex++, wordIndex = 0) {
             var piece = new TTSPiece(nodeIndex, wordIndex);
