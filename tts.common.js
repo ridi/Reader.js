@@ -559,14 +559,21 @@ TTSChunk.prototype = {
     },
 
     getPiece: function(offset) {
+        var piece = null;
         var length = 0;
-        for (var i = 0; i < this.pieces.length; i++) {
-            length += this.pieces[i].length;
-            if (offset <= length) {
-                return this.pieces[i];
+        if (this.pieces.length == 1) {
+            piece = this.pieces[0];
+        }
+        else {
+            for (var i = 0; i < this.pieces.length; i++) {
+                length += this.pieces[i].length;
+                if (offset <= length) {
+                    piece = this.pieces[i];
+                    break;
+                }
             }
         }
-        return null;
+        return piece;
     },
 
     getClientRects: function() {
