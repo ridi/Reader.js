@@ -204,23 +204,44 @@ var TTSTextModifier = {
     replaceTilde: function(text) {
         var extendTable = ["아", "에", "아", "에", "어", "에", "어", "에", "오", "아", "에", "에", "오", "우", "어", "에", "이", "우", "으", "으", "이"];
         var textLength = text.length;
-        var offset = -1;
+        var offset = -1, j;
         for (var i = 0; i < textLength; i++) {
             var code = text.charCodeAt(i);
             if (TTSTextModifier.isTildeCode(code)) {
                 if (i > 0) {
-                    for (var j = i - 1; j >= 0; j--) {
-                        var prevCode = text.charCodeAt(j);
-                        if (TTSTextModifier.isHangulCode(prevCode)) {
-                            var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
-                            text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
-                            offset = i;
+                    var isRangeTilde = false;
+                    for (j = i + 1; j < textLength; j++) {
+                        var nextCode = text.charCodeAt(j);
+                        if (TTSTextModifier.isSpaceCode(nextCode)) {
+                            continue;
+                        }
+                        else if (TTSTextModifier.isDigitCode(nextCode)) {
+                            isRangeTilde = true;
                             break;
                         }
                         else {
                             break;
                         }
                     }// end for
+                    if (!isRangeTilde) {
+                        for (j = i - 1; j >= 0; j--) {
+                            var prevCode = text.charCodeAt(j);
+                            if (TTSTextModifier.isHangulCode(prevCode)) {
+                                var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
+                                text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
+                                offset = i;
+                                break;
+                            }
+                            else if (TTSTextModifier.isLatinCode(prevCode)) {
+                                text = text.replace(text.substr(i, 1), text.substr(j, 1));
+                                offset = i;
+                                break;
+                            }
+                            else {
+                                break;
+                            }
+                        }// end for
+                    }
                 }
             }
         }// end for
@@ -315,7 +336,15 @@ var TTSTextModifier = {
 
     // 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
     replaceBracket: function(text) {
-        return text.replace(/\(([\d]{1,})\)/gm, "[$1]");
+        text = text.replace(/\(([\d]{1,})\)/gm, "[$1]");
+        text = text.replace(/\(([가|나|다|라|마|바|사|아|자|차|카|타|파|하])\)/gm, "[$1]");
+        return text;
+    },
+
+    replaceDate: function(text) {
+        var abbrMonth = ["jan", "feb", "mar", "may", "apr", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+        var fullMonth = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
     },
 
     // 기(양)수사 : 수량을 쓸 때 쓰는 수사
