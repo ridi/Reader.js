@@ -316,7 +316,8 @@ var TTSTextModifier = {
                     type = LATION;
                     break;
                 }
-                else if (type == HANGUL && text.charAt(i) == "장") {
+                else if (text.charAt(i) == "장" || text.charAt(i) == "권") {
+                    type = HANGUL;
                     break;
                 }
                 else {
