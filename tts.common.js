@@ -92,13 +92,15 @@ var TTSTextModifier = {
         text = TTSTextModifier.replaceTilde(text);
         text = TTSTextModifier.replaceNumeric(text);
         text = TTSTextModifier.replaceBracket(text);
+        text = TTSTextModifier.replaceEqual(text);
+        text = TTSTextModifier.insertPauseTag(text);
 
         return text;
     },
 
     // 소괄호 안에 뉴라인 문자가 있으면 읽지 않게 설정을해도 읽어버린다.
     removeNewline: function(text) {
-        return text.replace(/[\n|\r]/, " ");
+        return text.replace(/[\n\r]/, " ");
     },
 
     // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 지운다.
@@ -280,6 +282,10 @@ var TTSTextModifier = {
         var NONE = -1;
         var LATION = 0;
         var HANGUL = 1;
+        var TIME = 2;
+
+        // 숫자 앞에 0이 있는 경우 지워버린다.
+        text = text.replace(/[0]{1,}([\d]{1,})/gm, "$1");
 
         var textLength = text.length;
         var match, pattern = /[\d]{1,}/gm;
@@ -294,6 +300,10 @@ var TTSTextModifier = {
                 if (TTSTextModifier.isSpaceCode(code)) {
                     spaceCount++;
                     continue;
+                }
+                else if (TTSTextModifier.isColonCode(code)) {
+                    type = TIME;
+                    break;
                 }
                 else if (i < startOffset - 1 && TTSTextModifier.isLatinCode(code)) {
                     type = LATION;
@@ -312,6 +322,10 @@ var TTSTextModifier = {
                 if (TTSTextModifier.isSpaceCode(code)) {
                     continue;
                 }
+                else if (type == TIME || TTSTextModifier.isColonCode(code)) {
+                    type = TIME;
+                    break;
+                }
                 else if (endOffset < i && (type == LATION || TTSTextModifier.isLatinCode(code))) {
                     type = LATION;
                     break;
@@ -325,7 +339,7 @@ var TTSTextModifier = {
                     break;
                 }
             }
-            if (type != NONE) {
+            if (type == HANGUL || type == LATION) {
                 var numeric = parseInt(text.substring(startOffset, endOffset));
                 var notationString = TTSTextModifier.numericToNotationString(numeric, type);
                 text = text.substr(0, startOffset) + notationString + text.substr(endOffset);
@@ -337,15 +351,29 @@ var TTSTextModifier = {
 
     // 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
     replaceBracket: function(text) {
-        text = text.replace(/\(([\d]{1,})\)/gm, "[$1]");
-        text = text.replace(/\(([가|나|다|라|마|바|사|아|자|차|카|타|파|하])\)/gm, "[$1]");
+        text = text.replace(/\(([\d]{1,2})\)/gm, "[$1]");
+        text = text.replace(/\(([가나다라마바사아자차카타파하])\)/gm, "[$1]");
         return text;
+    },
+
+    // 판타지 소설에서 '=' 문자로 구분선을 만들기 때문에 사용자 사전에 넣지는 못하고 수동으로..
+    replaceEqual: function(text) {
+        return text.replace(/([^=])([=]{1})([^=])/gm, "$1는 $3");
     },
 
     replaceDate: function(text) {
         var abbrMonth = ["jan", "feb", "mar", "may", "apr", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
         var fullMonth = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+    },
+
+    // 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
+    // TDD - 불길하다.. 식이 왜저리 더러워;
+    insertPauseTag: function(text) {
+        text = text.replace(/([·|…_]{1,})/gm, "<pause=\"350ms\">$1");
+        text = text.replace(/([\D])(-|―){1,}([\D])/gm, "$1<pause=\"350ms\">$2$3");
+        text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, "$1<pause=\"350ms\">$2");
+        return text;
     },
 
     // 기(양)수사 : 수량을 쓸 때 쓰는 수사
@@ -452,6 +480,10 @@ var TTSTextModifier = {
         return code == 0x007E || code == 0x223C;// ~, ∼
     },
 
+    isColonCode: function(code) {
+        return code == 0x003A;
+    },
+
     isHangulCode: function(code) {
         var hangulTable = [0xAC00, 0xD7AF];
         return TTSTextModifier.isContain(code, hangulTable);
@@ -554,7 +586,7 @@ var TTSRegex = {
     },
 
     sentence: function(prefix, suffix, flags) {
-        return TTSRegex.makeRgex(prefix, "[.|。|?|!|\"|”|'|’|」|』]", suffix, flags);
+        return TTSRegex.makeRgex(prefix, "[.。?!\"”'’」』]", suffix, flags);
     }
 };
 
@@ -991,13 +1023,13 @@ var tts = {
 
     addChunk: function(pieces) {
         var split = function(text) {
-            text = text.replace(/([.|。|?|!])/gm, "$1[RidiDelimiter]");
+            text = text.replace(/([.。?!])/gm, "$1[RidiDelimiter]");
             return text.split("[RidiDelimiter]");
         };
 
         var getOpenBracket = function(text) {
             var ch = null;
-            var result = text.match(/[\(|\{|\[]/gm);
+            var result = text.match(/[\(\{\[]/gm);
             if (result !== null) {
                 ch = result[0];
             }
@@ -1006,7 +1038,7 @@ var tts = {
 
         var getCloseBracket = function(text) {
             var ch = null;
-            var result = text.match(/[\)|\}|\]]/gm);
+            var result = text.match(/[\)\}\]]/gm);
             if (result !== null) {
                 ch = result[result.length - 1];
             }
