@@ -86,7 +86,6 @@
 
 var TTSTextModifier = {
     modify: function(text) {
-        text = TTSTextModifier.removeNewline(text);
         text = TTSTextModifier.removeHanja(text);
         text = TTSTextModifier.removeLatin(text);
         text = TTSTextModifier.replaceTilde(text);
@@ -96,11 +95,6 @@ var TTSTextModifier = {
         text = TTSTextModifier.insertPauseTag(text);
 
         return text;
-    },
-
-    // 소괄호 안에 뉴라인 문자가 있으면 읽지 않게 설정을해도 읽어버린다.
-    removeNewline: function(text) {
-        return text.replace(/[\n\r]/, " ");
     },
 
     // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 지운다.
@@ -281,19 +275,21 @@ var TTSTextModifier = {
     replaceNumeric: function(text) {
         var NONE = -1;
         var LATION = 0;
-        var HANGUL = 1;
-        var TIME = 2;
+        var HANGUL_NOTATION = 1;
+        var HANGUL_ORDINAL = 2;
+        var TIME = 3;
 
         // 숫자 앞에 0이 있는 경우 지워버린다.
         text = text.replace(/[0]{1,}([\d]{1,})/gm, "$1");
 
         var textLength = text.length;
         var match, pattern = /[\d]{1,}/gm;
-        var i, code;
+        var i, code, ch;
         while ((match = pattern.exec(text)) !== null) {
             var startOffset = match.index;
             var endOffset = pattern.lastIndex;
-            var type = (startOffset === 0 ? HANGUL : NONE);
+            var numeric = parseInt(text.substring(startOffset, endOffset));
+            var type = (startOffset === 0 ? HANGUL_NOTATION : NONE);
             var spaceCount = 0;
             for (i = startOffset - 1; i >= 0; i--) {
                 code = text.charCodeAt(i);
@@ -315,10 +311,11 @@ var TTSTextModifier = {
                 }
             }
             if (spaceCount == startOffset) {
-                type = HANGUL;
+                type = HANGUL_NOTATION;
             }
             for (i = endOffset; i < textLength; i++) {
                 code = text.charCodeAt(i);
+                ch = text.charAt(i);
                 if (TTSTextModifier.isSpaceCode(code)) {
                     continue;
                 }
@@ -330,8 +327,12 @@ var TTSTextModifier = {
                     type = LATION;
                     break;
                 }
-                else if (text.charAt(i) == "장" || text.charAt(i) == "권") {
-                    type = HANGUL;
+                else if (ch == "장" || ch == "권") {
+                    type = HANGUL_NOTATION;
+                    break;
+                }
+                else if ((ch = TTSTextModifier.numericToOrdinalString(numeric, ch)) !== null) {
+                    type = HANGUL_ORDINAL;
                     break;
                 }
                 else {
@@ -339,10 +340,15 @@ var TTSTextModifier = {
                     break;
                 }
             }
-            if (type == HANGUL || type == LATION) {
-                var numeric = parseInt(text.substring(startOffset, endOffset));
-                var notationString = TTSTextModifier.numericToNotationString(numeric, type);
-                text = text.substr(0, startOffset) + notationString + text.substr(endOffset);
+            if (type == HANGUL_NOTATION || type == HANGUL_ORDINAL || type == LATION) {
+                var string;
+                if (type == HANGUL_ORDINAL) {
+                    string = ch;
+                }
+                else {
+                    string = TTSTextModifier.numericToNotationString(numeric, type);
+                }
+                text = text.substr(0, startOffset) + string + text.substr(endOffset);
             }
         }
 
@@ -450,12 +456,57 @@ var TTSTextModifier = {
         }
     },
 
-    // 서수사 : 순서를 나타내는 수사
-    numericToOrdinalString: function(num, isHangul) {
-        // 명, 분, 사람, 번, 개, 대, 돈, 벌, 살, 손, 죽, 채, 켤래, 쾌, 자루, 마리 
-        //
-        // 첫/한/하나, 둘/두, 셋/세, 넷/네, 다섯, 여섯, 일곱, 여덟, 아홉
-        // 열, 스물, 서른, 마흔, 쉰, 예순, 일흔, 여든, 아흔, 백(온), 천(즈믄)
+    // 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
+    numericToOrdinalString: function(num, suffix) {
+        var c = suffix !== undefined && suffix.match(/^(명|번|개|대|근|문|벌|살|채|쾌|자|마|달|시)/gm) !== null;
+        if (!c && suffix !== undefined && suffix.match(/^(의|으|로|이|째)/gm) === null) {
+            return null;
+        }
+
+        var onesN = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+        var onesO = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
+        var tens = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉'];
+        var teens = ['', '열', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔'];
+
+        var convertTens = function(num) {
+            if (num < 10) {
+                return onesO[num];
+            }
+            else {
+                return teens[Math.floor(num / 10)] + (c ? onesO[num % 10] : tens[num % 10]);
+            }
+        };
+
+        var convertHundreds = function(num) {
+            if (num > 99) {
+                if (num < 100 * 2) {
+                    return "백" + convertTens(num % 100);
+                }
+                return onesN[Math.floor(num / 100)] + "백" + convertTens(num % 100);
+            }
+            else {
+                return convertTens(num);
+            }
+        };
+
+        var convertThousands = function(num) {
+            if (num >= 1000) {
+                if (num < 1000 * 2) {
+                    return "천" + convertHundreds(num % 1000);
+                }
+                return convertThousands(Math.floor(num / 1000)) + "천" + convertHundreds(num % 1000);
+            }
+            else {
+                return convertHundreds(num);
+            }
+        };
+
+        if (num === 0) {
+            return null;
+        }
+        else {
+            return convertThousands(num);
+        }
     },
 
     isContain: function(code, table) {
