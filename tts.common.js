@@ -266,7 +266,7 @@ var TTSTextModifier = {
         }
 
         // '~'가 아닌 '∼'는 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
-        text = text.replace("∼", "에서");
+        text = text.replace("∼", "에서 ");
 
         return text;
     },
