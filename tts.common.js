@@ -689,6 +689,17 @@ TTSChunk.prototype = {
         return piece;
     },
 
+    getOffset: function(piece) {
+        var offset = piece.leftPadding;
+        for (var i = 0; i < this.pieces.length; i++) {
+            if (piece === this.pieces[i]) {
+                break;
+            }
+            offset += this.pieces[i].length;
+        }
+        return offset;
+    },
+
     getClientRects: function() {
         var rects = [];
         var startOffset, endOffset, offset = 0, length = 0;
@@ -943,13 +954,14 @@ var tts = {
             range.selectNodeContents(node);
             if (!piece.isImage() && isEndOfChunk) {
                 try {
-                    if (piece.length < chunk.range.endOffset) {
-                        range.setStart(node, range.endOffset - 1);
-                        range.setEnd(node, range.endOffset);
+                    var startOffset = chunk.getOffset(piece);
+                    var offset = (chunk.range.endOffset - startOffset) - (chunk.range.startOffset - startOffset);
+                    if (offset === 0) {
+                        return 0;
                     }
                     else {
-                        range.setStart(node, chunk.range.endOffset - 1);
-                        range.setEnd(node, chunk.range.endOffset);
+                        range.setStart(node, offset - 1);
+                        range.setEnd(node, offset);
                     }
                 }
                 catch (e) {
@@ -961,6 +973,10 @@ var tts = {
 
             return epub.getBoundingClientRect(range).left;
         };
+
+        if (tts.chunks.length - 1 <= chunkId) {
+            return -1;
+        }
 
         var chunk = tts.chunks[chunkId];
         if (chunk === undefined) {
