@@ -663,7 +663,7 @@ var TTSRegex = {
     },
 
     whitespace: function(prefix, suffix, flags) {
-        return TTSRegex.makeRgex(prefix, "[^\\s\\r\\n\\t]", suffix, flags);
+        return TTSRegex.makeRgex(prefix, "[\\t\\r\\n\\s]", suffix, flags);
     },
 
     sentence: function(prefix, suffix, flags) {
@@ -826,13 +826,13 @@ TTSChunk.prototype = {
                     // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
                     string = range.toString();
                     if (beginPiece.nodeIndex == piece.nodeIndex &&
-                        (string.match(TTSRegex.whitespace("^")) === null || string.match(TTSRegex.sentence("^")) !== null)) {
+                        (string.match(TTSRegex.whitespace("^")) !== null || string.match(TTSRegex.sentence("^")) !== null)) {
                         if (length < startOffset + 1) {
                             break;
                         }
                         startOffset++;
                     }
-                    else if (string.match(TTSRegex.whitespace(null, "$")) === null) {
+                    else if (string.match(TTSRegex.whitespace(null, "$")) !== null) {
                         if (endOffset - 1 < 0) {
                             break;
                         }
@@ -843,10 +843,12 @@ TTSChunk.prototype = {
                     }
                 }// end while
 
-                var textNodeRects = range.getClientRects();
-                if (textNodeRects !== null) {
-                    for (var j = 0; j < textNodeRects.length; j++) {
-                        rects.push(textNodeRects[j]);
+                if (string.length) {
+                    var textNodeRects = range.getClientRects();
+                    if (textNodeRects !== null) {
+                        for (var j = 0; j < textNodeRects.length; j++) {
+                            rects.push(textNodeRects[j]);
+                        }
                     }
                 }
             }
@@ -960,8 +962,8 @@ TTSPiece.prototype = {
         return this.node.nodeName.toLowerCase() == "img";
     },
 
-    isWhitespace: function() {
-        return this.text.match(TTSRegex.whitespace()) === null ? true : false;
+    isOnlyWhitespace: function() {
+        return this.text.match(TTSRegex.whitespace("^", "$")) !== null ? true : false;
     },
 
     isSentence: function() {
@@ -1083,7 +1085,7 @@ var tts = {
             }
 
             var pieces = [piece];
-            if (!piece.isValid() || piece.isWhitespace()) {
+            if (!piece.isValid() || piece.isOnlyWhitespace()) {
                 continue;
             }
             else {
@@ -1096,7 +1098,7 @@ var tts = {
                         if (!nextPiece.isValid()) {
                             // not working
                         }
-                        else if (nextPiece.isImage() || nextPiece.isWhitespace()) {
+                        else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace()) {
                             tts.addChunk(pieces);
                             nodeIndex--;
                             break;
@@ -1258,9 +1260,11 @@ var tts = {
 
     clearHighlight: function() {
         if (tts.highlightBody !== null) {
-            for (var i = 0; i < tts.HIGHLIGHT_COUNT; i++) {
-                var highlightNode = tts.highlightBody.children[i];
-                highlightNode.style.setProperty("display", "none", "important");
+            for (var i = 0; i < tts.HIGHLIGHT_COUNT + 2; i++) {
+                var child = tts.highlightBody.children[i];
+                if (child.style.display != "none") {
+                    child.style.setProperty("display", "none", "important");
+                }
             }
         }
     },
@@ -1276,6 +1280,11 @@ var tts = {
                 highlightNode.setAttribute("class", "RidiTTSHighlight");
                 fragment.appendChild(highlightNode);
             }
+            for (var i = 0; i < 2; i++) {
+                var highlightBorderNode = document.createElement("span");
+                highlightBorderNode.setAttribute("class", "RidiTTSHighlightBorder");
+                fragment.appendChild(highlightBorderNode);
+            }
             tts.highlightBody.appendChild(fragment);
             document.body.appendChild(tts.highlightBody);
         }
@@ -1288,32 +1297,37 @@ var tts = {
         var rects = chunk.getClientRects();
         var scrollLeft = document.body.scrollLeft;
 
+        var makeCSS = function(rect, isBorder) {
+            var cssText =
+                "position: absolute !important;" +
+                "background-color: #1e91e4 !important;" +
+                "left: " + rect.left + "px !important;" +
+                "top: " + rect.top + "px !important;" +
+                "width: " + rect.width + "px !important;" +
+                "height: " + rect.height + "px !important;" +
+                "display: block !important;" +
+                "opacity: " + (isBorder ? 1.0 : 0.2) + " !important;" +
+                "z-index: 214748364" + (isBorder ? 7 : 6) + " !important;";
+            return cssText;
+        };
+
+        tts.clearHighlight();
         for (var i = 0; i < tts.HIGHLIGHT_COUNT; i++) {
             var rect = rects[i];
             var highlightNode = tts.highlightBody.children[i];
-            if (rect === undefined) {
-                if (highlightNode.style.display != "none") {
-                    highlightNode.style.setProperty("display", "none", "important");
-                }
-            }
-            else {
-                var left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
+            if (rect !== undefined) {
+                rect.left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
                                      : (scrollLeft + (rect.left < 0 ? (scrollLeft + rect.left) : rect.left));
-                var top = basedLeft ? rect.top : (rect.top - startOffset);
-                var width = rect.width;
-                var height = rect.height;
-                var cssText =
-                    "position: absolute !important;" +
-                    "background-color: #1e91e4 !important;" +
-                    "left: " + left + "px !important;" +
-                    "top: " + top + "px !important;" +
-                    "width: " + width + "px !important;" +
-                    "height: " + height + "px !important;" +
-                    "display: block !important;" +
-                    "opacity: 0.2 !important;" +
-                    "z-index: 2147483647 !important;";
-
-                highlightNode.style.cssText = cssText;
+                rect.top = basedLeft ? rect.top : (rect.top - startOffset);
+                highlightNode.style.cssText = makeCSS(rect, false);
+                if (i === 0) {
+                    rect.width = 1;
+                    tts.highlightBody.children[tts.HIGHLIGHT_COUNT].style.cssText = makeCSS({left: rect.left - 2, top: rect.top, width: 2, height: rect.height}, true);
+                }
+                if (i == rects.length - 1) {
+                    rect.left += rect.width;
+                    tts.highlightBody.children[tts.HIGHLIGHT_COUNT + 1].style.cssText = makeCSS({left: rect.left + rect.width, top: rect.top, width: 2, height: rect.height}, true);
+                }
             }
         }// end for
     },
