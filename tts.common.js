@@ -143,14 +143,15 @@ var TTSTextModifier = {
                     for (j = i + 1; j < textLength; j++) {
                         code = text.charCodeAt(j);
                         ch = text.charAt(j);
-                        if (TTSTextModifier.isSpaceCode(code) || TTSTextModifier.isSentenceSuffix(ch)) {
+                        if (TTSTextModifier.isSpaceCode(code) || TTSTextModifier.isSentenceSuffix(ch) || ch == ":" || ch == ",") {
                             // 공백, 문장의 끝을 의미하는 문자일 때는 좀 더 이후 글자를 확인한다.
                             if (j + 1 < textLength) {
-                                var spaceCount = 1;
+                                var ignoreCount = 1;
                                 for (k = j + 1; k < textLength; k++) {
                                     nextCode = text.charCodeAt(k);
-                                    if (TTSTextModifier.isSpaceCode(nextCode)) {
-                                        spaceCount++;
+                                    nextCh = text.charAt(k);
+                                    if (TTSTextModifier.isSpaceCode(nextCode) || nextCh == ":" || nextCh == ",") {
+                                        ignoreCount++;
                                         continue;
                                     }
                                     else if (TTSTextModifier.isLatinCode(nextCode)) {
@@ -158,8 +159,8 @@ var TTSTextModifier = {
                                         break;
                                     }
                                     else {
-                                        add(startOffset, k - spaceCount);
-                                        j = k - spaceCount;
+                                        add(startOffset, k - ignoreCount);
+                                        j = k - ignoreCount;
                                         break;
                                     }
                                 }// end for
