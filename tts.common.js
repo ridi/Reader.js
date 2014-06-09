@@ -136,6 +136,7 @@ var TTSTextModifier = {
                     isAbbr = TTSTextModifier.isLatinCode(code, "u") & TTSTextModifier.isLatinCode(nextCode, "u");
                 }
                 if (!isAbbr && TTSTextModifier.isHangulCode(prevCode)) {
+                    // 영어의 전 글자는 반드시 한글이어야 한다.
                     startOffset = i;
                 }
                 if (startOffset > 0) {
@@ -143,6 +144,7 @@ var TTSTextModifier = {
                         code = text.charCodeAt(j);
                         ch = text.charAt(j);
                         if (TTSTextModifier.isSpaceCode(code) || TTSTextModifier.isSentenceSuffix(ch)) {
+                            // 공백, 문장의 끝을 의미하는 문자일 때는 좀 더 이후 글자를 확인한다.
                             if (j + 1 < textLength) {
                                 var spaceCount = 1;
                                 for (k = j + 1; k < textLength; k++) {
@@ -166,6 +168,7 @@ var TTSTextModifier = {
                             }
                         }
                         else if (!TTSTextModifier.isLatinCode(code)) {
+                            // 영문, 공백, 문장의 끝을 의미하는 문자가 아닐 때는 영문의 끝으로 간주한다.
                             if (j + 1 < textLength) {
                                 nextCode = text.charCodeAt(j + 1);
                                 if (TTSTextModifier.isLatinCode(nextCode)) {
@@ -205,7 +208,7 @@ var TTSTextModifier = {
             var code = text.charCodeAt(i);
             if (TTSTextModifier.isTildeCode(code)) {
                 if (i > 0) {
-                    var isRangeTilde = false;
+                    var isRangeTilde = false;// 범위를 의미하는 틸드일 때는 바꾸지 않는다. (3억~5억)
                     for (j = i + 1; j < textLength; j++) {
                         var nextCode = text.charCodeAt(j);
                         if (TTSTextModifier.isSpaceCode(nextCode)) {
@@ -223,12 +226,14 @@ var TTSTextModifier = {
                         for (j = i - 1; j >= 0; j--) {
                             var prevCode = text.charCodeAt(j);
                             if (TTSTextModifier.isHangulCode(prevCode)) {
+                                // 틸드의 뒷문자가 한글일 때는 앞문자의 자모에 맞춰 틸드를 바꿔준다. (와~ -> 와아)
                                 var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
                                 text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
                                 offset = i;
                                 break;
                             }
                             else if (TTSTextModifier.isLatinCode(prevCode)) {
+                                // 틸드의 뒷문자가 영문일 때는 앞문자와 같게 틸드를 바꿔준다. (Oh~ -> Ohh)
                                 text = text.replace(text.substr(i, 1), text.substr(j, 1));
                                 offset = i;
                                 break;
@@ -793,6 +798,7 @@ TTSChunk.prototype = {
                         break;
                     }
 
+                    // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
                     string = range.toString();
                     if (beginPiece.nodeIndex == piece.nodeIndex &&
                         (string.match(TTSRegex.whitespace("^")) === null || string.match(TTSRegex.sentence("^")) !== null)) {
@@ -1089,6 +1095,7 @@ var tts = {
     },
 
     addChunk: function(pieces) {
+        // 문자열을 문장 단위(기준: .|。|?|!)로 나눈다.
         var split = function(text) {
             text = text.replace(/([.。?!])/gm, "$1[RidiDelimiter]");
             return text.split("[RidiDelimiter]");
@@ -1123,26 +1130,30 @@ var tts = {
             }
         };
 
-        var isDigitOrAlpha = function(ch) {
+        // 문자가 숫자 또는 라틴(알파벳 포함) 문자일 경우 true.
+        var isDigitOrLation = function(ch) {
             if (ch === null || ch === undefined) {
                 return false;
             }
             else {
-                return ch.match(/[0-9a-zA-Z]/) !== null;
+                var code = ch.charCodeAt(0);
+                return TTSTextModifier.isLatinCode(code) || TTSTextModifier.isDigitCode(code);
             }
         };
 
+        // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true.
         var isPointOrName = function(text, nextText) {
-            // TDD - 마침표 앞뒤에 숫자 또는 영문이 있을 때는 나누지 않는다.
-            return text.match(/[.]$/gm) !== null && isDigitOrAlpha(text[Math.max(text.length - 2, 0)]) && nextText !== undefined && isDigitOrAlpha(nextText[0]);
+            return text.match(/[.]$/gm) !== null && isDigitOrLation(text[Math.max(text.length - 2, 0)]) && nextText !== undefined && isDigitOrLation(nextText[0]);
         };
 
+        // 문장의 마지막이 아닐 경우 true.
         var isNotEndOfSentence = function(nextText) {
             return nextText !== undefined && nextText.match(TTSRegex.sentence("^")) !== null;
         };
 
-        var call = function(num) {// Test Code
-            console.log((tts.chunks.length - 1) + ", #" + num + " " + tts.chunks[tts.chunks.length - 1].getText());
+        // Test Code
+        var call = function(caseNum) {
+            console.log((tts.chunks.length - 1) + ", #" + caseNum + " " + tts.chunks[tts.chunks.length - 1].getText());
         };
 
         var chunk = new TTSChunk(pieces);
