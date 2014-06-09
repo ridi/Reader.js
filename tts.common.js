@@ -285,15 +285,29 @@ var TTSTextModifier = {
         var HANGUL_ORDINAL = 2;
         var TIME = 3;
 
+        var match, pattern;
+        var i, code, ch, string;
+        var startOffset, endOffset;
+
         // 숫자 앞에 0이 있는 경우 지워버린다.
         text = text.replace(/[0]{1,}([\d]{1,})/gm, "$1");
 
-        var textLength = text.length;
-        var match, pattern = /[\d]{1,}/gm;
-        var i, code, ch;
+        // 천단위 ','를 지워버린다.
+        pattern = /[,][\d]{3,}/gm;
         while ((match = pattern.exec(text)) !== null) {
-            var startOffset = match.index;
-            var endOffset = pattern.lastIndex;
+            startOffset = match.index;
+            endOffset = pattern.lastIndex;
+            string = text.substring(startOffset, endOffset);
+            if (0 <= startOffset - 1 && TTSTextModifier.isDigitCode(text.charCodeAt(startOffset - 1))) {
+                text = text.substr(0, startOffset) + string.substr(1) + text.substr(endOffset);
+            }
+        }
+
+        // 숫자를 문맥에 따라 기수 또는 서수로 바꿔준다.
+        pattern = /[\d]{1,}/gm;
+        while ((match = pattern.exec(text)) !== null) {
+            startOffset = match.index;
+            endOffset = pattern.lastIndex;
             var numeric = parseInt(text.substring(startOffset, endOffset));
             var type = (startOffset === 0 ? HANGUL_NOTATION : NONE);
             var spaceCount = 0;
@@ -319,7 +333,7 @@ var TTSTextModifier = {
             if (spaceCount == startOffset) {
                 type = HANGUL_NOTATION;
             }
-            for (i = endOffset; i < textLength; i++) {
+            for (i = endOffset; i < text.length; i++) {
                 code = text.charCodeAt(i);
                 ch = text.charAt(i);
                 if (TTSTextModifier.isSpaceCode(code)) {
@@ -337,6 +351,9 @@ var TTSTextModifier = {
                     type = HANGUL_NOTATION;
                     break;
                 }
+                else if (TTSTextModifier.isSentenceSuffix(ch)) {
+                    break;
+                }
                 else if ((ch = TTSTextModifier.numericToOrdinalString(numeric, ch)) !== null) {
                     type = HANGUL_ORDINAL;
                     break;
@@ -347,7 +364,6 @@ var TTSTextModifier = {
                 }
             }
             if (type == HANGUL_NOTATION || type == HANGUL_ORDINAL || type == LATION) {
-                var string;
                 if (type == HANGUL_ORDINAL) {
                     string = ch;
                 }
@@ -363,7 +379,15 @@ var TTSTextModifier = {
 
     // 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
     replaceBracket: function(text) {
-        text = text.replace(/\(([\d]{1,2})\)/gm, "[$1]");
+        var match, pattern = /\([\d]{1,2}\)/gm;
+        while ((match = pattern.exec(text)) !== null) {
+            var startOffset = match.index;
+            var endOffset = pattern.lastIndex;
+            var string = text.substring(startOffset + 1, endOffset - 1);
+            if (startOffset === 0 || (0 <= startOffset - 1 && text.substr(startOffset - 1, 1) == " ")) {
+                text = text.substr(0, startOffset) + "[" + string + "]" + text.substr(endOffset);
+            }
+        }
         text = text.replace(/\(([가나다라마바사아자차카타파하])\)/gm, "[$1]");
         return text;
     },
@@ -465,7 +489,7 @@ var TTSTextModifier = {
     // 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
     numericToOrdinalString: function(num, suffix) {
         var c = suffix !== undefined && suffix.match(/^(명|번|개|대|근|문|벌|살|채|쾌|자|마|달|시)/gm) !== null;
-        if (!c && suffix !== undefined && suffix.match(/^(의|으|로|이|째)/gm) === null) {
+        if (!c && suffix !== undefined && suffix.match(/^(의|으|로|째)/gm) === null) {
             return null;
         }
 
@@ -1023,14 +1047,13 @@ var tts = {
                 return;
             }
 
-            // TDD - 이게 최선인가..
-            for (var i = 0; i < epub.textAndImageNodes.length; i++) {
+            var offset = 0;
+            for (var i = 0; i < epub.textAndImageNodes.length; i++, offset = 0) {
                 if (epub.textAndImageNodes[i] === range.startContainer) {
                     nodeIndex = i;
-                    var offset = 0;
                     var words = range.startContainer.textContent.split(new RegExp(" "));
                     for ( ; wordIndex < words.length; wordIndex++) {
-                        if (range.startOffset <= offset) {
+                        if (range.startOffset <= offset + words[wordIndex].length) {
                             break;
                         }
                         else {
@@ -1062,19 +1085,23 @@ var tts = {
             var pieces = [piece];
             if (!piece.isValid() || piece.isWhitespace()) {
                 continue;
-            } else {
-                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || (piece.length > 1 && piece.isSentence()) || piece.isNextSiblingToBr) {
+            }
+            else {
+                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || (piece.length > 1 && piece.isSentence())) {
                     tts.addChunk(pieces);
-                } else {
+                }
+                else {
                     var nextPiece = null;
                     while ((nextPiece = new TTSPiece(++nodeIndex)).nodeIndex !== null) {
                         if (!nextPiece.isValid()) {
                             // not working
-                        } else if (nextPiece.isImage() || nextPiece.isWhitespace()) {
+                        }
+                        else if (nextPiece.isImage() || nextPiece.isWhitespace()) {
                             tts.addChunk(pieces);
                             nodeIndex--;
                             break;
-                        } else {
+                        }
+                        else {
                             pieces.push(nextPiece);
                             if (nextPiece.length > 1 && nextPiece.isSentence()) {
                                 tts.addChunk(pieces);
