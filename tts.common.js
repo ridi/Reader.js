@@ -1280,6 +1280,7 @@ var tts = {
 
     updateHighlight: function(chunkId, startOffset, basedLeft) {
         tts.setUpHighlightBody();
+        tts.clearHighlight();
 
         var chunk = tts.chunks[chunkId];
         var rects = chunk.getClientRects(true);
@@ -1299,7 +1300,6 @@ var tts = {
             return cssText;
         };
 
-        tts.clearHighlight();
         for (var i = 0; i < tts.HIGHLIGHT_COUNT; i++) {
             var rect = rects[i];
             var highlightNode = tts.highlightBody.children[i];
@@ -1316,7 +1316,7 @@ var tts = {
                 if (i === 0) {
                     rect.width = 1;
                     tts.highlightBody.children[tts.HIGHLIGHT_COUNT].style.cssText = makeCSS({
-                        left: left - 2, 
+                        left: Math.max(left - 2, scrollLeft), 
                         top: top, 
                         width: 2, 
                         height: rect.height
