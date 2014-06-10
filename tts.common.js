@@ -901,7 +901,7 @@ TTSPiece.prototype = {
         if (typeof this.node.nodeValue == 'string') {
             this.text = this.node.nodeValue;
             if (this.wordIndex !== null && this.wordIndex > 0) {
-                var words = this.text.split(new RegExp(" "));
+                var words = this.text.split(new RegExp(" |" + String.fromCharCode(160), "gm"));
                 if (this.wordIndex < words.length) {
                     this.text = "";
                     for (var i = 0; i < words.length; i++) {
@@ -1041,7 +1041,7 @@ var tts = {
             for (var i = 0; i < epub.textAndImageNodes.length; i++, offset = 0) {
                 if (epub.textAndImageNodes[i] === range.startContainer) {
                     nodeIndex = i;
-                    var words = range.startContainer.textContent.split(new RegExp(" "));
+                    var words = range.startContainer.textContent.split(new RegExp(" |" + String.fromCharCode(160), "gm"));
                     for ( ; wordIndex < words.length; wordIndex++) {
                         if (range.startOffset <= offset + words[wordIndex].length) {
                             break;
