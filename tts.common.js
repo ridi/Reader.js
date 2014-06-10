@@ -1316,17 +1316,32 @@ var tts = {
             var rect = rects[i];
             var highlightNode = tts.highlightBody.children[i];
             if (rect !== undefined) {
-                rect.left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
+                var left = basedLeft ? (rect.left + (startOffset ? 0 : scrollLeft))
                                      : (scrollLeft + (rect.left < 0 ? (scrollLeft + rect.left) : rect.left));
-                rect.top = basedLeft ? rect.top : (rect.top - startOffset);
-                highlightNode.style.cssText = makeCSS(rect, false);
+                var top = basedLeft ? rect.top : (rect.top - startOffset);
+                highlightNode.style.cssText = makeCSS({
+                    left: left,
+                    top: top,
+                    width: rect.width,
+                    height: rect.height
+                }, false);
                 if (i === 0) {
                     rect.width = 1;
-                    tts.highlightBody.children[tts.HIGHLIGHT_COUNT].style.cssText = makeCSS({left: rect.left - 2, top: rect.top, width: 2, height: rect.height}, true);
+                    tts.highlightBody.children[tts.HIGHLIGHT_COUNT].style.cssText = makeCSS({
+                        left: left - 2, 
+                        top: top, 
+                        width: 2, 
+                        height: rect.height
+                    }, true);
                 }
                 if (i == rects.length - 1) {
                     rect.left += rect.width;
-                    tts.highlightBody.children[tts.HIGHLIGHT_COUNT + 1].style.cssText = makeCSS({left: rect.left + rect.width, top: rect.top, width: 2, height: rect.height}, true);
+                    tts.highlightBody.children[tts.HIGHLIGHT_COUNT + 1].style.cssText = makeCSS({
+                        left: left + rect.width, 
+                        top: top, 
+                        width: 2, 
+                        height: rect.height
+                    }, true);
                 }
             }
         }// end for
