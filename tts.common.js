@@ -977,34 +977,11 @@ var tts = {
 
     shouldNextPage: function(chunkId, baseOffset) {
         var getOffset = function(chunk, isEndOfChunk) {
-            var piece = chunk.getPiece(isEndOfChunk ? chunk.range.endOffset : chunk.range.startOffset);
-            if (piece === null) {
-                return 0;
+            var left = 0, rects;
+            if ((rects = chunk.getClientRects()) !== null) {
+                left = rects[isEndOfChunk ? rects.length - 1 : 0].left;
             }
-
-            var node = piece.node;
-            var range = document.createRange();
-            range.selectNodeContents(node);
-            if (!piece.isImage() && isEndOfChunk) {
-                try {
-                    var startOffset = chunk.getOffset(piece);
-                    var offset = (chunk.range.endOffset - startOffset) - (chunk.range.startOffset - startOffset);
-                    if (offset === 0) {
-                        return 0;
-                    }
-                    else {
-                        range.setStart(node, offset - 1);
-                        range.setEnd(node, offset);
-                    }
-                }
-                catch (e) {
-                    console.log("tts:shouldNextPage:getRect() Error!! " + e.toString());
-                    console.log("=> {nodeIndex: " + piece.nodeIndex + ", wordIndex: " + piece.wordIndex + "}");
-                    return 0;
-                }
-            }
-
-            return epub.getBoundingClientRect(range).left;
+            return left;
         };
 
         if (tts.chunks.length - 1 <= chunkId) {
