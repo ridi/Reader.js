@@ -730,7 +730,7 @@ TTSChunk.prototype = {
         return offset;
     },
 
-    getClientRects: function() {
+    getClientRects: function(removeBlank) {
         var rects = [];
         var startOffset, endOffset, offset = 0, length = 0;
         var string = null;
@@ -843,12 +843,14 @@ TTSChunk.prototype = {
                     }
                 }// end while
 
-                if (string.length) {
-                    var textNodeRects = range.getClientRects();
-                    if (textNodeRects !== null) {
-                        for (var j = 0; j < textNodeRects.length; j++) {
-                            rects.push(textNodeRects[j]);
-                        }
+                if (removeBlank === true && string.length === 0) {
+                    continue;
+                }
+
+                var textNodeRects = range.getClientRects();
+                if (textNodeRects !== null) {
+                    for (var j = 0; j < textNodeRects.length; j++) {
+                        rects.push(textNodeRects[j]);
                     }
                 }
             }
@@ -978,8 +980,18 @@ var tts = {
     shouldNextPage: function(chunkId, baseOffset) {
         var getOffset = function(chunk, isEndOfChunk) {
             var left = 0, rects;
-            if ((rects = chunk.getClientRects()) !== null) {
-                left = rects[isEndOfChunk ? rects.length - 1 : 0].left;
+            if (chunk !== undefined && (rects = chunk.getClientRects(false)).length) {
+                if (chunk.getText().length) {
+                    left = rects[isEndOfChunk ? rects.length - 1 : 0].left;
+                }
+                else {
+                    try {
+                        left = getOffset(tts.chunks[chunk.id + 1], isEndOfChunk);
+                    }
+                    catch (e) {
+                        return 0;
+                    }
+                }
             }
             return left;
         };
@@ -993,10 +1005,9 @@ var tts = {
             return 0;
         }
 
-        var offset = 0;
+        var offset;
         if ((offset = getOffset(chunk, true)) <= baseOffset) {
-            var nextChunk = tts.chunks[chunkId + 1];
-            if (nextChunk !== undefined && (offset = getOffset(nextChunk, false)) < baseOffset) {
+            if ((offset = getOffset(tts.chunks[chunkId + 1], false)) < baseOffset) {
                 return 0;
             }
         }
@@ -1271,7 +1282,7 @@ var tts = {
         tts.setUpHighlightBody();
 
         var chunk = tts.chunks[chunkId];
-        var rects = chunk.getClientRects();
+        var rects = chunk.getClientRects(true);
         var scrollLeft = document.body.scrollLeft;
 
         var makeCSS = function(rect, isBorder) {
