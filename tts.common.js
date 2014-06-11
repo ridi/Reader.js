@@ -977,7 +977,7 @@ var tts = {
     chunks: [],
     chunkLengthLimit: 0,
 
-    shouldNextPage: function(chunkId, baseOffset) {
+    shouldNextPage: function(chunkId, baseOffset, isPreceding) {
         var getOffset = function(chunk, isEndOfChunk) {
             var left = 0, rects;
             if (chunk !== undefined && (rects = chunk.getClientRects(false)).length) {
@@ -1006,18 +1006,22 @@ var tts = {
         }
 
         var offset;
-        if ((offset = getOffset(chunk, true)) <= baseOffset) {
-            if ((offset = getOffset(tts.chunks[chunkId + 1], false)) < baseOffset) {
+        if ((offset = getOffset(chunk, !isPreceding)) <= baseOffset) {
+            if (!isPreceding && (offset = getOffset(tts.chunks[chunkId + 1], false)) < baseOffset) {
                 return 0;
             }
         }
 
-        var page = Math.floor(offset / baseOffset);
+        var page = Math.floor(Math.max(offset, 1) / baseOffset);
         if (isNaN(page)) {
             page = 0;
         }
 
         return page;
+    },
+
+    didPlaySpeech: function(chunkId) {
+
     },
 
     didFinishSpeech: function(chunkId) {
