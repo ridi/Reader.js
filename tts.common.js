@@ -977,47 +977,8 @@ var tts = {
     chunks: [],
     chunkLengthLimit: 0,
 
-    shouldNextPage: function(chunkId, baseOffset, isPreceding) {
-        var getOffset = function(chunk, isEndOfChunk) {
-            var left = 0, rects;
-            if (chunk !== undefined && (rects = chunk.getClientRects(false)).length) {
-                if (chunk.getText().length) {
-                    left = rects[isEndOfChunk ? rects.length - 1 : 0].left;
-                }
-                else {
-                    try {
-                        left = getOffset(tts.chunks[chunk.id + 1], isEndOfChunk);
-                    }
-                    catch (e) {
-                        return 0;
-                    }
-                }
-            }
-            return left;
-        };
+    shouldNextPage: function(chunkId, canvasWidth, isPreceding) {
 
-        if (tts.chunks.length - 1 <= chunkId) {
-            return -1;
-        }
-
-        var chunk = tts.chunks[chunkId];
-        if (chunk === undefined) {
-            return 0;
-        }
-
-        var offset;
-        if ((offset = getOffset(chunk, !isPreceding)) <= baseOffset) {
-            if (!isPreceding && (offset = getOffset(tts.chunks[chunkId + 1], false)) < baseOffset) {
-                return 0;
-            }
-        }
-
-        var page = Math.floor(Math.max(offset, 1) / baseOffset);
-        if (isNaN(page)) {
-            page = 0;
-        }
-
-        return page;
     },
 
     didPlaySpeech: function(chunkId) {
@@ -1038,7 +999,7 @@ var tts = {
         if (range !== null) {
             var nodeIndex = -1, wordIndex = 0;
             if (epub.textAndImageNodes === null) {
-                return;
+                return tts.chunks.length;
             }
 
             var offset = 0;
@@ -1058,13 +1019,15 @@ var tts = {
                 }
             }
 
-            tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
+            return tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
         }
+
+        return tts.chunks.length;
     },
 
     makeChunksByNodeLocation: function(nodeIndex, wordIndex) {
         if (nodeIndex == -1 || wordIndex == -1 || epub.textAndImageNodes === null) {
-            return;
+            return tts.chunks.length;
         }
 
         var index = Math.max(tts.chunks.length - 1, 0);
@@ -1114,6 +1077,8 @@ var tts = {
         }// end for
 
         tts.didFinishMakeChunks(index);
+
+        return tts.chunks.length;
     },
 
     addChunk: function(pieces) {
