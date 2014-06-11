@@ -289,9 +289,6 @@ var TTSTextModifier = {
         var i, code, ch, string;
         var startOffset, endOffset;
 
-        // 숫자 앞에 0이 있는 경우 지워버린다.
-        text = text.replace(/[0]{1,}([\d]{1,})/gm, "$1");
-
         // 천단위 ','를 지워버린다.
         pattern = /[,][\d]{3,}/gm;
         while ((match = pattern.exec(text)) !== null) {
@@ -308,7 +305,7 @@ var TTSTextModifier = {
         while ((match = pattern.exec(text)) !== null) {
             startOffset = match.index;
             endOffset = pattern.lastIndex;
-            var numeric = parseInt(text.substring(startOffset, endOffset));
+            var numeric = parseInt(text.substring(startOffset, endOffset), 10);
             var type = (startOffset === 0 ? HANGUL_NOTATION : NONE);
             var spaceCount = 0;
             for (i = startOffset - 1; i >= 0; i--) {
@@ -371,6 +368,9 @@ var TTSTextModifier = {
                     string = TTSTextModifier.numericToNotationString(numeric, type);
                 }
                 text = text.substr(0, startOffset) + string + text.substr(endOffset);
+            }
+            else {
+                text = text.substr(0, startOffset) + numeric + text.substr(endOffset);
             }
         }
 
