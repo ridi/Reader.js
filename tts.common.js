@@ -226,8 +226,9 @@ var TTSTextModifier = {
                     if (!isRangeTilde) {
                         for (j = i - 1; j >= 0; j--) {
                             var prevCode = text.charCodeAt(j);
-                            if (TTSTextModifier.isHangulCode(prevCode)) {
+                            if (TTSTextModifier.isHangulCode(prevCode) && TTSTextModifier.getFinalCodeInHangulCode(prevCode) === 0x0000) {
                                 // 틸드의 뒷문자가 한글일 때는 앞문자의 자모에 맞춰 틸드를 바꿔준다. (와~ -> 와아)
+                                // 단, 받침이 없는 한글이어야 한다.
                                 var medialCodeIndex = TTSTextModifier.getMedialCodeIndexInHangulCode(prevCode);
                                 text = text.replace(text.substr(i, 1), extendTable[medialCodeIndex]);
                                 offset = i;
