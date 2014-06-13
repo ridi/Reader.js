@@ -301,6 +301,26 @@ var TTSTextModifier = {
             }
         }
 
+        // 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
+        text = text.replace(/⅐/gm, "칠 분의 일");
+        text = text.replace(/⅑/gm, "구 분의 일");
+        text = text.replace(/⅒/gm, "십 분의 일");
+        text = text.replace(/⅓/gm, "삼 분의 일");
+        text = text.replace(/⅔/gm, "삼 분의 이");
+        text = text.replace(/⅕/gm, "오 분의 일");
+        text = text.replace(/⅖/gm, "오 분의 이");
+        text = text.replace(/⅗/gm, "오 분의 삼");
+        text = text.replace(/⅘/gm, "오 분의 사");
+        text = text.replace(/⅙/gm, "육 분의 일");
+        text = text.replace(/⅚/gm, "육 분의 오");
+        text = text.replace(/⅛/gm, "팔 분의 일");
+        text = text.replace(/⅜/gm, "팔 분의 삼");
+        text = text.replace(/⅝/gm, "팔 분의 오");
+        text = text.replace(/⅞/gm, "팔 분의 칠");
+
+        // 년도를 의미하는 숫자에 XX가 있다면 0으로 교체한다.
+        text = text.replace(/([\d]{1,2})[Xx×]{2}/gm, "$100");
+
         // 숫자를 문맥에 따라 기수 또는 서수로 바꿔준다.
         pattern = /[\d]{1,}/gm;
         while ((match = pattern.exec(text)) !== null) {
@@ -489,7 +509,9 @@ var TTSTextModifier = {
 
     // 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
     numericToOrdinalString: function(num, suffix) {
-        var c = suffix !== undefined && suffix.match(/^(명|번|개|대|근|문|벌|살|채|쾌|자|마|달|시)/gm) !== null;
+        // 100미만? 번.. 개..
+        // 명 | 공기 | 달간 | 시[간] | 종목 | 벌 | 채 | 쾌 | 자 | 마 | 근 | 문제 | 큰술
+        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|자|마|근|문|큰)/gm) !== null;
         if (!c && suffix !== undefined && suffix.match(/^(의|으|로|째)/gm) === null) {
             return null;
         }
