@@ -86,6 +86,7 @@
 
 var TTSTextModifier = {
     modify: function(text) {
+        text = TTSTextModifier.removeNewLine(text);
         text = TTSTextModifier.removeHanja(text);
         text = TTSTextModifier.removeLatin(text);
         text = TTSTextModifier.replaceTilde(text);
@@ -95,6 +96,10 @@ var TTSTextModifier = {
         text = TTSTextModifier.insertPauseTag(text);
 
         return text;
+    },
+
+    removeNewLine: function(text) {
+        return text.replace(/[\n\r]/gm, " ");
     },
 
     // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 지운다.
@@ -510,8 +515,8 @@ var TTSTextModifier = {
     // 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
     numericToOrdinalString: function(num, suffix) {
         // 100미만? 번.. 개..
-        // 명 | 공기 | 달간 | 시[간] | 종목 | 벌 | 채 | 쾌 | 자 | 마 | 근 | 문제 | 큰술
-        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|자|마|근|문|큰)/gm) !== null;
+        // 명 | 공기 | 달간 | 시[간] | 종목 | 벌 | 채 | 쾌 | 자 | 마 | 근 | 문제 | 큰술 | 살
+        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|자|마|근|문|큰|살)/gm) !== null;
         if (!c && suffix !== undefined && suffix.match(/^(의|으|로|째)/gm) === null) {
             return null;
         }
