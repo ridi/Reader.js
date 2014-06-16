@@ -1056,9 +1056,12 @@ var tts = {
     },
 
     makeChunksByNodeLocation: function(nodeIndex, wordIndex) {
-        if (nodeIndex == -1 || wordIndex == -1 || epub.textAndImageNodes === null) {
+        if (epub.textAndImageNodes === null) {
             return tts.chunks.length;
         }
+
+        nodeIndex = Math.max(nodeIndex, 0);
+        wordIndex = Math.max(wordIndex, 0);
 
         var index = Math.max(tts.chunks.length - 1, 0);
         tts.chunkLengthLimit = Math.min(nodeIndex + 50, epub.textAndImageNodes.length);
