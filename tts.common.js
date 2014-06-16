@@ -296,15 +296,7 @@ var TTSTextModifier = {
         var startOffset, endOffset;
 
         // 천단위 ','를 지워버린다.
-        pattern = /[,][\d]{3,}/gm;
-        while ((match = pattern.exec(text)) !== null) {
-            startOffset = match.index;
-            endOffset = pattern.lastIndex;
-            string = text.substring(startOffset, endOffset);
-            if (0 <= startOffset - 1 && TTSTextModifier.isDigitCode(text.charCodeAt(startOffset - 1))) {
-                text = text.substr(0, startOffset) + string.substr(1) + text.substr(endOffset);
-            }
-        }
+        text = text.replace(/([\d]{0,})[,]([\d]{3,})/gm, "$1$2");
 
         // 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
         text = text.replace(/⅐/gm, "칠 분의 일");
