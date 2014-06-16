@@ -508,8 +508,8 @@ var TTSTextModifier = {
     numericToOrdinalString: function(num, suffix) {
         // 100미만? 번.. 개..
         // 명 | 공기 | 달간 | 시[간] | 종목 | 벌 | 채 | 쾌 | 자 | 마 | 근 | 문제 | 큰술 | 살
-        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|자|마|근|문|큰|살)/gm) !== null;
-        if (!c && suffix !== undefined && suffix.match(/^(의|으|로|째)/gm) === null) {
+        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|자|마|근|문|큰|살|째)/gm) !== null;
+        if (!c && suffix !== undefined) {
             return null;
         }
 
