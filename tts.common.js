@@ -678,7 +678,7 @@ var TTSRegex = {
     makeRgex: function(prefix, pattern, suffix, flags) {
         prefix = typeof prefix === 'string' ? prefix : "";
         suffix = typeof suffix === 'string' ? suffix : "";
-        flags = typeof option === 'string' ? flags : "gm";
+        flags = typeof flags === 'string' ? flags : "gm";
         return new RegExp(prefix + pattern + suffix, flags);
     },
 
@@ -846,13 +846,13 @@ TTSChunk.prototype = {
                     // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
                     string = range.toString();
                     if (beginPiece.nodeIndex == piece.nodeIndex &&
-                        (string.match(TTSRegex.whitespace("^")) !== null || string.match(TTSRegex.sentence("^")) !== null)) {
+                        (string.match(TTSRegex.whitespace("^", null, "g")) !== null || string.match(TTSRegex.sentence("^", null, "g")) !== null)) {
                         if (length < startOffset + 1) {
                             break;
                         }
                         startOffset++;
                     }
-                    else if (string.match(TTSRegex.whitespace(null, "$")) !== null) {
+                    else if (string.match(TTSRegex.whitespace(null, "$", "g")) !== null) {
                         if (endOffset - 1 < 0) {
                             break;
                         }
