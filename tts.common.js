@@ -369,7 +369,7 @@ var TTSTextModifier = {
                 else if (TTSTextModifier.isSentenceSuffix(ch)) {
                     break;
                 }
-                else if ((ch = TTSTextModifier.numericToOrdinalString(numeric, ch)) !== null) {
+                else if (i == endOffset && (ch = TTSTextModifier.numericToOrdinalString(numeric, ch)) !== null) {
                     type = HANGUL_ORDINAL;
                     break;
                 }
@@ -406,7 +406,7 @@ var TTSTextModifier = {
                 text = text.substr(0, startOffset) + "[" + string + "]" + text.substr(endOffset);
             }
         }
-        text = text.replace(/\(([가나다라마바사아자차카타파하])\)/gm, "[$1]");
+        text = text.replace(/\(([가나다라마바사아자차카타파하OX])\)/gm, "[$1]");
         return text;
     },
 
@@ -424,7 +424,8 @@ var TTSTextModifier = {
     // 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
     // TDD - 불길하다.. 식이 왜저리 더러워;
     insertPauseTag: function(text) {
-        text = text.replace(/([·|…_]{1,})/gm, "<pause=\"500ms\">$1");
+        text = text.replace(/([·|_]{1})/gm, "<pause=\"200ms\">$1");
+        text = text.replace(/([…]{1,})/gm, "<pause=\"500ms\">$1");
         text = text.replace(/([\D])(-|―){1,}([\D])/gm, "$1<pause=\"500ms\">$2$3");
         text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, "$1<pause=\"500ms\">$2");
         return text;
@@ -1190,7 +1191,7 @@ var tts = {
                         }
                         // TDD - 괄호가 섞였을 때는 어쩔건가. 예) [{~~~]}
                         if ((closeBracket = getCloseBracket(nextToken)) !== null && isOnePair(openBracket, closeBracket)) {
-                            if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.indexOf(openBracket)) {
+                            if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.lastIndexOf(openBracket)) {
                                 continue;
                             }
                             else if (i < j && (otherOpenBracket = getOpenBracket(nextToken)) !== null) {
@@ -1201,7 +1202,7 @@ var tts = {
                                 isLast = true;
                             }
                         }
-                        if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+                        if (isPointOrName(subText, tokens[j + 1]) || isNotEndOfSentence(tokens[j + 1])) {
                             isLast = true;
                             continue;
                         }
@@ -1229,7 +1230,8 @@ var tts = {
                 tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
                 call(3);
             }
-        } else {
+        }
+        else {
             tts.chunks.push(chunk);
             call(4);
         }
