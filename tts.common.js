@@ -424,7 +424,8 @@ var TTSTextModifier = {
     // 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
     // TDD - 불길하다.. 식이 왜저리 더러워;
     insertPauseTag: function(text) {
-        text = text.replace(/([·|_]{1})/gm, "<pause=\"200ms\">$1");
+        text = text.replace(/([\D])([·]{1,})([\D])/gm, "$1<pause=\"200ms\">$2$3");
+        text = text.replace(/([|_]{1})/gm, "<pause=\"200ms\">$1");
         text = text.replace(/([…]{1,})/gm, "<pause=\"500ms\">$1");
         text = text.replace(/([\D])(-|―){1,}([\D])/gm, "$1<pause=\"500ms\">$2$3");
         text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, "$1<pause=\"500ms\">$2");
@@ -545,7 +546,7 @@ var TTSTextModifier = {
                 if (num < 1000 * 2) {
                     return "천" + convertHundreds(num % 1000);
                 }
-                return convertThousands(Math.floor(num / 1000)) + "천" + convertHundreds(num % 1000);
+                return onesN[Math.floor(num / 1000)] + "천" + convertHundreds(num % 1000);
             }
             else {
                 return convertHundreds(num);
