@@ -1071,7 +1071,7 @@ var tts = {
                 continue;
             }
             else {
-                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || (piece.length > 1 && piece.isSentence())) {
+                if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || (piece.length > 1 && piece.isSentence()) || piece.isNextSiblingToBr) {
                     tts.addChunk(pieces);
                 }
                 else {
@@ -1080,7 +1080,7 @@ var tts = {
                         if (!nextPiece.isValid()) {
                             // not working
                         }
-                        else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace()) {
+                        else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace() || nextPiece.isNextSiblingToBr) {
                             tts.addChunk(pieces);
                             nodeIndex--;
                             break;
