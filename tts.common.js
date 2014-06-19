@@ -576,7 +576,7 @@ var TTSTextModifier = {
     },
 
     isSpaceCode: function(code) {
-        return code == 0x0020;
+        return code == 0x0020 || code == 0x00A0;
     },
 
     isTildeCode: function(code) {
@@ -685,7 +685,7 @@ var TTSRegex = {
     },
 
     whitespace: function(prefix, suffix, flags) {
-        return TTSRegex.makeRgex(prefix, "[\\t\\r\\n\\s]", suffix, flags);
+        return TTSRegex.makeRgex(prefix, "[\\t\\r\\n\\s\\u00A0]", suffix, flags);
     },
 
     sentence: function(prefix, suffix, flags) {
@@ -976,7 +976,7 @@ TTSPiece.prototype = {
                 valid = false;
             }
         }
-        else if (this.text === null) {
+        else if (this.text === null || this.length === 0) {
             valid = false;
         }
         return valid;
@@ -987,7 +987,7 @@ TTSPiece.prototype = {
     },
 
     isOnlyWhitespace: function() {
-        return this.text.match(TTSRegex.whitespace("^", "$")) !== null ? true : false;
+        return this.text.match(TTSRegex.whitespace("", "{" + this.length + ",}")) !== null ? true : false;
     },
 
     isSentence: function() {
@@ -1221,7 +1221,9 @@ var tts = {
                     if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
                         continue;
                     }
-                    tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+                    if (subText.length > 0) {
+                        tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+                    }
                     subText = "";
                     startOffset = offset;
                     call(2);
