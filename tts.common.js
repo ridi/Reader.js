@@ -510,7 +510,7 @@ var TTSTextModifier = {
     numericToOrdinalString: function(num, suffix) {
         // 100미만? 번.. 개..
         // 명 | 공기 | 달간 | 시[간] | 종목 | 벌 | 채 | 쾌 | 자 | 마 | 근 | 문제 | 큰술 | 살
-        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|자|마|근|문|큰|살|째)/gm) !== null;
+        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|근|문|큰|살|째)/gm) !== null;
         if (!c && suffix !== undefined) {
             return null;
         }
@@ -1092,9 +1092,14 @@ var tts = {
                         if (!nextPiece.isValid()) {
                             tts.chunkLengthLimit = Math.min(tts.chunkLengthLimit + 1, epub.textAndImageNodes.length);
                         }
-                        else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace() || nextPiece.isNextSiblingToBr) {
+                        else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace()) {
                             tts.addChunk(pieces);
                             nodeIndex--;
+                            break;
+                        }
+                        else if (nextPiece.isNextSiblingToBr) {
+                            pieces.push(nextPiece);
+                            tts.addChunk(pieces);
                             break;
                         }
                         else {
