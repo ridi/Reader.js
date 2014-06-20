@@ -515,17 +515,16 @@ var TTSTextModifier = {
             return null;
         }
 
-        var onesN = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
-        var onesO = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
+        var ones = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
         var tens = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉'];
         var teens = ['', '열', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔'];
 
         var convertTens = function(num) {
             if (num < 10) {
-                return onesO[num];
+                return ones[num];
             }
             else {
-                return teens[Math.floor(num / 10)] + (c ? onesO[num % 10] : tens[num % 10]);
+                return teens[Math.floor(num / 10)] + (c ? ones[num % 10] : tens[num % 10]);
             }
         };
 
@@ -534,7 +533,7 @@ var TTSTextModifier = {
                 if (num < 100 * 2) {
                     return "백" + convertTens(num % 100);
                 }
-                return onesN[Math.floor(num / 100)] + "백" + convertTens(num % 100);
+                return TTSTextModifier.numericToNotationString(Math.floor(num / 100), true) + "백" + convertTens(num % 100);
             }
             else {
                 return convertTens(num);
@@ -546,10 +545,22 @@ var TTSTextModifier = {
                 if (num < 1000 * 2) {
                     return "천" + convertHundreds(num % 1000);
                 }
-                return onesN[Math.floor(num / 1000)] + "천" + convertHundreds(num % 1000);
+                return TTSTextModifier.numericToNotationString(Math.floor(num / 1000), true) + "천" + convertHundreds(num % 1000);
             }
             else {
                 return convertHundreds(num);
+            }
+        };
+
+        var convertMillions = function(num) {
+            if (num >= 10000) {
+                if (num < 10000 * 2) {
+                    return "만" + convertThousands(num % 10000);
+                }
+                return TTSTextModifier.numericToNotationString(Math.floor(num / 10000), true) + "만" + convertThousands(num % 10000);
+            }
+            else {
+                return convertThousands(num);
             }
         };
 
@@ -557,7 +568,7 @@ var TTSTextModifier = {
             return null;
         }
         else {
-            return convertThousands(num);
+            return convertMillions(num);
         }
     },
 
