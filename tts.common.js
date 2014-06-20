@@ -1303,6 +1303,7 @@ var tts = {
         var chunk = tts.chunks[chunkId];
         var rects = chunk.getClientRects(true);
         var scrollLeft = document.body.scrollLeft;
+        var innerWidth = window.innerWidth;
 
         var makeCSS = function(rect, isBorder) {
             var cssText =
@@ -1331,7 +1332,7 @@ var tts = {
                     width: rect.width,
                     height: rect.height
                 }, false);
-                if (i === 0) {
+                if (i === 0 && left >= 0 && scrollLeft <= left) {
                     rect.width = 1;
                     tts.highlightBody.children[tts.HIGHLIGHT_COUNT].style.cssText = makeCSS({
                         left: Math.max(left - 2, scrollLeft), 
@@ -1340,7 +1341,7 @@ var tts = {
                         height: rect.height
                     }, true);
                 }
-                if (i == rects.length - 1) {
+                if (i == rects.length - 1 && scrollLeft <= left && left <= scrollLeft + innerWidth) {
                     rect.left += rect.width;
                     tts.highlightBody.children[tts.HIGHLIGHT_COUNT + 1].style.cssText = makeCSS({
                         left: left + rect.width, 
