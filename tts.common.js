@@ -1068,6 +1068,7 @@ var tts = {
 
             var pieces = [piece];
             if (!piece.isValid() || piece.isOnlyWhitespace()) {
+                tts.chunkLengthLimit = Math.min(tts.chunkLengthLimit + 1, epub.textAndImageNodes.length);
                 continue;
             }
             else {
@@ -1078,7 +1079,7 @@ var tts = {
                     var nextPiece = null;
                     while ((nextPiece = new TTSPiece(++nodeIndex)).nodeIndex !== null) {
                         if (!nextPiece.isValid()) {
-                            // not working
+                            tts.chunkLengthLimit = Math.min(tts.chunkLengthLimit + 1, epub.textAndImageNodes.length);
                         }
                         else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace() || nextPiece.isNextSiblingToBr) {
                             tts.addChunk(pieces);
