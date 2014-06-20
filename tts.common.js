@@ -1332,8 +1332,7 @@ var tts = {
                     width: rect.width,
                     height: rect.height
                 }, false);
-                if (i === 0 && left >= 0 && scrollLeft <= left) {
-                    rect.width = 1;
+                if (i === 0 && scrollLeft <= left) {
                     tts.highlightBody.children[tts.HIGHLIGHT_COUNT].style.cssText = makeCSS({
                         left: Math.max(left - 2, scrollLeft), 
                         top: top, 
@@ -1341,10 +1340,10 @@ var tts = {
                         height: rect.height
                     }, true);
                 }
-                if (i == rects.length - 1 && scrollLeft <= left && left <= scrollLeft + innerWidth) {
+                if (i == rects.length - 1 && scrollLeft <= left) {
                     rect.left += rect.width;
                     tts.highlightBody.children[tts.HIGHLIGHT_COUNT + 1].style.cssText = makeCSS({
-                        left: left + rect.width, 
+                        left: Math.min(left + rect.width, scrollLeft + innerWidth - 2), 
                         top: top, 
                         width: 2, 
                         height: rect.height
