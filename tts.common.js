@@ -508,9 +508,7 @@ var TTSTextModifier = {
 
     // 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
     numericToOrdinalString: function(num, suffix) {
-        // 100미만? 번.. 개..
-        // 명 | 공기 | 달간 | 시[간] | 종목 | 벌 | 채 | 쾌 | 자 | 마 | 근 | 문제 | 큰술 | 살
-        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|쾌|근|문|큰|살|째)/gm) !== null;
+        var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|갈|쾌|근|문|큰|살|째)/gm) !== null;
         if (!c && suffix !== undefined) {
             return null;
         }
@@ -1196,7 +1194,7 @@ var tts = {
             var subText = "";
             for (var i = 0; i < tokens.length; i++) {
                 var token = tokens[i];
-                var openBracket, closeBracket, otherOpenBracket;
+                var openBracket, closeBracket, otherBracket;
                 subText += token;
                 offset += token.length;
                 if ((openBracket = getOpenBracket(token)) !== null) {
@@ -1212,8 +1210,11 @@ var tts = {
                             if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.lastIndexOf(openBracket)) {
                                 continue;
                             }
-                            else if (i < j && (otherOpenBracket = getOpenBracket(nextToken)) !== null) {
-                                openBracket = otherOpenBracket;
+                            else if (i < j && (otherBracket = getOpenBracket(nextToken)) !== null) {
+                                openBracket = otherBracket;
+                                if ((otherBracket = getCloseBracket(nextToken)) !== null && isOnePair(openBracket, otherBracket)) {
+                                    isLast = true;
+                                }
                                 continue;
                             }
                             else {
