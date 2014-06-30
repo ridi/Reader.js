@@ -1342,9 +1342,12 @@ var tts = {
                     }, true);
                 }
                 if (i == rects.length - 1 && scrollLeft <= left) {
-                    rect.left += rect.width;
+                    left = left + rect.width;
+                    if (scrollLeft + innerWidth == left) {
+                        left -= 2;
+                    }
                     tts.highlightBody.children[tts.HIGHLIGHT_COUNT + 1].style.cssText = makeCSS({
-                        left: Math.min(left + rect.width, scrollLeft + innerWidth - 2), 
+                        left: left, 
                         top: top, 
                         width: 2, 
                         height: rect.height
