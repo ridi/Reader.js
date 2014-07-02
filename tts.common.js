@@ -277,8 +277,9 @@ var TTSTextModifier = {
             }
         }
 
-        // '~'가 아닌 '∼'는 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
+        // '~'가 아닌 '∼'와 '〜'는 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
         text = text.replace("∼", "에서 ");
+        text = text.replace("〜", "에서 ");
 
         return text;
     },
@@ -589,7 +590,7 @@ var TTSTextModifier = {
     },
 
     isTildeCode: function(code) {
-        return code == 0x007E || code == 0x223C;// ~, ∼
+        return code == 0x007E || code == 0x223C || code == 0x301C;// ~, ∼, 〜
     },
 
     isColonCode: function(code) {
@@ -698,7 +699,7 @@ var TTSRegex = {
     },
 
     sentence: function(prefix, suffix, flags) {
-        return TTSRegex.makeRgex(prefix, "[.。?!\"”'’」』]", suffix, flags);
+        return TTSRegex.makeRgex(prefix, "[.。?!\"”'’」』〞〟]", suffix, flags);
     }
 };
 
