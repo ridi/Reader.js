@@ -232,21 +232,21 @@ var ridi = {
         var containerValueLength = startContainer.nodeValue.length;
 
         while (startOffset > 0) {
-            startOffset -= 1;
-            range.setStart(startContainer, startOffset);
             if (/^\s/.test(range.toString())) {
                 range.setStart(startContainer, startOffset += 1);
                 break;
             }
+            startOffset -= 1;
+            range.setStart(startContainer, startOffset);
         }
 
         while (originalOffset < containerValueLength) {
-            originalOffset += 1;
-            range.setEnd(startContainer, originalOffset);
             if (/\s$/.test(range.toString())) {
                 range.setEnd(startContainer, originalOffset -= 1);
                 break;
             }
+            originalOffset += 1;
+            range.setEnd(startContainer, originalOffset);
         }
     },
 
