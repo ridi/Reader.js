@@ -1,10 +1,6 @@
 // epub.common.js
 
 var epub = {
-    setForegroundColor : function(color) {
-        document.body.style.color = color;
-    },
-    
     totalWidth : function() {
         return document.documentElement.scrollWidth;
     },
