@@ -189,6 +189,8 @@ var ridi = {
         var el = document.getElementById(anchor);
         
         if (el) {
+            var basedLeft = ridi.getMatchedStyle(el, 'position', true) != 'absolute';
+
             var nodeIterator = document.createNodeIterator(
                 el,
                 NodeFilter.SHOW_TEXT,
@@ -204,20 +206,21 @@ var ridi = {
                 var r = document.createRange();
                 r.selectNodeContents(node);
                 var rects = r.getClientRects();
-                
+
                 if (rects.length > 0) {
-                    return ridi.getPageFromElementRect(rects[0]);
+                    return ridi.getPageFromElementRect(rects[0], basedLeft);
                 }
             }
     
             // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
-            return ridi.getPageFromElementRect(el.getBoundingClientRect());
+            return ridi.getPageFromElementRect(el.getBoundingClientRect(), basedLeft);
         }
 
         return -1;
     },
 
-    getPageFromElementRect: function(rect) {
+    // basedLeft: rect.left를 기준으로 page를 구할지(false일 때는 rect.top을 기준으로 구한다, 기본값: true)
+    getPageFromElementRect: function(rect, basedLeft) {
         
     },
 
@@ -358,44 +361,46 @@ var ridi = {
 
     },
 
-    getMatchedStyle : function(el, property) {
-        // element property has highest priority
-        var val = el.style.getPropertyValue(property);
+    getMatchedStyle : function(el, property, recursive) {
+        recursive = recursive !== undefined ? recursive : false;
 
-        // if it's important, we are done
-        if (el.style.getPropertyPriority(property))
-            return val;
+        var getMatchedStyle = function(el, property) {
+            // element property has highest priority
+            var val = el.style.getPropertyValue(property);
 
-        // get matched rules
-        var rules = window.getMatchedCSSRules(el);
-        if (rules === null)
-            return val;
+            // if it's important, we are done
+            if (el.style.getPropertyPriority(property))
+                return val;
 
-        // iterate the rules backwards
-        // rules are ordered by priority, highest last
-        for (var i = rules.length; i --> 0;) {
-            var r = rules[i];
+            // get matched rules
+            var rules = window.getMatchedCSSRules(el);
+            if (rules === null)
+                return val;
 
-            var important = r.style.getPropertyPriority(property);
+            // iterate the rules backwards
+            // rules are ordered by priority, highest last
+            for (var i = rules.length; i --> 0;) {
+                var r = rules[i];
 
-            // if set, only reset if important
-            if (val === null || important) {
-                val = r.style.getPropertyValue(property);
+                var important = r.style.getPropertyPriority(property);
 
-                // done if important
-                if (important)
-                    break;
+                // if set, only reset if important
+                if (val === null || important) {
+                    val = r.style.getPropertyValue(property);
+
+                    // done if important
+                    if (important)
+                        break;
+                }
             }
-        }
-        return val;
-    },
+            return val;
+        };
 
-    getMatchedParentStyle : function(el, property) {
         var val = null;
         var target = el;
-        while (!(val = ridi.getMatchedStyle(target, property))) {
+        while (!(val = getMatchedStyle(target, property))) {
             target = target.parentElement;
-            if (target === null) {
+            if (target === null || recursive === false) {
                 break;
             }
         }
