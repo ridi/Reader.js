@@ -32,6 +32,7 @@
 //        - 문장에서 특정 단어에 태그를 입혔을 때 그 단어 하나만 문장으로 구성될 우려가 있기 때문이다.
 //             예) <p>제가 <b>하쿠나 마타타</b>라고 말하면 가는 겁니다.</p>
 //        - 다음 노드에 대해서도 1~6번을 따른다.
+//             - 단, 2번은 previousSibling이 span일 경우 무시한다.
 //        - 다음 노드도 문장이 되지 못 한다면 다음 노드와 합친다.
 //        - 마지막 노드를 만날 때까지 문장이 되지 못 한다면 Chunk로 만든다.
 //
@@ -76,9 +77,6 @@
 //
 //    - 숫자에 제곱의 의미로 윗첨자가 붙었을 때. (숫자만 읽어버린다. 하하)
 //    - span과 스타일을 이용해 윗첨자 또는 아랫첨자를 흉내냈을 때. (아오... 왜그러니.. 어소링 툴에 있을텐데 분명 =_=)
-//    - 같은 의미의 한글과 영문 또는 외국어가 붙어있을 때.
-//         예) <p>공작에 대한 경칭은 그레이스<span class="eng">grâce</span> ...</p> (span 없는 애도 있다.. 맙소사)
-//         예) 로드는 색슨어로 <span class="eng">laford</span>이고, 고전 라틴어로 <span class="eng">dominus</span>이며, ...
 //    - 게임 판타지 소설에서 자주 나오는 캐릭터 또는 장비 스테이터스. (이걸 다 읽어줘야 하나...)
 //    - 문장으로 생각했는데 뒤에 붙어야할 애가 있다.
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
@@ -997,7 +995,11 @@ TTSPiece.prototype = {
     },
 
     isOnlyWhitespace: function() {
-        return this.text.match(TTSRegex.whitespace("", "{" + this.length + ",}")) !== null ? true : false;
+        var isOnlyWhitespace = this.text.match(TTSRegex.whitespace("", "{" + this.length + ",}")) !== null ? true : false;
+        if (isOnlyWhitespace && this.node.previousSibling !== null) {
+            isOnlyWhitespace = this.node.previousSibling.nodeName.toLowerCase() != "span";
+        }
+        return isOnlyWhitespace;
     },
 
     isSentence: function() {
@@ -1173,7 +1175,8 @@ var tts = {
 
         // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true.
         var isPointOrName = function(text, nextText) {
-            return text.match(/[.]$/gm) !== null && isDigitOrLation(text[Math.max(text.length - 2, 0)]) && nextText !== undefined && isDigitOrLation(nextText[0]);
+            return (text.match(/[.]$/gm) !== null && isDigitOrLation(text[Math.max(text.length - 2, 0)]) && nextText !== undefined && isDigitOrLation(nextText[0])) || 
+                   ((text + nextText).match(/[.]([\s]{0,}[A-Za-z])/gm) !== null);
         };
 
         // 문장의 마지막이 아닐 경우 true.
