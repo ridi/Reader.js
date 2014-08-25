@@ -361,6 +361,10 @@ var TTSTextModifier = {
                     type = LATION;
                     break;
                 }
+                else if (type != LATION && ch == ".") {
+                    type = NONE;
+                    break;
+                }
                 else if (ch == "장" || ch == "권") {
                     type = HANGUL_NOTATION;
                     break;
