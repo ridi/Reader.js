@@ -964,33 +964,26 @@ TTSPiece.prototype = {
     isValid: function() {
         var valid = true;
         var element = (this.node.nodeType == Node.TEXT_NODE ? this.node.parentElement : this.node);
-        var nodeName = element.nodeName.toLowerCase();
-        if (element.style.display == "none" || element.offsetWidth === 0) {
+
+        if (this.text === null || this.length === 0 || element.style.display == "none" || element.offsetWidth === 0) {
             valid = false;
         }
-        else if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
-            valid = false;
-        }
-        else if (nodeName == "sub" || nodeName == "sup") {
-            valid = false;
-        }
-        else if (nodeName == "a") {
-            var pElement = element.parentElement;
-            while (pElement !== null) {
-                nodeName = pElement.nodeName.toLowerCase();
-                if (nodeName == "sub" || nodeName == "sup") {
+        else {
+            while (element) {
+                var nodeName = element.nodeName.toLowerCase();
+                if (nodeName == "ruby" || nodeName == "rt" || nodeName == "rp") {
                     valid = false;
+                }
+                else if (nodeName == "sub" || nodeName == "sup") {
+                    valid = false;
+                }
+                if (!valid) {
                     break;
                 }
-                pElement = pElement.parentElement;
-            }
-            if (element.getElementsByTagName("sub").length > 0 || element.getElementsByTagName("sup") > 0) {
-                valid = false;
+                element = element.parentNode;
             }
         }
-        else if (this.text === null || this.length === 0) {
-            valid = false;
-        }
+
         return valid;
     },
 
