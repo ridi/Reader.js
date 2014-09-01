@@ -79,7 +79,7 @@ var epub = {
     //   - 제작자가 의도한 이미지 비율 또는 크기를 따르돼 
     //    원본 비율을 붕괴시키거나 원본 크기보다 커지는 경우를 없애기 위함.
     //
-    reviseImagesInSpine : function(canvasWidth, canvasHeight) {
+    reviseImagesInSpine : function() {
 
     },
 
@@ -127,15 +127,11 @@ var epub = {
 
     textAndImageNodes: null,
 
-    // element의 rect 계산 기준이 spine의 시작일 경우: startOffset = scrollLeft, endOffset = scrollLeft + canvasWidth (iOS 7.x)
-    // element의 rect 계산 기준이 현재 offset일 경우: startOffset = 0, endOffset = canvasWidth (iOS 7.x under, Android 4.x Later)
-    // -webkit-column 구현 기준이 left일 경우: basedLeft = true (iOS All, Android 3.x Later)
-    // -webkit-column 구현 기준이 top일 경우: basedLeft = false (Android 2.x)
-    getTopNodeLocationOfCurrentPage : function(startOffset, endOffset, basedLeft) {
+    getTopNodeLocationOfCurrentPage : function() {
 
     },
 
-    getPageOffsetFromLocation: function(canvasWidth, canvasHeight, nodeIndex, wordIndex, basedLeft) {
+    getPageOffsetFromLocation: function(nodeIndex, wordIndex) {
 
     },
 
@@ -153,6 +149,17 @@ var MutableClientRect = function(rect) {
 };
 
 var ridi = {
+    // * Android
+    // ex) 14, 17, 19, ... (API level)
+    // * iOS
+    // ex) 6, 7, 8, ...
+    systemMajorVersion: 0,
+
+    // 페이지 또는 위치를 계산할 때 Rect에서 기준이될 값
+    // left : iOS All, Android 3.x Later
+    // top  : Android 2.x
+    offsetDirection: 'left',
+
     appPassedWidth: 0,
     appPassedHeight: 0,
 
@@ -189,7 +196,7 @@ var ridi = {
         var el = document.getElementById(anchor);
         
         if (el) {
-            var basedLeft = ridi.getMatchedStyle(el, 'position', true) != 'absolute';
+            var offsetDirection = ridi.getMatchedStyle(el, 'position', true) != 'absolute' ? 'left' : 'top';
 
             var nodeIterator = document.createNodeIterator(
                 el,
@@ -208,19 +215,18 @@ var ridi = {
                 var rects = r.getClientRects();
 
                 if (rects.length > 0) {
-                    return ridi.getPageFromElementRect(rects[0], basedLeft);
+                    return ridi.getPageFromElementRect(rects[0], offsetDirection);
                 }
             }
     
             // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
-            return ridi.getPageFromElementRect(el.getBoundingClientRect(), basedLeft);
+            return ridi.getPageFromElementRect(el.getBoundingClientRect(), offsetDirection);
         }
 
         return -1;
     },
 
-    // basedLeft: rect.left를 기준으로 page를 구할지(false일 때는 rect.top을 기준으로 구한다, 기본값: true)
-    getPageFromElementRect: function(rect, basedLeft) {
+    getPageFromElementRect: function(rect, offsetDirection) {
         
     },
 
