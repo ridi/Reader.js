@@ -352,19 +352,14 @@ var ridi = {
         var result = '';
         
         for (var i = 0; i < rects.length; i++) {
-            var relativeRect = ridi.rectsToRelativeCoord(rects[i]);
-            
-            result += relativeRect.left + ',';
-            result += relativeRect.top + ',';
-            result += relativeRect.width + ',';
-            result += relativeRect.height + ',';
+            var rect = rects[i];
+            result += rect.left + ',';
+            result += rect.top + ',';
+            result += rect.width + ',';
+            result += rect.height + ',';
         }
 
         return result;
-    },
-
-    rectsToRelativeCoord: function(rect) {
-
     },
 
     getMatchedStyle : function(el, property, recursive) {
