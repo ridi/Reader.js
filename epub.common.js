@@ -15,6 +15,38 @@ var epub = {
         }
     },
 
+    svgElementFromPoint : function(x, y) {
+        var element = document.elementFromPoint(x, y);
+        if (element) {
+            while(element.nodeName != 'HTML' && element.nodeName != 'BODY') {
+                element = element.parentElement;
+                if (element.nodeName.toLowerCase() == 'svg') {
+                    var prefix = '<svg';
+                    for (var i = 0; i < element.attributes.length; i++) {
+                        var attribute = element.attributes[i];
+                        prefix += ' ' + attribute.nodeName + '="' + attribute.nodeValue + '"';
+                    }
+                    prefix += '>';
+
+                    var postfix = '</svg>';
+
+                    return prefix + this.getSvgInnerHTML(element) + postfix;
+                }
+            }
+        }
+        return 'null';
+    },
+
+    // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
+    getSvgInnerHTML : function(element) {
+        var svgElement = document.createElement('svgElement');
+        Array.prototype.slice.call(element.childNodes)
+        .forEach(function (node, index) {
+            svgElement.appendChild(node.cloneNode(true));
+        });
+        return svgElement.innerHTML;
+    },
+
     // 넘겨받은 element가 A태그로 링크가 걸려있는 경우 해당 링크 주소 리턴
     getLinkOfElement : function(element) {
         while (element) {
