@@ -440,8 +440,3 @@ var ridi = {
         return val;
     },
 };
-
-(function() {
-    // 링크의 기본 색상을 지정한다(링크 색상이 CSS나 속성으로 존재하면 무시된다)
-    document.body.setAttribute('link', '#1F8EE6');  // dodgerBlue1
-} ());
