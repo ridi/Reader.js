@@ -48,22 +48,20 @@ TTSPiece.prototype = {
   },
 
   isValid: function() {
-    var element = (this.node.nodeType == Node.TEXT_NODE ? this.node.parentElement : this.node);
-    var valid = this.text !== null &&
-                this.length !== 0 &&
-                element.style.display != 'none' &&
-                element.offsetWidth !== 0;
-    if (valid) {
+    var valid = true, element = (this.node.nodeType == Node.TEXT_NODE ? this.node.parentElement : this.node);
+    if (this.text === null || this.length === 0 || element.style.display == 'none' || element.offsetWidth === 0) {
+      valid = false;
+    } else {
       while (element) {
-        // 독음이나 첨자는 읽지 않는다
-        for (var nodeName in ['RUBY', 'RT', 'RP', 'SUB', 'SUP']) {
-          if (element.nodeName == nodeName)
-            valid = false;
+        var nodeName = element.nodeName;
+        if (nodeName == 'RUBY' || nodeName == 'RT' || nodeName == 'RP') {
+          valid = false;
+        } else if (nodeName == 'SUB' || nodeName == 'SUP') {
+          valid = false;
         }
-        if (!valid) {
-          break;
-        } else
-          element = element.parentNode;
+        if (!valid)
+            break;
+        element = element.parentNode;
       }
     }
     return valid;
@@ -93,7 +91,7 @@ TTSPiece.prototype = {
   },
 
   isSentence: function() {
-    regexSentence(null, null, '$');
+    regexSentence(null, '$');
     return this.text.trim().match(regexSentence(null, '$')) !== null ? true : false;
   }
 };

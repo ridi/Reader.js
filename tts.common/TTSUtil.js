@@ -41,8 +41,36 @@ function regexSentence(/*String*/prefix, /*String*/suffix, /*String*/flags) {
 
 // Char
 
-function isLastCharOfSentence(ch) {
+function isLastCharOfSentence(/*Char*/ch) {
   return ch.match(regexSentence()) !== null;
+}
+
+function isDigitOrLatin(/*Char*/ch) {
+  if (ch) {
+    var code = ch.charCodeAt(0);
+    return isLatinCharCode(code) || isDigitCharCode(code);
+  } else
+    return false;
+}
+
+function getFirstOpenBracket(/*String*/text) {
+  try {
+    return text.match(/[\({\[]/gm)[0];
+  } catch(e) {
+    return null;
+  }
+}
+
+function getLastCloseBracket(/*String*/text) {
+  try {
+    return text.match(/[\)}\]]/gm).pop();
+  } catch(e) {
+    return null;
+  }
+}
+
+function isOnePairBracket(/*Char*/open, /*Char*/close) {
+  return (open + close).match(/\(\)|{}|\[\]/gm) !== null;
 }
 
 // CharCode
@@ -76,6 +104,7 @@ function isHangulCharCode(/*Number*/code) {
 }
 
 function isLatinCharCode(/*Number*/code, /*String*/flag) {
+  var table;
   var uppercaseTable = [0x0041, 0x005A, 0x00C0, 0x00D6, 0x00D8, 0x00DE];
   var lowercaseTable = [0x0061, 0x007A, 0x00DF, 0x00F6, 0x00F8, 0x00FF];
   if (code >= 0x0100 && code <= 0x017F) {
@@ -108,14 +137,13 @@ function isLatinCharCode(/*Number*/code, /*String*/flag) {
     return true;
   } else {
     // Latin Basic
-    if (flag == 'u') {
-        return isCharCodeWithinTable(uppercaseTable, code);
-    } else if (flag == 'l') {
-        return isCharCodeWithinTable(lowercaseTable, code);
-    } else {
-        var latinTable = [].concat(uppercaseTable).concat(lowercaseTable);
-        return isCharCodeWithinTable(latinTable, code);
-    }
+    if (flag == 'u')
+      table = uppercaseTable;
+    else if (flag == 'l')
+      table = lowercaseTable;
+    else
+      table = [].concat(uppercaseTable).concat(lowercaseTable);
+    return isCharCodeWithinTable(table, code);
   }
 }
 

@@ -180,8 +180,9 @@ TTSUtterance.prototype = {
     }
 
     // '~'가 아닌 '∼'와 '〜'는 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
-    text = text.replace('∼', '에서 ');
-    text = text.replace('〜', '에서 ');
+    text = text.replace(/∼|〜/gm, function(matched) {
+      return '에서 ';
+    });
 
     return new TTSUtterance(text);
   },
@@ -199,21 +200,14 @@ TTSUtterance.prototype = {
     text = text.replace(/([\d]{0,})[,]([\d]{3,})/gm, "$1$2");
 
     // 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
-    text = text.replace(/⅐/gm, "칠 분의 일");
-    text = text.replace(/⅑/gm, "구 분의 일");
-    text = text.replace(/⅒/gm, "십 분의 일");
-    text = text.replace(/⅓/gm, "삼 분의 일");
-    text = text.replace(/⅔/gm, "삼 분의 이");
-    text = text.replace(/⅕/gm, "오 분의 일");
-    text = text.replace(/⅖/gm, "오 분의 이");
-    text = text.replace(/⅗/gm, "오 분의 삼");
-    text = text.replace(/⅘/gm, "오 분의 사");
-    text = text.replace(/⅙/gm, "육 분의 일");
-    text = text.replace(/⅚/gm, "육 분의 오");
-    text = text.replace(/⅛/gm, "팔 분의 일");
-    text = text.replace(/⅜/gm, "팔 분의 삼");
-    text = text.replace(/⅝/gm, "팔 분의 오");
-    text = text.replace(/⅞/gm, "팔 분의 칠");
+    var map = {
+       '⅐': '칠 분의 일', '⅑': '구 분의 일', '⅒': '십 분의 일', '⅓': '삼 분의 일', '⅔': '삼 분의 이',
+       '⅕': '오 분의 일', '⅖': '오 분의 이', '⅗': '오 분의 삼', '⅘': '오 분의 사', '⅙': '육 분의 일',
+       '⅚': '육 분의 오', '⅛': '팔 분의 일', '⅜': '팔 분의 삼', '⅝': '팔 분의 오', '⅞': '팔 분의 칠'
+    };
+    text = text.replace(/⅐|⅑|⅒|⅓|⅔|⅕|⅖|⅗|⅘|⅙|⅚|⅛|⅜|⅝|⅞/gm, function(matched) {
+      return map[matched];
+    });
 
     // 년도를 의미하는 숫자 뒤에 XX가 붙어 있다면 0으로 교체한다.
     text = text.replace(/([\d]{1,2})[Xx×]{2}/gm, "$100");
