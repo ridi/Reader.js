@@ -242,6 +242,7 @@ TTSUtterance.prototype = {
       for (i = endOffset; i < text.length; i++) {
         code = text.charCodeAt(i);
         ch = text.charAt(i);
+        var nextCh = text.charAt(i + 1);
         if (isSpaceCharCode(code)) {
           continue;
         } else if (type == TYPE.TIME || isColonCharCode(code)) {
@@ -258,7 +259,7 @@ TTSUtterance.prototype = {
           break;
         } else if (isLastCharOfSentence(ch)) {
           break;
-        } else if (i == endOffset && (ch = numericToOrdinalString(numeric, ch)) !== null) {
+        } else if (i == endOffset && (ch = numericToOrdinalString(numeric, ch + nextCh)) !== null) {
           type = TYPE.HANGUL_ORDINAL;
           break;
         } else {

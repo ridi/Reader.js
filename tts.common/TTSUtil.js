@@ -262,7 +262,7 @@ function numericToOrdinalString(/*Number*/num, /*String*/suffix) {
   var tens = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉'];
   var teens = ['', '열', '스물', '서른', '마흔', '쉰', '예순', '일흔', '여든', '아흔'];
 
-  var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|갈|쾌|근|문|큰|살|째)/gm) !== null;
+  var c = suffix !== undefined && suffix.match(/^(명|공|달|시|종|벌|채|갈|쾌|근|문|큰|살|째)(?!러)/gm) !== null;
   if (!c && suffix !== undefined) {
     return null;
   }

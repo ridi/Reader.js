@@ -53,6 +53,7 @@ TTSPiece.prototype = {
       valid = false;
     } else {
       while (element) {
+        // 독음(후리가나)과 첨자는 읽지 않는다
         var nodeName = element.nodeName;
         if (nodeName == 'RUBY' || nodeName == 'RT' || nodeName == 'RP') {
           valid = false;
