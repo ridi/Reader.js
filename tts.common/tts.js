@@ -86,7 +86,7 @@ var tts = {
   debug: false,
 
   chunks: [],
-  chunkLengthLimit: 0,
+  maxChunkLength: 0,
 
   shouldNextPage: function(/*Number*/chunkId, /*Number*/canvasWidth, /*Boolean*/isPreceding) {
 
@@ -105,14 +105,16 @@ var tts = {
   },
 
   makeChunksByRange: function(serializedRange) {
-    var range = rangy.deserializeRange(serializedRange, document.body);
-    var nodeIndex = -1, wordIndex = 0;
-    var nodes = epub.textAndImageNodes;
-    if (nodes === null) {
-      return tts.chunks.length;
-    }
+    var range = rangy.deserializeRange(serializedRange, document.body),
+        nodeIndex = -1, wordIndex = 0,
+        nodes = epub.textAndImageNodes;
 
-    if (range !== null) {
+    if (nodes === null)
+      throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
+
+    if (range === null)
+      throw 'tts: range is invalid.';
+
       for (var i = 0, offset = 0; i < nodes.length; i++, offset = 0) {
         if (nodes[i] === range.startContainer) {
           nodeIndex = i;
@@ -126,44 +128,54 @@ var tts = {
           break;
         }
       }
-      return tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
-    }
 
-    return tts.chunks.length;
+      return tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
   },
 
   makeChunksByNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
     var nodes = epub.textAndImageNodes;
-    if (nodes === null) {
-      return tts.chunks.length;
-    }
+    if (nodes === null)
+      throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
+
+    if (nodeIndex === undefined || wordIndex === undefined)
+      throw 'tts: nodeIndex or wordIndex is invalid.';
 
     nodeIndex = Math.max(nodeIndex, 0);
     wordIndex = Math.max(wordIndex, 0);
 
-    var index = Math.max(tts.chunks.length - 1, 0);
-    tts.chunkLengthLimit = Math.min(nodeIndex + 50, nodes.length);
+    var index = Math.max(tts.chunks.length - 1, 0),
+        maxLength = Math.min(nodeIndex + 50, nodes.length);
 
-    for (; nodeIndex < tts.chunkLengthLimit; nodeIndex++, wordIndex = 0) {
-      var piece = new TTSPiece(nodeIndex, wordIndex);
-      if (piece.node === null) {
+    for (; nodeIndex < maxLength; nodeIndex++, wordIndex = 0) {
+      var piece;
+      try {
+        piece = new TTSPiece(nodeIndex, wordIndex);
+      } catch (e) {
+        console.log(e);
         break;
       }
 
       var pieces = [piece];
-      if (!piece.isValid() || piece.isOnlyWhitespace()) {
-        tts.chunkLengthLimit = Math.min(tts.chunkLengthLimit + 1, nodes.length);
+      if (piece.isInvalid() || piece.isOnlyWhitespace()) {
+        maxLength = Math.min(maxLength + 1, nodes.length);
         continue;
       } else {
-        if (nodeIndex == tts.chunkLengthLimit - 1 || piece.isImage() || 
+        if (nodeIndex == maxLength - 1 || 
             (piece.length > 1 && piece.isSentence()) || piece.isNextSiblingToBr()) {
           tts.addChunk(pieces);
         } else {
-          var nextPiece = null;
-          while ((nextPiece = new TTSPiece(++nodeIndex)).nodeIndex !== null) {
-            if (!nextPiece.isValid()) {
-              tts.chunkLengthLimit = Math.min(tts.chunkLengthLimit + 1, nodes.length);
-            } else if (nextPiece.isImage() || nextPiece.isOnlyWhitespace()) {
+          for (++nodeIndex; nodeIndex < maxLength; ++nodeIndex) {
+            var nextPiece;
+            try {
+              nextPiece = new TTSPiece(nodeIndex);
+            } catch (e) {
+              console.log(e);
+              break;
+            }
+
+            if (nextPiece.isInvalid()) {
+              maxLength = Math.min(maxLength + 1, nodes.length);
+            } else if (nextPiece.isOnlyWhitespace()) {
               tts.addChunk(pieces);
               nodeIndex--;
               break;
@@ -178,16 +190,16 @@ var tts = {
                 break;
               }
             }
-            if (nodeIndex == nodes.length - 1) {
+
+            if (nodeIndex == nodes.length - 1)
               tts.addChunk(pieces);
-            }
-          }// end while
-        }
-        if (tts.chunkLengthLimit < nodeIndex) {
-          tts.chunkLengthLimit = nodeIndex;
+          }// end for
+          if (maxLength < nodeIndex)
+            maxLength = nodeIndex;
         }
       }
     }// end for
+    tts.maxChunkLength = maxLength;
 
     tts.didFinishMakeChunks(index);
 

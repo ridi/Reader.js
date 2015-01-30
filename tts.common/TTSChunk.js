@@ -1,25 +1,33 @@
 // TTSChunk
 
 function TTSChunk(/*Array<TTSPiece>*/pieces) {
-  this.id = tts.chunks.length;
-  this.pieces = pieces;
-  this.range = new TTSRange(0, this.getText().length);
-  setReadOnly(this, ['id', 'pieces'], true);
+  this.init(pieces); 
 }
 
 TTSChunk.prototype = {
   range: null,
 
+  init: function(/*Array<TTSPiece>*/pieces) {
+    if (pieces === undefined)
+      throw 'TTSChunk: piece list is invalid.';
+
+    this.id = tts.chunks.length;
+    this.pieces = pieces;
+    this.range = new TTSRange(0, this.getText().length);
+
+    setReadOnly(this, ['id', 'pieces'], true);
+  },
+
   getText: function() {
-    var fullText = '';
+    var fullText = '',
+        range = this.range;
 
     this.pieces.forEach(function(piece) {
-      if (piece.length > 0) {
-        fullText += piece.text;
-      }
+      fullText += piece.text;
     });
-    if (this.range !== null)
-      return fullText.substring(this.range.startOffset, this.range.endOffset);
+
+    if (range !== null)
+      return fullText.substring(range.startOffset, range.endOffset);
     else
       return fullText;
   },
@@ -38,46 +46,46 @@ TTSChunk.prototype = {
   },
 
   getPiece: function(/*Number*/offset) {
-    var piece = null, length = 0;
-    if (this.pieces.length == 1) {
-      piece = this.pieces[0];
-    } else {
-      for (var i = 0; i < this.pieces.length; i++) {
-        length += this.pieces[i].length;
-        if (offset <= length) {
-          piece = this.pieces[i];
-          break;
-        }
+    var length = 0;
+    return this.pieces.find(function(item) {
+      if (offset <= length)
+        return true;
+      else {
+        length += item.length;
+        return false;
       }
-    }
-    return piece;
+    });
   },
 
   getOffset: function(/*Number*/piece) {
     var offset = piece.leftPadding;
-    for (var i = 0; i < this.pieces.length; i++) {
-      if (piece === this.pieces[i]) {
-        break;
+    return this.pieces.find(function(item) {
+      if (item === piece)
+        return true;
+      else {
+        offset += item.length;
+        return false;
       }
-      offset += this.pieces[i].length;
-    }
-    return offset;
+    });
   },
 
   getClientRects: function(/*Boolean*/removeBlank) {
-    var rects = [];
-    var startOffset, endOffset, offset = 0, length = 0;
-    var startPiece = this.getPiece(this.range.startOffset);
+    var rects = [],
+        chunkRange = this.range,
+        pieces = this.pieces,
+        startOffset, endOffset,
+        offset = 0, length = 0,
+        startPiece = this.getPiece(chunkRange.startOffset);
 
-    for (var i = 0; i < this.pieces.length; i++, offset += length) {
-      var piece = this.pieces[i];
-      var text = piece.text;
-      var node = piece.node;
-      var string = null;
+    for (var i = 0; i < pieces.length; i++, offset += length) {
+      var piece = pieces[i],
+          text = piece.text,
+          node = piece.node,
+          string = null;
 
       var range = document.createRange();
       range.selectNodeContents(node);
-      if (piece.isImage()) {
+      if (piece.isInvalid()) {
         length = 0;
 
         var rect = epub.getBoundingClientRect(range);
@@ -87,9 +95,7 @@ TTSChunk.prototype = {
       } else {
         length = piece.length;
 
-        var chunkRange = this.range;
         var pieceRange = new TTSRange(offset, offset + piece.length);
-
         if (chunkRange.startOffset <= pieceRange.startOffset) {
           if (pieceRange.endOffset <= chunkRange.endOffset) {
             // Case 1
@@ -137,9 +143,8 @@ TTSChunk.prototype = {
 
         startOffset = Math.max(startOffset - offset + piece.leftPadding, 0);
         endOffset = Math.max(endOffset - offset + piece.leftPadding, 0);
-        if (endOffset === 0) {
+        if (endOffset === 0)
           endOffset = length;
-        }
         while (true) {
           try {
             range.setStart(node, startOffset);
@@ -160,7 +165,7 @@ TTSChunk.prototype = {
           string = range.toString();
           if (startPiece.nodeIndex == piece.nodeIndex &&
               (string.match(regexWhitespaceAndNewLine('^', null, 'g')) !== null || 
-                string.match(regexSentence('^', null, 'g')) !== null)) {
+               string.match(regexSentence('^', null, 'g')) !== null)) {
             if (length < startOffset + 1)
               break;
             startOffset++;
@@ -168,14 +173,12 @@ TTSChunk.prototype = {
             if (endOffset - 1 < 0)
               break;
             endOffset--;
-          } else {
+          } else
             break;
-          }
         }// end while
 
-        if (removeBlank === true && string.length === 0) {
+        if (removeBlank === true && string.length === 0)
           continue;
-        }
 
         var textNodeRects = range.getClientRects();
         if (textNodeRects !== null) {

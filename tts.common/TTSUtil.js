@@ -130,7 +130,7 @@ function isLatinCharCode(/*Number*/code, /*String*/flag) {
         return true;
       }
     }
-    return true;
+    return false;
   } else if (code >= 0x0180 && code <= 0x024F) {
     // Latin Extended-B... 대소문자가 섞여있고 편집문자까지 들어가 있다...
     // TODO 나중에 구분해주자...

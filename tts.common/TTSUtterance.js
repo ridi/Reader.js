@@ -1,12 +1,16 @@
 // TTSUtterance
 
 function TTSUtterance(/*String*/text) {
-  this.text = text;
-  this.length = text.length;
-  setReadOnly(this, ['text', 'length'], true);
+  this.init(text);
 }
 
 TTSUtterance.prototype = {
+  init: function(/*String*/text) {
+    this.text = typeof text === 'string' ? text : '';
+    this.length = text.length;
+    setReadOnly(this, ['text', 'length'], true);
+  },
+
   // 개행문자는 읽을 때 잡음으로 변환되기 때문에 제거한다.
   removeNewLine: function() {
     return new TTSUtterance(this.text.replace(regexNewLine(), ' '));
@@ -25,18 +29,17 @@ TTSUtterance.prototype = {
 
   // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
   removeLatin: function() {
-    var removeList = [];
-    var text = this.text;
-    var textLength = this.length;
-    var startOffset = -1, endOffset = -1, i, j, k;
-    var ch, nextCh;
-    var prevCode, code, nextCode;
+    var removeList = [],
+        text = this.text,
+        textLength = this.length,
+        startOffset = -1, endOffset = -1, 
+        i, j, k,
+        ch, nextCh,
+        prevCode, code, nextCode;
 
     var checkRemoveRange = function(start, end) {
-      // 한 글자 이상일 때만 제거한다.
-      if (end - start > 1) {
+      if (end - start > 1)
         removeList.push({startOffset: start, endOffset: end});
-      }
       startOffset = -1;
     };
 
@@ -115,14 +118,15 @@ TTSUtterance.prototype = {
 
   // 한글에 틸드 문자가 붙을 경우 소리를 늘리는 의미기에 자모에 맞춰 늘려준다.
   replaceTilde: function() {
-    var extendTable = ['아', '에', '아', '에', '어',
+    var offset = -1,
+        text = this.text,
+        textLength = this.length,
+        i, j, k,
+        extendTable = ['아', '에', '아', '에', '어',
                        '에', '어', '에', '오', '아',
                        '에', '에', '오', '우', '어',
                        '에', '이', '우', '으', '으', '이'];
-    var text = this.text;
-    var textLength = this.length;
-    var offset = -1, j;
-    for (var i = 0; i < textLength; i++) {
+    for (i = 0; i < textLength; i++) {
       var code = text.charCodeAt(i);
       if (isTildeCharCode(code)) {
         if (i > 0) {
@@ -162,7 +166,6 @@ TTSUtterance.prototype = {
 
     // 쉼표를 줘서 다음 문장 또는 단어와 바로 이어지지 않도록 한다.
     if (offset != -1) {
-      var k;
       var insertRest = true;
       for (k = offset + 1; k < textLength; k++) {
         if (isHangulCharCode(text.charCodeAt(k))) {
@@ -188,13 +191,13 @@ TTSUtterance.prototype = {
   },
 
   replaceNumeric: function() {
-    var TYPE = {
-      NONE: -1, LATION: 0, HANGUL_NOTATION: 1, HANGUL_ORDINAL: 2, TIME: 3
-    };
-    var match, pattern;
-    var i, code, ch, string;
-    var startOffset, endOffset;
-    var text = this.text;
+    var match, pattern,
+        i, code, ch, string,
+        startOffset, endOffset,
+        text = this.text,
+        TYPE = {
+          NONE: -1, LATION: 0, HANGUL_NOTATION: 1, HANGUL_ORDINAL: 2, TIME: 3
+        };
 
     // 천단위 ','를 지워버린다.
     text = text.replace(/([\d]{0,})[,]([\d]{3,})/gm, "$1$2");
@@ -217,9 +220,9 @@ TTSUtterance.prototype = {
     while ((match = pattern.exec(text)) !== null) {
       startOffset = match.index;
       endOffset = pattern.lastIndex;
-      var numeric = parseInt(text.substring(startOffset, endOffset), 10);
-      var type = (startOffset === 0 ? TYPE.HANGUL_NOTATION : TYPE.NONE);
-      var spaceCount = 0;
+      var numeric = parseInt(text.substring(startOffset, endOffset), 10),
+          type = (startOffset === 0 ? TYPE.HANGUL_NOTATION : TYPE.NONE),
+          spaceCount = 0;
       for (i = startOffset - 1; i >= 0; i--) {
         code = text.charCodeAt(i);
         if (isSpaceCharCode(code)) {
@@ -284,15 +287,14 @@ TTSUtterance.prototype = {
 
   // 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
   replaceBracket: function() {
-    var text = this.text;
-    var match, pattern = /\([\d]{1,2}\)/gm;
+    var text = this.text,
+        match, pattern = /\([\d]{1,2}\)/gm;
     while ((match = pattern.exec(text)) !== null) {
-      var startOffset = match.index;
-      var endOffset = pattern.lastIndex;
-      var string = text.substring(startOffset + 1, endOffset - 1);
-      if (startOffset === 0 || (0 <= startOffset - 1 && text.substr(startOffset - 1, 1) == ' ')) {
+      var startOffset = match.index,
+          endOffset = pattern.lastIndex,
+          string = text.substring(startOffset + 1, endOffset - 1);
+      if (startOffset === 0 || (0 <= startOffset - 1 && text.substr(startOffset - 1, 1) == ' '))
         text = text.substr(0, startOffset) + '[' + string + ']' + text.substr(endOffset);
-      }
     }
     text = text.replace(/\(([가나다라마바사아자차카타파하OX])\)/gm, '[$1]');
     return new TTSUtterance(text);
