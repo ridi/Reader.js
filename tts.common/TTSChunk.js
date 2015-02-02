@@ -48,17 +48,14 @@ TTSChunk.prototype = {
   getPiece: function(/*Number*/offset) {
     var length = 0;
     return this.pieces.find(function(item) {
+      length += item.length;
       if (offset <= length)
         return true;
-      else {
-        length += item.length;
-        return false;
-      }
     });
   },
 
   getOffset: function(/*Number*/piece) {
-    var offset = piece.leftPadding;
+    var offset = piece.paddingLeft;
     return this.pieces.find(function(item) {
       if (item === piece)
         return true;
@@ -141,8 +138,8 @@ TTSChunk.prototype = {
           }
         }
 
-        startOffset = Math.max(startOffset - offset + piece.leftPadding, 0);
-        endOffset = Math.max(endOffset - offset + piece.leftPadding, 0);
+        startOffset = Math.max(startOffset - offset + piece.paddingLeft, 0);
+        endOffset = Math.max(endOffset - offset + piece.paddingLeft, 0);
         if (endOffset === 0)
           endOffset = length;
         while (true) {
