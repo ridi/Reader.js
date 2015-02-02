@@ -1,5 +1,18 @@
 // TTSUtil
 
+// Array extension
+
+if (Array.prototype.find === undefined) {
+  Array.prototype.find = function(callback) {
+    for (var i = 0; i < this.length; i++) {
+      var item = this[i];
+      if (callback(item) === true)
+        return item;
+    }
+    return null;
+  };
+}
+
 // Property
 
 function setReadOnly(/*Object*/obj, /*Array<String>*/properties, /*Boolean*/readOnly) {
