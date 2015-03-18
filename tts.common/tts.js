@@ -162,10 +162,12 @@ var tts = {
         maxIndex = Math.min(maxIndex + 1, nodes.length);
         continue;
       } else {
-        if (nodeIndex == maxIndex - 1 || 
-            (piece.length > 1 && piece.isSentence()) || piece.isNextSiblingToBr()) {
+        if (piece.isNextSiblingToBr() || (piece.length > 1 && piece.isSentence())) {
           tts.addChunk(pieces);
         } else {
+          if (nodeIndex == maxIndex - 1) {
+            maxIndex = Math.min(maxIndex + 1, nodes.length);
+          }
           for (++nodeIndex; nodeIndex < maxIndex; ++nodeIndex) {
             var nextPiece;
             try {
@@ -193,6 +195,8 @@ var tts = {
               }
             }
 
+            if (nodeIndex == maxIndex - 1)
+              maxIndex = Math.min(maxIndex + 1, nodes.length);
             if (nodeIndex == nodes.length - 1)
               tts.addChunk(pieces);
           }// end for
