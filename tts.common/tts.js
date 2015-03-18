@@ -88,7 +88,7 @@ var tts = {
   debug: false,
 
   chunks: [],
-  maxChunkLength: 0,
+  maxNodeIndex: 0,
 
   shouldNextPage: function(/*Number*/chunkId, /*Number*/canvasWidth, /*Boolean*/isPreceding) {
 
@@ -145,10 +145,10 @@ var tts = {
     nodeIndex = Math.max(nodeIndex, 0);
     wordIndex = Math.max(wordIndex, 0);
 
-    var index = Math.max(tts.chunks.length - 1, 0),
-        maxLength = Math.min(nodeIndex + 50, nodes.length);
+    var index = tts.chunks.length,
+        maxIndex = Math.min(nodeIndex + 50, nodes.length);
 
-    for (; nodeIndex < maxLength; nodeIndex++, wordIndex = 0) {
+    for (; nodeIndex < maxIndex; nodeIndex++, wordIndex = 0) {
       var piece;
       try {
         piece = new TTSPiece(nodeIndex, wordIndex);
@@ -159,14 +159,14 @@ var tts = {
 
       var pieces = [piece];
       if (piece.isInvalid() || piece.isOnlyWhitespace()) {
-        maxLength = Math.min(maxLength + 1, nodes.length);
+        maxIndex = Math.min(maxIndex + 1, nodes.length);
         continue;
       } else {
-        if (nodeIndex == maxLength - 1 || 
+        if (nodeIndex == maxIndex - 1 || 
             (piece.length > 1 && piece.isSentence()) || piece.isNextSiblingToBr()) {
           tts.addChunk(pieces);
         } else {
-          for (++nodeIndex; nodeIndex < maxLength; ++nodeIndex) {
+          for (++nodeIndex; nodeIndex < maxIndex; ++nodeIndex) {
             var nextPiece;
             try {
               nextPiece = new TTSPiece(nodeIndex);
@@ -176,7 +176,7 @@ var tts = {
             }
 
             if (nextPiece.isInvalid()) {
-              maxLength = Math.min(maxLength + 1, nodes.length);
+              maxIndex = Math.min(maxIndex + 1, nodes.length);
             } else if (nextPiece.isOnlyWhitespace()) {
               tts.addChunk(pieces);
               nodeIndex--;
@@ -196,12 +196,12 @@ var tts = {
             if (nodeIndex == nodes.length - 1)
               tts.addChunk(pieces);
           }// end for
-          if (maxLength < nodeIndex)
-            maxLength = nodeIndex;
+          if (maxIndex < nodeIndex)
+            maxIndex = nodeIndex;
         }
       }
     }// end for
-    tts.maxChunkLength = maxLength;
+    tts.maxNodeIndex = maxIndex;
 
     tts.didFinishMakeChunks(index);
 
