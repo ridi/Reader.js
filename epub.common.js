@@ -280,9 +280,12 @@ var ridi = {
 
     expandRangeByWord: function(range) {
         var startContainer = range.startContainer;
+        if (startContainer.nodeValue === null) {
+            return;
+        }
+        var containerValueLength = startContainer.nodeValue.length;
         var startOffset = range.startOffset;
         var originalOffset = startOffset;
-        var containerValueLength = startContainer.nodeValue.length;
 
         while (startOffset > 0) {
             if (/^\s/.test(range.toString())) {
@@ -316,9 +319,15 @@ var ridi = {
     },
 
     getOnlyTextNodeRects: function(range) {
-        if (range.startContainer == range.endContainer)
-            return range.getClientRects();
-            
+        if (range.startContainer == range.endContainer) {
+            var innerText = range.startContainer.innerText;
+            if (innerText !== undefined && innerText.length === 0) {
+                return [];
+            } else {
+                return range.getClientRects();
+            }
+        }
+
         var nodeIterator = document.createNodeIterator(
             range.commonAncestorContainer,
             NodeFilter.SHOW_TEXT,
