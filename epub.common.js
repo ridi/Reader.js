@@ -5,36 +5,14 @@ var epub = {
         return document.documentElement.scrollWidth;
     },
 
-    imagePathFromPoint : function(x, y) {
-        var element = document.elementFromPoint(x, y);
-        if (element && element.nodeName == 'IMG') {
-            return element.src;
+    svgHTMLFromElement : function(element) {
+        var prefix = '<svg';
+        for (var i = 0; i < element.attributes.length; i++) {
+            var attribute = element.attributes[i];
+            prefix += ' ' + attribute.nodeName + '="' + attribute.nodeValue + '"';
         }
-        else {
-            return 'null';
-        }
-    },
-
-    svgElementFromPoint : function(x, y) {
-        var element = document.elementFromPoint(x, y);
-        if (element) {
-            while(element.nodeName != 'HTML' && element.nodeName != 'BODY') {
-                element = element.parentElement;
-                if (element.nodeName.toLowerCase() == 'svg') {
-                    var prefix = '<svg';
-                    for (var i = 0; i < element.attributes.length; i++) {
-                        var attribute = element.attributes[i];
-                        prefix += ' ' + attribute.nodeName + '="' + attribute.nodeValue + '"';
-                    }
-                    prefix += '>';
-
-                    var postfix = '</svg>';
-
-                    return prefix + this.getSvgInnerHTML(element) + postfix;
-                }
-            }
-        }
-        return 'null';
+        prefix += '>';
+        return prefix + this.getSvgInnerHTML(element) + '</svg>';
     },
 
     // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
