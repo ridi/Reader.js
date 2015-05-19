@@ -191,5 +191,41 @@ TTSChunk.prototype = {
     var newChunk = new TTSChunk(this.pieces);
     newChunk.range = range;
     return newChunk;
-  }
+  },
+
+  getNodeIndex: function() {
+    var piece = this.getPiece(this.range.startOffset);
+    return piece.nodeIndex;
+  },
+
+  getWordIndex: function() {
+    var nodeIndex = this.getNodeIndex(),
+        range = this.range,
+        piece = null,
+        offset = 0;
+
+    for (var i = 0; i < this.pieces.length; i++) {
+      piece = this.pieces[i];
+      if (piece.nodeIndex == nodeIndex) {
+        break;
+      } else {
+        offset += piece.length;
+      }
+    }
+
+    var diff = range.startOffset - offset + piece.paddingLeft;
+    if (diff <= 0) {
+      return 0;
+    } else {
+      offset = 0;
+      var words = piece.text.split(regexSplitWhitespace());
+      for (var j = 0; j < words.length; j++) {
+        offset += (words[j].length + 1);
+        if (offset >= diff) {
+          return j;
+        }
+      }
+      return words.length - 1;
+    }
+  },
 };
