@@ -250,11 +250,12 @@ var tts = {
 
     var chunk = new TTSChunk(pieces);
     var tokens = split(chunk.getText());
-    var openBracket, closeBracket, otherBracket;
-    if (tokens.length) {
+    if (tokens.length > 1) {
       var offset = 0, startOffset = 0;
       var subText = '';
-      tokens.forEach(function(token, i) {
+      for (var i = 0; i < tokens.length; i++) {
+        var token = tokens[i];
+        var openBracket, closeBracket, otherBracket;
         subText += token;
         offset += token.length;
         if ((openBracket = getFirstOpenBracket(token)) !== null) {
@@ -298,7 +299,7 @@ var tts = {
         } else {
           if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
             // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
-            return;
+            continue;
           }
           if (subText.length) {
             tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
@@ -307,7 +308,7 @@ var tts = {
           }
           startOffset = offset;
         }
-      });// end forEach i
+      } // end for i
       if (subText.length) {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
         tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
