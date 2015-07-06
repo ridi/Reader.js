@@ -1,35 +1,43 @@
 // epub.common.js
 
 var epub = {
-    totalWidth : function() {
+    totalWidth: function() {
         return document.documentElement.scrollWidth;
     },
 
-    imagePathFromPoint : function(x, y) {
+    totalHeight: function() {
+        return document.documentElement.scrollHeight;
+    },
+
+    scrollTo: function(offset) {
+        if (epub.isScrollMode()) {
+            window.scroll(0, offset);
+        } else {
+            window.scroll(offset, 0);
+        }
+    },
+
+    imagePathFromPoint: function(x, y) {
         var element = document.elementFromPoint(x, y);
         if (element && element.nodeName == 'IMG') {
             return element.src;
-        }
-        else {
+        } else {
             return 'null';
         }
     },
 
-    svgElementFromPoint : function(x, y) {
+    svgElementFromPoint: function(x, y) {
         var element = document.elementFromPoint(x, y);
         if (element) {
-            while(element.nodeName != 'HTML' && element.nodeName != 'BODY') {
+            while (element.nodeName != 'HTML' && element.nodeName != 'BODY') {
                 element = element.parentElement;
-                if (element.nodeName.toLowerCase() == 'svg') {
-                    var prefix = '<svg';
+                if (element.nodeName == 'SVG') {
+                    var prefix = '<svg', postfix = '</svg>';
                     for (var i = 0; i < element.attributes.length; i++) {
                         var attribute = element.attributes[i];
                         prefix += ' ' + attribute.nodeName + '="' + attribute.nodeValue + '"';
                     }
                     prefix += '>';
-
-                    var postfix = '</svg>';
-
                     return prefix + this.getSvgInnerHTML(element) + postfix;
                 }
             }
@@ -38,40 +46,36 @@ var epub = {
     },
 
     // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
-    getSvgInnerHTML : function(element) {
+    getSvgInnerHTML: function(element) {
         var svgElement = document.createElement('svgElement');
-        Array.prototype.slice.call(element.childNodes)
-        .forEach(function (node, index) {
+        Array.prototype.slice.call(element.childNodes).forEach(function(node, index) {
             svgElement.appendChild(node.cloneNode(true));
         });
         return svgElement.innerHTML;
     },
 
     // 넘겨받은 element가 A태그로 링크가 걸려있는 경우 해당 링크 주소 리턴
-    getLinkOfElement : function(element) {
+    getLinkOfElement: function(element) {
         while (element) {
             if (element && element.nodeName == 'A') {
                 return element.href;
             }
-            
             element = element.parentNode;
         }
-        
         return null;
     },
 
-    searchText : function (keyword) {
+    searchText: function(keyword) {
         var result = window.find(keyword, 0);   // case insensitive
         if (result) {
             var sel = document.getSelection();
             return rangy.serializeRange(sel.getRangeAt(0), true, document.body);
-        }
-        else {
+        } else {
             return 'null';
         }
     },
 
-    textAroundSearchResult : function (pre, post) {
+    textAroundSearchResult: function(pre, post) {
         var sel = window.getSelection();
         var range = sel.getRangeAt(0);
         
@@ -98,11 +102,8 @@ var epub = {
         return result;
     },
 
-    pageOffsetOfSearchResult : function() {
-        var sel = window.getSelection();
-        var range = sel.getRangeAt(0);
-        var rects = range.getClientRects();
-        
+    pageOffsetOfSearchResult: function() {
+        var rects = window.getSelection().getRangeAt(0).getClientRects();
         return ridi.getPageFromElementRect(rects[0]);
     },
 
@@ -111,7 +112,7 @@ var epub = {
     //   - 제작자가 의도한 이미지 비율 또는 크기를 따르돼 
     //    원본 비율을 붕괴시키거나 원본 크기보다 커지는 경우를 없애기 위함.
     //
-    reviseImagesInSpine : function() {
+    reviseImagesInSpine: function() {
 
     },
 
@@ -123,7 +124,7 @@ var epub = {
         };
 
         var nodes = [];
-        if (element === null || typeof element === 'undefined') {
+        if (element === null || element === undefined) {
             return nodes;
         }
 
@@ -131,8 +132,7 @@ var epub = {
         var node = null, walk = document.createTreeWalker(
             element, 
             NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, 
-            {
-                acceptNode: function(node) {
+            { acceptNode: function(node) {
                     calledFilter = true;
                     if (filter(node)) {
                         return NodeFilter.FILTER_ACCEPT;
@@ -159,12 +159,16 @@ var epub = {
 
     textAndImageNodes: null,
 
-    getTopNodeLocationOfCurrentPage : function() {
+    getTopNodeLocationOfCurrentPage: function() {
 
     },
 
     getPageOffsetFromLocation: function(nodeIndex, wordIndex) {
 
+    },
+
+    isScrollMode: function() {
+        return ridi.appPassedHeight != epub.totalHeight();
     },
 
 };
@@ -176,7 +180,6 @@ var MutableClientRect = function(rect) {
     this.bottom = rect.bottom;
     this.width = rect.width;
     this.height = rect.height;
-
     return this;
 };
 
@@ -229,7 +232,6 @@ var ridi = {
         
         if (el) {
             var offsetDirection = ridi.getMatchedStyle(el, 'position', true) != 'absolute' ? 'left' : 'top';
-
             var nodeIterator = document.createNodeIterator(
                 el,
                 NodeFilter.SHOW_TEXT,
@@ -344,26 +346,30 @@ var ridi = {
         r.setStart(range.startContainer, range.startOffset);
         r.setEnd(range.startContainer, range.startContainer.length);
         
-        for (i = 0; i < r.getClientRects().length; i++)
+        for (i = 0; i < r.getClientRects().length; i++) {
             textNodeRects.push(r.getClientRects()[i]);
+        }
     
         var node = null;
         while ((node = nodeIterator.nextNode()) !== null) {
             // startContainer 노드보다 el이 앞에 있으면
             if (range.startContainer.compareDocumentPosition(node) == Node.DOCUMENT_POSITION_PRECEDING ||
-                range.startContainer == node)
+                range.startContainer == node) {
                 continue;
+            }
 
             // endContainer 뒤로 넘어가면 멈춤
             if (range.endContainer.compareDocumentPosition(node) == Node.DOCUMENT_POSITION_FOLLOWING ||
-                range.endContainer == node)
+                range.endContainer == node) {
                 break;
+            }
             
             r = document.createRange();
             r.selectNodeContents(node);
 
-            if (ridi.isWhiteSpaceRange(r))
+            if (ridi.isWhiteSpaceRange(r)) {
                 continue;
+            }
         
             var rects = r.getClientRects();
     
@@ -377,16 +383,16 @@ var ridi = {
         r.setEnd(range.endContainer, range.endOffset);
         
         if (ridi.isWhiteSpaceRange(r) === false) {
-            for (i = 0; i < r.getClientRects().length; i++)
+            for (i = 0; i < r.getClientRects().length; i++) {
                 textNodeRects.push(r.getClientRects()[i]);
+            }
         }
     
         return textNodeRects;
     },
 
     isWhiteSpaceRange: function(range) {
-        var rangeString = range.toString();
-        return (/^\s*$/.test(rangeString));
+        return /^\s*$/.test(range.toString());
     },
 
     rectsToJsonWithRelativeCoord: function(rects) {
@@ -411,13 +417,15 @@ var ridi = {
             var val = el.style.getPropertyValue(property);
 
             // if it's important, we are done
-            if (el.style.getPropertyPriority(property))
+            if (el.style.getPropertyPriority(property)) {
                 return val;
+            }
 
             // get matched rules
             var rules = window.getMatchedCSSRules(el);
-            if (rules === null)
+            if (rules === null) {
                 return val;
+            }
 
             // iterate the rules backwards
             // rules are ordered by priority, highest last
@@ -431,8 +439,9 @@ var ridi = {
                     val = r.style.getPropertyValue(property);
 
                     // done if important
-                    if (important)
+                    if (important) {
                         break;
+                    }
                 }
             }
             return val;
