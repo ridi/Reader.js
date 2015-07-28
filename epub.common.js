@@ -58,7 +58,7 @@ var epub = {
     getLinkOfElement: function(element) {
         while (element) {
             if (element && element.nodeName == 'A') {
-                return element.href;
+                return {node: element, href: element.href, type: (element.attributes['epub:type'] || {value: ''}).value};
             }
             element = element.parentNode;
         }
