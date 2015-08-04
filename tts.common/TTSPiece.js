@@ -15,16 +15,18 @@ TTSPiece.prototype = {
   paddingLeft: 0,
 
   init: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-    if (nodeIndex === undefined || typeof nodeIndex !== 'number' || nodeIndex < 0)
+    if (nodeIndex === undefined || typeof nodeIndex !== 'number' || nodeIndex < 0) {
       throw 'TTSPiece: nodeIndex is invalid.';
+    }
 
     var nodes = epub.textAndImageNodes;
-    if (nodes === null)
+    if (nodes === null) {
       throw 'TTSPiece: nodes is empty. make call epub.findTextAndImageNodes().';
-    else if (nodes.length - 1 < nodeIndex)
+    } else if (nodes.length - 1 < nodeIndex) {
       throw 'TTSPiece: nodeIndex is out of bounds(' + nodeIndex + '/' + nodes.length + ').';
-    else if ((this.node = nodes[nodeIndex]) === null)
+    } else if ((this.node = nodes[nodeIndex]) === null) {
       throw 'TTSPiece: node not found on nodes.';
+    }
 
     this.nodeIndex = nodeIndex;
     this.wordIndex = wordIndex = typeof wordIndex === 'number' ? wordIndex : 0;
@@ -36,15 +38,20 @@ TTSPiece.prototype = {
         var words = nodeValue.split(regexSplitWhitespace());
         if (wordIndex < words.length) {
           words.forEach(function(word, i, list) {
-            if (wordIndex <= i)
+            if (wordIndex <= i) {
               text += (word + ((i < list.length - 1) ? ' ' : ''));
-            else
+            } else {
               padding += (word.length + 1);
+            }
           });
-        } else
+        } else {
           throw 'TTSPiece: wordIndex is out of bounds(' + wordIndex + '/' + words.length + ').';
-      } else
+        }
+      } else {
         text = nodeValue;
+      }
+    } else if (this.node.nodeName == 'IMG') {
+      text = this.node.alt || '';
     }
     this.text = text;
     this.length = text.length;
@@ -56,15 +63,21 @@ TTSPiece.prototype = {
   isInvalid: function() {
     var node = this.node, 
         valid = true,
-        element = (node.nodeType == Node.TEXT_NODE ? node.parentElement : node);
-    // 텍스트가 없거나 눈에 보이지 않는 것은 읽지 않는다
-    if (this.length === 0 || element.style.display == 'none' || element.offsetWidth === 0) {
+        element = (node.nodeType == Node.TEXT_NODE ? node.parentElement : node),
+        ridi_tts = (element.attributes['data-ridi-tts'] || {value: ''}).value.toLowerCase();
+    if (this.length === 0 || ridi_tts == 'no') {
       valid = false;
-    } else {
-      do {// 이미지, 독음(후리가나)과 첨자는 읽지 않는다
-        if (!(valid = (['RUBY', 'RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(element.nodeName) == -1)))
-          break;
-      } while ((element = element.parentNode));
+    } else if (ridi_tts != 'yes') {
+      if (element.style.display == 'none' || element.offsetWidth === 0) {
+        // 눈에 보이지 않는 것은 읽지 않는다
+        valid = false;
+      } else {
+        do {// 이미지, 독음(후리가나)과 첨자는 읽지 않는다
+          if (!(valid = (['RUBY', 'RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(element.nodeName) == -1))) {
+            break;
+          }
+        } while ((element = element.parentNode));
+      }
     }
     return !valid;
   },
