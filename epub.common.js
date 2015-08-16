@@ -11,7 +11,8 @@ var epub = {
 
     scrollTo: function(offset) {
         if (epub.isScrollMode()) {
-            window.scroll(0, offset);
+            var paddingTop = parseInt(window.getComputedStyle(document.documentElement).paddingTop, 10);
+            window.scroll(0, paddingTop + offset);
         } else {
             window.scroll(offset, 0);
         }
