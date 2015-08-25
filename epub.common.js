@@ -11,8 +11,7 @@ var epub = {
 
     scrollTo: function(offset) {
         if (epub.isScrollMode()) {
-            var paddingTop = parseInt(window.getComputedStyle(document.documentElement).paddingTop, 10);
-            window.scroll(0, paddingTop + offset);
+            window.scroll(0, offset);
         } else {
             window.scroll(offset, 0);
         }
@@ -164,7 +163,11 @@ var epub = {
 
     },
 
-    getPageOffsetFromLocation: function(nodeIndex, wordIndex) {
+    getPageOffsetFromTopNodeLocation: function(nodeIndex, wordIndex) {
+
+    },
+
+    getPositionFromTopNodeLocation: function(nodeIndex, wordIndex) {
 
     },
 
