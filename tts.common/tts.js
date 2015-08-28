@@ -94,6 +94,10 @@ var tts = {
 
   },
 
+  scrollOffsetOfChunkId: function(/*Number*/chunkId) {
+
+  },
+
   didPlaySpeech: function(/*Number*/chunkId) {
 
   },

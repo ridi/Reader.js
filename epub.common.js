@@ -163,11 +163,11 @@ var epub = {
 
     },
 
-    getPageOffsetFromTopNodeLocation: function(nodeIndex, wordIndex) {
+    getPageOffsetOfTopNodeLocation: function(nodeIndex, wordIndex) {
 
     },
 
-    getPositionFromTopNodeLocation: function(nodeIndex, wordIndex) {
+    getScrollOfTopNodeLocation: function(nodeIndex, wordIndex) {
 
     },
 
