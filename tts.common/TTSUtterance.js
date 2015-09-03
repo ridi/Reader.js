@@ -231,7 +231,7 @@ TTSUtterance.prototype = {
         } else if (isColonCharCode(code)) {
           type = TYPE.TIME;
           break;
-        } else if (i < startOffset - 1 && isLatinCharCode(code)) {
+        } else if (i < startOffset - 1 && isLatinCharCode(code, 'l')) {
           type = TYPE.LATION;
           break;
         } else {
@@ -251,7 +251,7 @@ TTSUtterance.prototype = {
         } else if (type == TYPE.TIME || isColonCharCode(code)) {
           type = TYPE.TIME;
           break;
-        } else if (endOffset < i && (type == TYPE.LATION || isLatinCharCode(code))) {
+        } else if (endOffset < i && (type == TYPE.LATION || isLatinCharCode(code, 'l'))) {
           type = TYPE.LATION;
           break;
         } else if (type != TYPE.LATION && ch == '.') {

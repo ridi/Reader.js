@@ -225,7 +225,7 @@ var tts = {
     var isPointOrName = function(text, nextText) {
       if (text === undefined || nextText === undefined)
         return false;
-      var hit = 0, index = text.search(/[.](\s{0,})$/gm) !== null;
+      var hit = 0, index = text.search(/[.](\s{0,})$/gm);
       if (index > 0 && isDigitOrLatin(text[index - 1]))
         hit++;
       index = nextText.search(/[^\s]/gm);
