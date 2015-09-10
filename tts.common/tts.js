@@ -90,11 +90,11 @@ var tts = {
   chunks: [],
   maxNodeIndex: 0,
 
-  pageOffsetOfChunkId: function(/*Number*/chunkId) {
+  getPageOffsetOfChunkId: function(/*Number*/chunkId) {
 
   },
 
-  scrollOffsetOfChunkId: function(/*Number*/chunkId) {
+  getScrollOffsetOfChunkId: function(/*Number*/chunkId) {
 
   },
 

@@ -1,11 +1,11 @@
 // epub.common.js
 
 var epub = {
-    totalWidth: function() {
+    getTotalWidth: function() {
         return document.documentElement.scrollWidth;
     },
 
-    totalHeight: function() {
+    getTotalHeight: function() {
         return document.documentElement.scrollHeight;
     },
 
@@ -17,7 +17,7 @@ var epub = {
         }
     },
 
-    imagePathFromPoint: function(x, y) {
+    getImagePathFromPoint: function(x, y) {
         var element = document.elementFromPoint(x, y);
         if (element && element.nodeName == 'IMG') {
             return element.src;
@@ -26,7 +26,7 @@ var epub = {
         }
     },
 
-    svgElementFromPoint: function(x, y) {
+    getSvgElementFromPoint: function(x, y) {
         var element = document.elementFromPoint(x, y);
         if (element) {
             while (element.nodeName != 'HTML' && element.nodeName != 'BODY') {
@@ -102,7 +102,7 @@ var epub = {
         return result;
     },
 
-    pageOffsetOfSearchResult: function() {
+    getPageOffsetOfSearchResult: function() {
         var rects = window.getSelection().getRangeAt(0).getClientRects();
         return ridi.getPageFromElementRect(rects[0]);
     },
@@ -120,7 +120,7 @@ var epub = {
     findTextAndImageNodes: function(element) {
         var filter = function(node) {
             // 주의! topNodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
-            return node.nodeType == Node.TEXT_NODE || (node.nodeType == Node.ELEMENT_NODE && node.nodeName.toLowerCase() == "img");
+            return node.nodeType == Node.TEXT_NODE || (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'IMG');
         };
 
         var nodes = [];
@@ -193,11 +193,6 @@ var ridi = {
     // * iOS
     // ex) 6, 7, 8, ...
     systemMajorVersion: 0,
-
-    // 페이지 또는 위치를 계산할 때 Rect에서 기준이될 값
-    // left : iOS All, Android 3.x Later
-    // top  : Android 2.x
-    offsetDirection: 'left',
 
     appPassedWidth: 0,
     appPassedHeight: 0,
@@ -280,7 +275,7 @@ var ridi = {
         return range;
     },
 
-    rectsOfRange: function(serializedRange) {
+    getRectsOfRange: function(serializedRange) {
 
     },
 
