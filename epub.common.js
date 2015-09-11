@@ -225,7 +225,7 @@ var ridi = {
 
     },
 
-    getOffsetOfAnchorElement: function(/*String*/anchor) {
+    getOffsetOfAnchorElement: function(/*String*/anchor, /*Function*/block) {
         var el = document.getElementById(anchor);
         if (el) {
             var nodeIterator = createTextNodeIterator(el), node, rect, origin;
@@ -236,17 +236,27 @@ var ridi = {
 
                 var rects = range.getClientRects();
                 if (rects.length > 0) {
-                    rect = rects[0];
-                    return ridi.getPageFromElementRect(rect, el);
+                    return block(rects[0], el);
                 }
             }
 
             // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
-            rect = el.getBoundingClientRect();
-            return ridi.getPageFromElementRect(rect, el);
+            return block(el.getBoundingClientRect(), el);
         }
 
         return -1;
+    },
+
+    getPageOffsetOfAnchorElement: function(/*String*/anchor) {
+        return ridi.getOffsetOfAnchorElement(anchor, function(rect, el) {
+            return ridi.getPageOffsetFromElementRect(rect, el);
+        });
+    },
+
+    getScrollOffsetOfAnchorElement: function(/*String*/anchor) {
+        return ridi.getOffsetOfAnchorElement(anchor, function(rect) {
+            return rect.top;
+        });
     },
 
     getPageFromElementRect: function(/*ClientRect*/rect, /*{HTMLElement}*/el) {
@@ -300,7 +310,7 @@ var ridi = {
     removeOtherPageRects: function(/*ClientRectList*/rects, /*Number*/page) {
         var removedRects = [];
         for (var i = 0; i < rects.length; i++) {
-            if (ridi.getPageFromElementRect(rects[i]) == page) {
+            if (ridi.getPageOffsetFromElementRect(rects[i]) == page) {
                 removedRects.push(rects[i]);
             }
         }
