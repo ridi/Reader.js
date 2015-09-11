@@ -16,3 +16,7 @@
 /*global setTimeout: true */
 /*global clearTimeout: true */
 /*global console: true */
+/*global alert: true*/
+/*global scroll: true*/
+/*global find: true*/
+/*global getSelection: true*/

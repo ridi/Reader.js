@@ -234,7 +234,7 @@ var tts = {
     };
 
     // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
-    var isPointOrName = function(text, nextText) {
+    var isPointOrName = function(/*String*/text, /*String*/nextText) {
       if (text === undefined || nextText === undefined) {
         return false;
       }
@@ -250,12 +250,12 @@ var tts = {
     };
 
     // 문장의 마지막이 아닐 경우 true
-    var isNotEndOfSentence = function(nextText) {
+    var isNotEndOfSentence = function(/*String*/nextText) {
       return nextText !== undefined && nextText.match(regexSentence('^')) !== null;
     };
 
     // Test Code
-    var debug = function(caseNum) {
+    var debug = function(/*Number*/caseNum) {
       if (tts.debug) {
         console.log('chunkId: ' + (tts.chunks.length - 1)
                    + ', Case: ' + caseNum
@@ -338,5 +338,6 @@ var tts = {
 
   flush: function() {
 
-  }
+  },
+
 };
