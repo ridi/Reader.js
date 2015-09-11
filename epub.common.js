@@ -196,6 +196,8 @@ var ridi = {
     appPassedWidth: 0,
     appPassedHeight: 0,
 
+    RB_SELECTION_MAX_LENGTH: 1000,
+
     // * Android
     // 일부 기기와 Android 2.x에서 window.innerWidth, window.innerHeight를 정확하지 않게 리턴하는 경우를 위한 workaround
     // PagingContext의 width, height 값이 html의 width, height 값으로 세팅된다.
