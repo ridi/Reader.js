@@ -90,7 +90,11 @@ var tts = {
   chunks: [],
   maxNodeIndex: 0,
 
-  shouldNextPage: function(/*Number*/chunkId, /*Number*/canvasWidth, /*Boolean*/isPreceding) {
+  getPageOffsetOfChunkId: function(/*Number*/chunkId) {
+
+  },
+
+  getScrollOffsetOfChunkId: function(/*Number*/chunkId) {
 
   },
 
@@ -106,41 +110,46 @@ var tts = {
 
   },
 
-  makeChunksByRange: function(serializedRange) {
+  makeChunksByRange: function(/*String*/serializedRange) {
     var range = rangy.deserializeRange(serializedRange, document.body),
         nodeIndex = -1, wordIndex = 0,
         nodes = epub.textAndImageNodes;
 
-    if (nodes === null)
+    if (nodes === null) {
       throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
+    }
 
-    if (range === null)
+    if (range === null) {
       throw 'tts: range is invalid.';
+    }
 
-      for (var i = 0, offset = 0; i < nodes.length; i++, offset = 0) {
-        if (nodes[i] === range.startContainer) {
-          nodeIndex = i;
-          var words = range.startContainer.textContent.split(regexSplitWhitespace());
-          for (; wordIndex < words.length; wordIndex++) {
-            if (range.startOffset <= offset + words[wordIndex].length) {
-              break;
-            } else
-              offset += (words[wordIndex].length + 1);
+    for (var i = 0, offset = 0; i < nodes.length; i++, offset = 0) {
+      if (nodes[i] === range.startContainer) {
+        nodeIndex = i;
+        var words = range.startContainer.textContent.split(regexSplitWhitespace());
+        for (; wordIndex < words.length; wordIndex++) {
+          if (range.startOffset <= offset + words[wordIndex].length) {
+            break;
+          } else {
+            offset += (words[wordIndex].length + 1);
           }
-          break;
         }
+        break;
       }
+    }
 
-      return tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
+    return tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
   },
 
   makeChunksByNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
     var nodes = epub.textAndImageNodes;
-    if (nodes === null)
+    if (nodes === null) {
       throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
+    }
 
-    if (nodeIndex === undefined || wordIndex === undefined)
+    if (nodeIndex === undefined || wordIndex === undefined) {
       throw 'tts: nodeIndex or wordIndex is invalid.';
+    }
 
     nodeIndex = Math.max(nodeIndex, 0);
     wordIndex = Math.max(wordIndex, 0);
@@ -195,13 +204,16 @@ var tts = {
               }
             }
 
-            if (nodeIndex == maxIndex - 1)
+            if (nodeIndex == maxIndex - 1) {
               maxIndex = Math.min(maxIndex + 1, nodes.length);
-            if (nodeIndex == nodes.length - 1)
+            }
+            if (nodeIndex == nodes.length - 1) {
               tts.addChunk(pieces);
+            }
           }// end for
-          if (maxIndex < nodeIndex)
+          if (maxIndex < nodeIndex) {
             maxIndex = nodeIndex;
+          }
         }
       }
     }// end for
@@ -222,25 +234,28 @@ var tts = {
     };
 
     // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
-    var isPointOrName = function(text, nextText) {
-      if (text === undefined || nextText === undefined)
+    var isPointOrName = function(/*String*/text, /*String*/nextText) {
+      if (text === undefined || nextText === undefined) {
         return false;
-      var hit = 0, index = text.search(/[.](\s{0,})$/gm);
-      if (index > 0 && isDigitOrLatin(text[index - 1]))
+      }
+      var hit = 0, index = text.search(/[.](\s{0,})$/gm) !== null;
+      if (index > 0 && isDigitOrLatin(text[index - 1])) {
         hit++;
+      }
       index = nextText.search(/[^\s]/gm);
-      if (index >= 0 && isDigitOrLatin(nextText[index]))
+      if (index >= 0 && isDigitOrLatin(nextText[index])) {
         hit++;
+      }
       return hit == 2;
     };
 
     // 문장의 마지막이 아닐 경우 true
-    var isNotEndOfSentence = function(nextText) {
+    var isNotEndOfSentence = function(/*String*/nextText) {
       return nextText !== undefined && nextText.match(regexSentence('^')) !== null;
     };
 
     // Test Code
-    var debug = function(caseNum) {
+    var debug = function(/*Number*/caseNum) {
       if (tts.debug) {
         console.log('chunkId: ' + (tts.chunks.length - 1)
                    + ', Case: ' + caseNum
@@ -323,5 +338,6 @@ var tts = {
 
   flush: function() {
 
-  }
+  },
+
 };

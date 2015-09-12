@@ -8,8 +8,9 @@ TTSChunk.prototype = {
   range: null,
 
   init: function(/*Array<TTSPiece>*/pieces) {
-    if (pieces === undefined)
+    if (pieces === undefined) {
       throw 'TTSChunk: piece list is invalid.';
+    }
 
     this.id = tts.chunks.length;
     this.pieces = pieces;
@@ -26,10 +27,11 @@ TTSChunk.prototype = {
       fullText += piece.text;
     });
 
-    if (range !== null)
+    if (range !== null) {
       return fullText.substring(range.startOffset, range.endOffset);
-    else
+    } else {
       return fullText;
+    }
   },
 
   getUtterance: function() {
@@ -49,17 +51,18 @@ TTSChunk.prototype = {
     var length = 0;
     return this.pieces.find(function(item) {
       length += item.length;
-      if (offset <= length)
+      if (offset <= length) {
         return true;
+      }
     });
   },
 
   getOffset: function(/*Number*/piece) {
     var offset = piece.paddingLeft;
     return this.pieces.find(function(item) {
-      if (item === piece)
+      if (item === piece) {
         return true;
-      else {
+      } else {
         offset += item.length;
         return false;
       }
@@ -140,8 +143,9 @@ TTSChunk.prototype = {
 
         startOffset = Math.max(startOffset - offset + piece.paddingLeft, 0);
         endOffset = Math.max(endOffset - offset + piece.paddingLeft, 0);
-        if (endOffset === 0)
+        if (endOffset === 0) {
           endOffset = length;
+        }
         while (true) {
           try {
             range.setStart(node, startOffset);
@@ -163,28 +167,86 @@ TTSChunk.prototype = {
           if (startPiece.nodeIndex == piece.nodeIndex &&
               (string.match(regexWhitespaceAndNewLine('^', null, 'g')) !== null || 
                string.match(regexSentence('^', null, 'g')) !== null)) {
-            if (length < startOffset + 1)
+            if (length < startOffset + 1) {
               break;
+            }
             startOffset++;
           } else if (string.match(regexWhitespaceAndNewLine(null, '$', 'g')) !== null) {
-            if (endOffset - 1 < 0)
+            if (endOffset - 1 < 0) {
               break;
+            }
             endOffset--;
-          } else
+          } else {
             break;
+          }
         }// end while
 
-        if (removeBlank === true && string.length === 0)
+        if (removeBlank === true && string.length === 0) {
           continue;
+        }
 
         var textNodeRects = range.getClientRects();
         if (textNodeRects !== null) {
-          for (var j = 0; j < textNodeRects.length; j++)
+          for (var j = 0; j < textNodeRects.length; j++) {
             rects.push(textNodeRects[j]);
+          }
         }
       }
     }// end for
     return rects;
+  },
+
+  getBoundingClientRect: function() {
+    var rects = this.getClientRects(false);
+    var top = null, bottom = null, left = null, right = null, width = 0, height = 0;
+    for (var i = 0; i < rects.length; i++) {
+        var rect = rects[i];
+
+        if (top === null) {
+            top = rect.top;
+        } else {
+            top = Math.min(top, rect.top);
+        }
+
+        if (bottom === null) {
+            bottom = rect.bottom;
+        } else {
+            bottom = Math.max(bottom, rect.bottom);
+        }
+
+        if (left === null) {
+            left = rect.left;
+        } else {
+            left = Math.min(left, rect.left);
+        }
+
+        if (right === null) {
+            right = rect.right;
+        } else {
+            right = Math.max(right, rect.right);
+        }
+    }
+
+    if (left !== null && right !== null) {
+        width = right - left;
+        if (width < 0) {
+            width = 0;
+        }
+    }
+
+    if (top !== null && bottom !== null) {
+        height = bottom - top;
+        if (height < 0) {
+            height = 0;
+        }
+    }
+
+    return {top: (top ? top : 0),
+            bottom: (bottom ? bottom : 0),
+            left: (left ? left : 0),
+            right: (right ? right : 0),
+            width: width,
+            height: height};
   },
 
   copy: function(/*TTSRange*/range) {
