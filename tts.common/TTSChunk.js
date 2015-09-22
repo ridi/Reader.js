@@ -37,6 +37,7 @@ TTSChunk.prototype = {
               .removeNewLine()
               .removeHanja()
               .removeLatin()
+              .removeAllRepeatedCharacter(['<', '>', '_'])
               .replaceTilde()
               .replaceNumeric()
               .replaceBracket()

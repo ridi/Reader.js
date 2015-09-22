@@ -190,6 +190,15 @@ TTSUtterance.prototype = {
     return new TTSUtterance(text);
   },
 
+  removeAllRepeatedCharacter: function(/*Array<String>*/strs) {
+    var text = this.text, i;
+    for (i = 0; i < strs.length; i++) {
+      var regex = new RegExp(strs[i] + '{2,}', 'gm');
+      text = text.replace(regex, '');
+    }
+    return new TTSUtterance(text);
+  },
+
   replaceNumeric: function() {
     var match, pattern,
         i, code, ch, string,
