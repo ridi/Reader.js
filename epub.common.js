@@ -113,7 +113,7 @@ var epub = {
 
     getPageOffsetOfSearchResult: function() {
         var rects = getSelection().getRangeAt(0).getClientRects();
-        return ridi.getPageFromElementRect(rects[0]);
+        return ridi.getPageOffsetFromElementRect(rects[0]);
     },
 
     //
@@ -261,7 +261,7 @@ var ridi = {
         });
     },
 
-    getPageFromElementRect: function(/*ClientRect*/rect, /*{HTMLElement}*/el) {
+    getPageOffsetFromElementRect: function(/*ClientRect*/rect, /*{HTMLElement}*/el) {
 
     },
 
