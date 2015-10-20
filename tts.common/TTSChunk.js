@@ -37,6 +37,7 @@ TTSChunk.prototype = {
   getUtterance: function() {
     return new TTSUtterance(this.getText())
               .removeNewLine()
+              .removeSpecialCharacters(['≪', '≫'])
               .removeHanja()
               .removeLatin()
               .removeAllRepeatedCharacter(['<', '>', '_'])
