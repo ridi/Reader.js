@@ -16,6 +16,13 @@ TTSUtterance.prototype = {
     return new TTSUtterance(this.text.replace(regexNewLine(), ' '));
   },
 
+  // 읽지 말아야할 특수문자를 제거한다.
+  // (사용자 사전으로 처리할 수 없기 때문에 코드로)
+  removeSpecialCharacters: function(/*Array<String>*/characters) {
+    var regex = new RegExp('[' + characters.join('') + ']', 'gm');
+    return new TTSUtterance(this.text.replace(regex, ' '));
+  },
+
   // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 제거한다.
   // TODO - 한자 단독으로 쓰일 때 처리하기
   removeHanja: function() {
