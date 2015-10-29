@@ -236,7 +236,8 @@ TTSUtterance.prototype = {
     while ((match = pattern.exec(text)) !== null) {
       startOffset = match.index;
       endOffset = pattern.lastIndex;
-      var numeric = parseInt(text.substring(startOffset, endOffset), 10),
+      var origin = text.substring(startOffset, endOffset),
+          numeric = parseInt(origin, 10),
           type = (startOffset === 0 ? TYPE.HANGUL_NOTATION : TYPE.NONE),
           spaceCount = 0;
       for (i = startOffset - 1; i >= 0; i--) {
@@ -294,7 +295,7 @@ TTSUtterance.prototype = {
         }
         text = text.substr(0, startOffset) + string + text.substr(endOffset);
       } else {
-        text = text.substr(0, startOffset) + numeric + text.substr(endOffset);
+        text = text.substr(0, startOffset) + origin + text.substr(endOffset);
       }
     }
 
