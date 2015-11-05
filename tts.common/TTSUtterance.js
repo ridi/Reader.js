@@ -333,11 +333,11 @@ TTSUtterance.prototype = {
   // 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
   insertPauseTag: function() {
     var text = this.text;
-    text = text.replace(/([\D])([·]{1,})([\D])/gm, '$1<pause=\"200ms\">$2$3');
+    text = text.replace(/([\D])([·]{2,})([\D])/gm, '$1<pause=\"200ms\">$2$3');
     text = text.replace(/([|_]{1})/gm, '<pause=\"200ms\">$1');
-    text = text.replace(/([…]{1,})/gm, '<pause=\"500ms\">$1');
-    text = text.replace(/([\D])(-|―){1,}([\D])/gm, '$1<pause=\"500ms\">$2$3');
-    text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, '$1<pause=\"500ms\">$2');
+    text = text.replace(/([…]{1,})/gm, '<pause=\"200ms\">$1');
+    text = text.replace(/([\D])(-|―){1,}([\D])/gm, '$1<pause=\"200ms\">$2$3');
+    text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, '$1<pause=\"200ms\">$2');
     return new TTSUtterance(text);
   }
 };
