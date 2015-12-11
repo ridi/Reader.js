@@ -197,9 +197,13 @@ var rangy = {
             rootNode = doc.documentElement;
         }
         var result = rangy.deserializeRegex.exec(serialized);
-        var checksum = result[4], rootNodeChecksum = rangy.getElementChecksum(rootNode);
-        if (checksum && checksum !== rangy.getElementChecksum(rootNode)) {
-            throw new Error("Error in Rangy: deserializeRange(): checksums of serialized range root node (" + checksum + ") and target root node (" + rootNodeChecksum + ") do not match.");
+        var checksum = result[4], rootNodeChecksum;
+        if (checksum) {
+            rootNodeChecksum = getElementChecksum(rootNode);
+            if (checksum !== rootNodeChecksum) {
+                throw new Error("deserializeRange: checksums of serialized range root node (" + checksum +
+                    ") and target root node (" + rootNodeChecksum + ") do not match");
+            }
         }
         var start = rangy.deserializePosition(result[1], rootNode, doc), end = rangy.deserializePosition(result[2], rootNode, doc);
         var range = document.createRange();
