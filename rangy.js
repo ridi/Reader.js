@@ -199,7 +199,7 @@ var rangy = {
         var result = rangy.deserializeRegex.exec(serialized);
         var checksum = result[4], rootNodeChecksum;
         if (checksum) {
-            rootNodeChecksum = getElementChecksum(rootNode);
+            rootNodeChecksum = rangy.getElementChecksum(rootNode);
             if (checksum !== rootNodeChecksum) {
                 throw new Error("deserializeRange: checksums of serialized range root node (" + checksum +
                     ") and target root node (" + rootNodeChecksum + ") do not match");
