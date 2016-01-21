@@ -85,15 +85,11 @@ TTSChunk.prototype = {
           node = piece.node,
           string = null;
 
-      var range = document.createRange();
+      var range = doc.createRange();
       range.selectNodeContents(node);
       if (piece.isInvalid()) {
         length = 0;
-
-        var rect = epub.getBoundingClientRect(range);
-        if (rect !== null) {
-          rects.push(rect);
-        }
+        rects.push(range.getAdjustedBoundingClientRect());
       } else {
         length = piece.length;
 
@@ -143,8 +139,8 @@ TTSChunk.prototype = {
           }
         }
 
-        startOffset = Math.max(startOffset - offset + piece.paddingLeft, 0);
-        endOffset = Math.max(endOffset - offset + piece.paddingLeft, 0);
+        startOffset = max(startOffset - offset + piece.paddingLeft, 0);
+        endOffset = max(endOffset - offset + piece.paddingLeft, 0);
         if (endOffset === 0) {
           endOffset = length;
         }
@@ -187,12 +183,7 @@ TTSChunk.prototype = {
           continue;
         }
 
-        var textNodeRects = range.getClientRects();
-        if (textNodeRects !== null) {
-          for (var j = 0; j < textNodeRects.length; j++) {
-            rects.push(textNodeRects[j]);
-          }
-        }
+        rects.concat(range.getAdjustedClientRects());
       }
     }// end for
     return rects;
@@ -207,25 +198,25 @@ TTSChunk.prototype = {
         if (top === null) {
             top = rect.top;
         } else {
-            top = Math.min(top, rect.top);
+            top = min(top, rect.top);
         }
 
         if (bottom === null) {
             bottom = rect.bottom;
         } else {
-            bottom = Math.max(bottom, rect.bottom);
+            bottom = max(bottom, rect.bottom);
         }
 
         if (left === null) {
             left = rect.left;
         } else {
-            left = Math.min(left, rect.left);
+            left = min(left, rect.left);
         }
 
         if (right === null) {
             right = rect.right;
         } else {
-            right = Math.max(right, rect.right);
+            right = max(right, rect.right);
         }
     }
 

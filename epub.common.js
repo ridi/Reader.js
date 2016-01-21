@@ -1,51 +1,44 @@
 // epub.common.js
 
-function createTextNodeIterator(/*Node*/node) {
-    return document.createNodeIterator(
-        node,
-        NodeFilter.SHOW_TEXT,
-        { acceptNode : function (/*Node*/node) {
-            return NodeFilter.FILTER_ACCEPT;
-        }},
-        true
-    );
-}
+var Epub = function() {};
+Epub.prototype = {
+    textAndImageNodes: null,
+    debugTopNodeLocation: false,
 
-var epub = {
     getTotalWidth: function() {
-        return document.documentElement.scrollWidth;
+        return html.scrollWidth;
     },
 
     getTotalHeight: function() {
-        return document.documentElement.scrollHeight;
+        return html.scrollHeight;
     },
 
     scrollTo: function(/*Number*/offset) {
-        if (epub.isScrollMode()) {
+        if (app.isScrollMode()) {
             scroll(0, offset);
         } else {
             scroll(offset, 0);
         }
     },
 
+    setViewport: function() {
+        mustOverride('setViewport');
+    },
+
     getImagePathFromPoint: function(/*Number*/x, /*Number*/y) {
-        var el = document.elementFromPoint(x, y);
-        if (el && el.nodeName == 'IMG') {
-            return el.src;
-        } else {
-            return 'null';
-        }
+        var el = doc.elementFromPoint(x, y);
+        return (el && el.nodeName == 'IMG') ? (el.src || 'null') : 'null';
     },
 
     getSvgElementFromPoint: function(/*Number*/x, /*Number*/y) {
-        var el = document.elementFromPoint(x, y);
+        var el = doc.elementFromPoint(x, y);
         if (el) {
             var getSvgInnerHTML = function(/*HTMLElement*/el) {
                 // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
-                var svgEl = document.createElement('svgElement');
+                var svgEl = doc.createElement('svgElement');
                 Array.prototype.slice.call(el.childNodes).forEach(function(node, index) {
                     svgEl.appendChild(node.cloneNode(true));
-                });
+                }); 
                 return svgEl.innerHTML;
             };
 
@@ -65,8 +58,7 @@ var epub = {
         return 'null';
     },
 
-    // 넘겨받은 element가 A태그로 링크가 걸려있는 경우 해당 링크 주소 리턴
-    getLinkOfElement: function(/*HTMLElement*/el) {
+    getLinkFromElement: function(/*HTMLElement*/el) {
         while (el) {
             if (el && el.nodeName == 'A') {
                 return {node: el, href: el.href, type: (el.attributes['epub:type'] || {value: ''}).value};
@@ -76,69 +68,289 @@ var epub = {
         return null;
     },
 
-    searchText: function(/*String*/keyword) {
-        if (find(keyword, 0)/*Case insensitive*/) {
-            var sel = getSelection();
-            return rangy.serializeRange(sel.getRangeAt(0), true, document.body);
+    getOffsetDirectionFromElement: function(/*HTMLElement*/el, /*Boolean*/scrollMode) {
+        var offsetDirection = scrollMode ? 'top' : 'left';
+        if (el && offsetDirection == 'left' && getMatchedStyle(el, 'position', true) == 'absolute') {
+            offsetDirection = 'top';
+        }
+        return offsetDirection;
+    },
+
+    getPageOffsetFromRect: function(/*ClientRect*/rect, /*HTMLElement*/el) {
+        mustOverride('getPageOffsetFromRect');
+    },
+
+    getOffsetFromAnchor: function(/*String*/anchor, /*Function*/block) {
+        var el = doc.getElementById(anchor);
+        if (el) {
+            var iterator = createTextNodeIterator(el), node, rect, origin;
+            if ((node = iterator.nextNode()) !== null) {
+                // 첫번째 텍스트만 확인
+                var range = doc.createRange();
+                range.selectNodeContents(node);
+
+                var rects = range.getAdjustedClientRects();
+                if (rects.length) {
+                    return block(rects[0], el);
+                }
+            }
+
+            // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
+            return block(el.getAdjustedBoundingClientRect(), el);
         } else {
-            return 'null';
+            return block({left: -1, top: -1}, null);
         }
     },
 
-    textAroundSearchResult: function(/*Number*/pre, /*Number*/post) {
-        var sel = getSelection();
-        var range = sel.getRangeAt(0);
+    getPageOffsetFromAnchor: function(/*String*/anchor) {
+        var that = this;
+        return this.getOffsetFromAnchor(anchor, function(rect, el) {
+            return that.getPageOffsetFromRect(rect, el);
+        });
+    },
 
-        var startOffset = range.startOffset;
-        var newStart = range.startOffset - pre;
-        if (newStart < 0) {
-            newStart = 0;
+    getScrollYOffsetFromAnchor: function(/*String*/anchor) {
+        return this.getOffsetFromAnchor(anchor, function(rect) {
+            return rect.top;
+        });
+    },
+
+    getOffsetOfSerializedRange: function(/*String*/serializedRange, /*Function*/block) {
+        var range = this.getRangeFromSerializedRange(serializedRange);
+        var rects = range.getAdjustedClientRects();
+        return block(rects.length > 0 ? rects[0] : null);
+    },
+
+    getPageOffsetOfSerializedRange: function(/*String*/serializedRange) {
+        return this.getOffsetOfSerializedRange(serializedRange, function(rect) {
+            return this.getPageOffsetFromRect(rect);
+        });
+    },
+
+    getScrollYOffsetOfSerializedRange: function(/*String*/serializedRange) {
+        return this.getOffsetOfSerializedRange(serializedRange, function(rect) {
+            return (rect || {top: -1}).top;
+        });
+    },
+
+    // MARK: - 이미지 보정 관련
+
+    // 제작자가 의도한 이미지 비율 또는 크기를 따르돼. 원본 비율을 붕괴시키거나 원본 크기보다 커지는 경우를 없애기 위함.
+    reviseImagesInSpine: function(/*Number*/canvasWidth, /*Number*/canvasHeight) {
+        mustOverride('reviseImagesInSpine');
+    },
+
+    getImageSize: function(/*HTMLElement*/imgEl, /*Number*/canvasWidth, /*Number*/canvasHeight) {
+        var style = imgEl.style;
+        var attrs = imgEl.attributes;
+
+        var zeroAttr = doc.createAttribute('size');
+        zeroAttr.value = '0px';
+
+        return {
+            // 화면에 맞춰 랜더링된 크기
+            dWidth: imgEl.width,
+            dHeight: imgEl.height,
+            // 원본 크기
+            nWidth: imgEl.naturalWidth,
+            nHeight: imgEl.naturalHeight,
+            // CSS에서 명시된 크기
+            sWidth: getMatchedStyle(imgEl, 'width'),
+            sHeight: getMatchedStyle(imgEl, 'height'),
+            // 엘리먼트 속성으로 명시된 크기
+            aWidth: (attrs.width || zeroAttr).value,
+            aHeight: (attrs.height || zeroAttr).value
+        };
+    },
+
+    reviseImage: function(/*HTMLElement*/imgEl, /*Number*/canvasWidth, /*Number*/canvasHeight, /*Number*/paddingTop) {
+        var isPercentValue = function(/*String*/value) {
+            if (typeof value == 'string') {
+                return value.search(/%/);
+            } else {
+                return -1;
+            }
+        };
+
+        var compareSize = function(/*String*/size1, /*String*/size2) {
+            var intVal = parseInt(size1);
+            if (!isNaN(intVal)) {
+                if (isPercentValue(size1) != -1) {
+                    if (intVal > 100) {
+                        return 1;
+                    } else if (intVal < 100) {
+                        return -1;
+                    }
+                } else {
+                    if (size2 < intVal) {
+                        return 1;
+                    } else if (size2 > intVal) {
+                        return -1;
+                    }
+                }
+            }
+            return 0;
+        };
+
+        var calcRate = function(/*Number*/width, /*Number*/height) {
+            var n, m;
+            width = width || 1;
+            height = height || 1;
+            if (width > height) {
+                n = height;
+                m = width;
+            } else {
+                n = width;
+                m = height;
+            }
+            return (n / m) * 100;
+        };
+
+        var size = this.getImageSize(imgEl, canvasWidth, canvasHeight);
+
+        var cssWidth = '';
+        var cssHeight = '';
+        var cssMaxWidth = '';
+        var cssMaxHeight = '';
+
+        // 원본 사이즈가 없다는 것은 엑박이란 거다
+        if (size.nWidth === 0 || size.nHeight === 0) {
+            return null;
         }
 
-        var endOffset = range.endOffset;
-        var newEnd = newStart + post;
-        if (newEnd > range.endContainer.length) {
-            newEnd = range.endContainer.length;
+        //
+        // * 너비와 높이 크기 보정(CSS 속성과 엘리먼트 속성 그리고 원본 사이즈를 이용한)
+        //   - CSS 속성 또는 엘리먼트 속성이 반영된 사이즈가 원본 사이즈보다 클 때 'initial'로 보정한다.
+        //     --> width 또는 height의 값이 100% 이상일 때.
+        //        (CP에서 원본 비율과 깨짐을 떠나서 단순히 여백 없이 출력하기 위해 100% 이상을 사용하더라)
+        //     --> 최종 계산된 width 또는 height의 값(px)이 원본 사이즈보다 클 때.
+        //   - CP에서 의도적으로 원본보다 크게 설정한 경우 난감하다.
+        //
+
+        if (compareSize(size.sWidth, size.nWidth) > 0 || compareSize(size.aWidth, size.nWidth) > 0) {
+            cssWidth = 'initial';
+        }
+        
+        if (compareSize(size.sHeight, size.nHeight) > 0 || compareSize(size.aHeight, size.nHeight) > 0) {
+            cssHeight = 'initial';
         }
 
-        range.setStart(range.startContainer, newStart);
-        range.setEnd(range.endContainer, newEnd);
+        //
+        // * 너비와 높이 비율 보정(원본 사이즈, 랜더링된 이미지 사이즈를 이용한)
+        //   - 원본 비율이 랜더링된 이미지 비율과 다를때 상황에 맞춰 보정을 한다.
+        //     --> 비율은 다르나 랜더링된 이미지의 너비 또는 높이가 원본보다 작을때 근사값으로 비율을 조정해준다.
+        //        다만, 근사값으로 조정한 사이즈가 화면 사이즈를 벗어나는 상황이라면 'initial'로 보정한다.
+        //     --> 비율도 다르고 랜더링된 이미지의 너비 또는 높이가 원본보다 클 때 'initial'로 보정한다.
+        //   - CP에서 의도적으로 비율을 깨버렸다면 매우 곤란하다.
+        //
 
-        var result = range.toString();
-        range.setStart(range.startContainer, startOffset);
-        range.setEnd(range.endContainer, endOffset);
+        var diff = 1, rate = 0;
+        if ((size.nWidth >= size.nHeight) != (size.dWidth >= size.dHeight) ||
+            abs(calcRate(size.nWidth, size.nHeight) - calcRate(size.dWidth, size.dHeight)) > diff) {
+            if (size.dWidth >= size.dHeight && size.dWidth < size.nWidth) {
+                rate = (calcRate(size.dWidth, size.nWidth) / 100);
+                if (size.dWidth < canvasWidth && round(size.nHeight * rate) < canvasHeight) {
+                    cssWidth = size.dWidth + 'px';
+                    cssHeight = round(size.nHeight * rate) + 'px';
+                } else {
+                    cssWidth = 'initial';
+                    cssHeight = 'initial';
+                }
+            } else if (size.dWidth < size.dHeight && size.dHeight < size.nHeight) {
+                rate = (calcRate(size.dHeight, size.nHeight) / 100);
+                if (round(size.nWidth * rate) < canvasWidth && size.dHeight < canvasHeight) {
+                    cssWidth = round(size.nWidth * rate) + 'px';
+                    cssHeight = size.dHeight + 'px';
+                } else {
+                    cssWidth = 'initial';
+                    cssHeight = 'initial';
+                }
+            } else {
+                cssWidth = 'initial';
+                cssHeight = 'initial';
+            }
+        }
 
-        return result;
+        //
+        // * 이미지 잘림 보정(1)
+        //   - 앞선 과정에서 보정된 또는 보정되지 않은 사이즈가 페이지를 벗어날 때 페이지에 맞게 보정해 준다.
+        //    (높이만 보정을 하는 이유는 DOM 너비는 화면 너비에 맞게 되어있고 DOM 높이는 스크롤의 전체 길이이기 때문이다.)
+        //     --> 원본 높이 또는 랜더링된 이미지의 높이가 페이지 보다 같거나 클 때 페이지에 맞게 보정한다.
+        //        (단순히 페이지보다 작게 만드는게 아니라 이미지의 상단 여백을 가져와 페이지 높이에 뺀 값으로 보정한다.)
+        //        (이미지의 상단 여백은 '-webkit-text-size-adjust'에 영향 받고 있으니 참고하자.)
+        //
+
+        if (!app.isScrollMode()) {
+            var mHeight = size.dHeight;
+            if (cssHeight.length) {
+                mHeight = parseInt(cssHeight);
+                if (isNaN(mHeight)) {
+                    mHeight = size.dHeight;
+                }
+            }
+            if (mHeight >= canvasHeight) {
+                var offsetTop = (imgEl.offsetTop + paddingTop) % canvasHeight;
+                if (isNaN(offsetTop)) {
+                    offsetTop = 0;
+                }
+                if (offsetTop > 0) {
+                    cssHeight = (canvasHeight * 0.95) + 'px';
+                }
+                paddingTop += offsetTop;
+                if (cssWidth.length) {
+                    cssWidth = 'initial';
+                }
+            }
+        }
+
+        //
+        // * 이미지 잘림 보정(2)
+        //   - 제작 과정에서 이 속성을 사용할 수 있기 때문에 '!important'를 붙이지는 못하고
+        //    수치가 100%를 넘을때나 속성이 없을때 추가해준다. 
+        //    (100%를 초과하면 사이즈에 따라 이미지가 잘리는것을 볼 수 있다)
+        //    (높이를 95%로 주는 이유는 spine에 이미지 하나만 있을 때 p테그의 줄간, 서체 크기에
+        //     영향을 받아 빈 페이지가 들어가기 때문이다.)
+        //
+
+        var maxWidth = getMatchedStyle(imgEl, 'max-width');
+        if (isPercentValue(maxWidth) && parseInt(maxWidth) > 100) {
+            cssMaxWidth = '100%';
+        }
+
+        var maxHeight = getMatchedStyle(imgEl, 'max-height');
+        if (isPercentValue(maxHeight) && parseInt(maxHeight) > 95) {
+            cssMaxHeight = '95%';
+        }
+
+
+        return {
+            el : imgEl, 
+            width: cssWidth, 
+            height: cssHeight, 
+            maxWidth: cssMaxWidth, 
+            maxHeight: cssMaxHeight,
+            position: '',
+            paddingTop: paddingTop,
+            size: size
+        };
     },
 
-    getPageOffsetOfSearchResult: function() {
-        var rects = getSelection().getRangeAt(0).getClientRects();
-        return ridi.getPageOffsetFromElementRect(rects[0]);
-    },
-
-    //
-    // * 이미지 비율 및 크기 보정
-    //   - 제작자가 의도한 이미지 비율 또는 크기를 따르돼 
-    //    원본 비율을 붕괴시키거나 원본 크기보다 커지는 경우를 없애기 위함.
-    //
-    reviseImagesInSpine: function() {
-
-    },
+    // MARK: - TopNodeLocation 관련
 
     // element에 붙어 있는 모든 텍스트, 이미지 노드를 구한다.
     findTextAndImageNodes: function(/*HTMLElement*/el) {
         var filter = function(/*Node*/node) {
             // 주의! topNodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
-            return node.nodeType == Node.TEXT_NODE || (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'IMG');
+            return node.nodeType == Node.TEXT_NODE || 
+                   (node.nodeType == Node.ELEMENT_NODE && node.nodeName == 'IMG');
         };
 
-        var nodes = [];
-        if (el === null || el === undefined) {
-            return nodes;
+        if (!el) {
+            return [];
         }
 
         var calledFilter = false;
-        var node, walk = document.createTreeWalker(
+        var node, walk = doc.createTreeWalker(
             el, 
             NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, 
             { acceptNode: function(/*Node*/node) {
@@ -155,6 +367,7 @@ var epub = {
 
         // 일부 Webkit에서 NodeFilter 기능이 동작하지 않는 경우가 있다.
         // 동작하지 않을 경우 element에 붙어있는 모든 노드가 끌려옴으로 수동으로 필터링해야 한다.
+        var nodes = [];
         while ((node = walk.nextNode())) {
             if (calledFilter) {
                 nodes.push(node);
@@ -166,285 +379,217 @@ var epub = {
         return nodes;
     },
 
-    textAndImageNodes: null,
-
-    getTopNodeLocationOfCurrentPage: function() {
-
-    },
-
-    getPageOffsetOfTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-
-    },
-
-    getScrollOfTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-
-    },
-
-    isScrollMode: function() {
-        return ridi.appPassedHeight != epub.getTotalHeight();
-    },
-
-};
-
-var ridi = {
-    // * Android
-    // ex) 14, 17, 19, ... (API level)
-    // * iOS
-    // ex) 6, 7, 8, ...
-    systemMajorVersion: 0,
-
-    appPassedWidth: 0,
-    appPassedHeight: 0,
-
-    selectionMaxLength: 0,
-
-    // * Android
-    // 일부 기기와 Android 2.x에서 window.innerWidth, window.innerHeight를 정확하지 않게 리턴하는 경우를 위한 workaround
-    // PagingContext의 width, height 값이 html의 width, height 값으로 세팅된다.
-    // [!] 가정 : window.innerWidth == PagingContext.width && window.innerHeight = PagingContext.height
-    // * iOS
-    // 두 쪽 보기일 때 왼쪽과 오른쪽의 웹뷰 사이즈가 다르기 때문에(Selection 처리 때문에 크기가 다름) 이를 맞춰주기 위한 workaround
-    // EPubBookControl의 contentWidth, contentHeight 값이 html의 width, height 값으로 세팅된다.
-    // [!] 가정 : window.innerWidth == EPubBookControl.contentWidth && window.innerHeight = EPubBookControl.contentHeight
-    setAppPassedInnerSize: function(/*Number*/width, /*Number*/height) {
-        ridi.appPassedWidth = width;
-        ridi.appPassedHeight = height;
-    },
-
-    startSelectionMode: function(/*Number*/x, /*Number*/y) {
-
-    },
-
-    changeInitialSelection: function(/*Number*/x, /*Number*/y) {
-
-    },
-
-    extendUpperSelection: function(/*Number*/x, /*Number*/y) {
-
-    },
-
-    extendLowerSelection: function(/*Number*/x, /*Number*/y) {
-
-    },
-
-    getOffsetOfAnchorElement: function(/*String*/anchor, /*Function*/block) {
-        var el = document.getElementById(anchor);
-        if (el) {
-            var nodeIterator = createTextNodeIterator(el), node, rect, origin;
-            if ((node = nodeIterator.nextNode()) !== null) {
-                // 첫번째 텍스트만 확인
-                var range = document.createRange();
-                range.selectNodeContents(node);
-
-                var rects = range.getClientRects();
-                if (rects.length > 0) {
-                    return block(rects[0], el);
-                }
+    findTopNodeRectOfCurrentPage: function(/*ClientRectList*/rects, /*Number*/startOffset, /*Number*/endOffset, /*Boolean*/scrollMode) {
+        for (var j = 0; j < rects.length; j++) {
+            // rect 값이 현재 보고있는 페이지의 최상단에 위치하고 있는지.
+            var origin = scrollMode ? rects[j].top : rects[j].left;
+            if (startOffset <= origin && origin <= endOffset) {
+                var rect = rects[j];
+                return {top: (rect.top ? rect.top : 0),
+                        bottom: (rect.bottom ? rect.bottom : 0),
+                        left: (rect.left ? rect.left : 0),
+                        right: (rect.right ? rect.right : 0),
+                        width: rect.width,
+                        height: rect.height,
+                        index: j};
             }
+        }
+        return null;
+    },
 
-            // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
-            return block(el.getBoundingClientRect(), el);
+    findTopNodeRectAndLocationOfCurrentPage: function(/*NodeList*/nodes, /*Number*/startOffset, /*Number*/endOffset, /*String*/posSeparator, /*Boolean*/scrollMode) {
+        if (!nodes) {
+            return null;
         }
 
-        return -1;
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            var range = doc.createRange();
+            range.selectNodeContents(node);
+
+            var rect = range.getAdjustedBoundingClientRect();
+            if (!rect) {
+                return null;
+            }
+
+            // 노드가 현재 보고있는 페이지의 최상단에 위치하거나 걸쳐있는지.
+            var origin = scrollMode ? (rect.top + rect.height) : (rect.left + rect.width);
+            if (rect.width === 0 || origin < startOffset) {
+                continue;
+            }
+
+            if (node.nodeType == Node.TEXT_NODE) {
+                var string = node.nodeValue;
+                if (!string) {
+                    continue;
+                }
+
+                var words = string.split(/' |\\u00A0'/);
+                var offset = range.startOffset, length = string.length;
+                for (var j = 0; j < words.length; j++) {
+                    var word = words[j];
+                    if (word.trim().length) {
+                        try {
+                            range.setStart(node, offset);
+                            range.setEnd(node, offset + word.length);
+                        } catch (e) {
+                            return null;
+                        }
+                        if ((rect = this.findTopNodeRectOfCurrentPage(range.getAdjustedClientRects(), startOffset, endOffset, scrollMode)) !== null) {
+                            return {rect: rect, location: (i + posSeparator + min(j + rect.index, words.length - 1))};
+                        }
+                    }
+                    offset += (word.length + 1);
+                }
+            } else if (node.nodeName == 'IMG') {
+                if ((rect = this.findTopNodeRectOfCurrentPage(range.getAdjustedClientRects(), startOffset, endOffset, scrollMode)) !== null) {
+                    // 이미지 노드는 워드 인덱스를 구할 수 없기 때문에 0을 사용하며, 위치를 찾을때 이미지 노드의 rect가 현재 위치다.
+                    return {rect: rect, location: (i + posSeparator + '0')};
+                }
+            }
+        }
+
+        return null;
     },
 
-    getPageOffsetOfAnchorElement: function(/*String*/anchor) {
-        return ridi.getOffsetOfAnchorElement(anchor, function(rect, el) {
-            return ridi.getPageOffsetFromElementRect(rect, el);
-        });
-    },
-
-    getScrollOffsetOfAnchorElement: function(/*String*/anchor) {
-        return ridi.getOffsetOfAnchorElement(anchor, function(rect) {
-            return rect.top;
-        });
-    },
-
-    getPageOffsetFromElementRect: function(/*ClientRect*/rect, /*{HTMLElement}*/el) {
-
-    },
-
-    getRangeFromSerializedRange: function(/*String*/serializedRange) {
-        var tmpRange = rangy.deserializeRange(serializedRange, document.body);
-
-        var range = document.createRange();
-        range.setStart(tmpRange.startContainer, tmpRange.startOffset);
-        range.setEnd(tmpRange.endContainer, tmpRange.endOffset);
-
-        tmpRange.detach();
-
-        return range;
-    },
-
-    getRectsOfRange: function(/*String*/serializedRange) {
-
-    },
-
-    expandRangeByWord: function(/*Range*/range) {
-        var startContainer = range.startContainer;
-        if (startContainer.nodeValue === null) {
+    showTopNodeLocation: function(/*Object*/result, /*Boolean*/scrollMode) {
+        if (!this.debugTopNodeLocation) {
             return;
         }
-        var containerValueLength = startContainer.nodeValue.length;
-        var startOffset = range.startOffset;
-        var originalOffset = startOffset;
 
-        while (startOffset > 0) {
-            if (/^\s/.test(range.toString())) {
-                range.setStart(startContainer, startOffset += 1);
-                break;
-            }
-            startOffset -= 1;
-            range.setStart(startContainer, startOffset);
+        var topNode = doc.getElementById('RidiTopNode');
+        if (!topNode) {
+            topNode = doc.createElement('span');
+            topNode.setAttribute('id', 'RidiTopNode');
+            body.appendChild(topNode);
         }
 
-        while (originalOffset < containerValueLength) {
-            if (/\s$/.test(range.toString())) {
-                range.setEnd(startContainer, originalOffset -= 1);
-                break;
-            }
-            originalOffset += 1;
-            range.setEnd(startContainer, originalOffset);
+        var left = result.rect.left, top = result.rect.top;
+        if (scrollMode) {
+            top += win.pageYOffset;
+        } else {
+            left += win.pageXOffset;
         }
+
+        topNode.style.cssText = 
+        'position: absolute !important;' +
+        'background-color: red !important;' +
+        'left: ' + left + 'px !important;' +
+        'top: ' + top + 'px !important;' +
+        'width: ' + (result.rect.width ? result.rect.width : 3) + 'px !important;' +
+        'height: ' + result.rect.height + 'px !important;' +
+        'display: block !important;' +
+        'opacity: 0.4 !important;' +
+        'z-index: 99 !important;';
     },
 
-    removeOtherPageRects: function(/*ClientRectList*/rects, /*Number*/page) {
-        var removedRects = [];
-        for (var i = 0; i < rects.length; i++) {
-            if (ridi.getPageOffsetFromElementRect(rects[i]) == page) {
-                removedRects.push(rects[i]);
-            }
-        }
-
-        return removedRects;
+    getTopNodeLocationOfCurrentPage: function(/*String*/posSeparator) {
+        mustOverride('getTopNodeLocationOfCurrentPage');
     },
 
-    getOnlyTextNodeRects: function(/*Range*/range) {
-        if (range.startContainer == range.endContainer) {
-            var innerText = range.startContainer.innerText;
-            if (innerText !== undefined && innerText.length === 0) {
-                return [];
-            } else {
-                return range.getClientRects();
-            }
-        }
+    getPageOffsetAndRectFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
+        var scrollMode = app.isScrollMode();
+        var pageUnit = scrollMode ? app.pageHeightUnit : app.pageWidthUnit;
+        var totalPageSize = scrollMode ? epub.getTotalHeight() : epub.getTotalWidth();
 
-        var nodeIterator = createTextNodeIterator(range.commonAncestorContainer);
-        var textNodeRects = [], i;
-
-        var workRange = document.createRange();
-        workRange.setStart(range.startContainer, range.startOffset);
-        workRange.setEnd(range.startContainer, range.startContainer.length);
-
-        var workRects = workRange.getClientRects();
-        for (i = 0; i < workRects.length; i++) {
-            textNodeRects.push(workRects[i]);
-        }
-
-        var node = null;
-        while ((node = nodeIterator.nextNode()) !== null) {
-            // startContainer 노드보다 el이 앞에 있으면
-            if (range.startContainer.compareDocumentPosition(node) == Node.DOCUMENT_POSITION_PRECEDING ||
-                range.startContainer == node) {
-                continue;
+        var calcPageOffset = function(/*ClientRect*/rect) {
+            var offset = scrollMode ? rect.top : rect.left;
+            if (offset === null || offset < 0) {
+                return -1;
             }
 
-            // endContainer 뒤로 넘어가면 멈춤
-            if (range.endContainer.compareDocumentPosition(node) == Node.DOCUMENT_POSITION_FOLLOWING ||
-                range.endContainer == node) {
-                break;
-            }
-
-            workRange = document.createRange();
-            workRange.selectNodeContents(node);
-
-            if (ridi.isWhiteSpaceRange(workRange)) {
-                continue;
-            }
-
-            var rects = workRange.getClientRects();
-            for (i = 0; i < rects.length; i++) {
-                textNodeRects.push(rects[i]);
-            }
-        }
-
-        workRange = document.createRange();
-        workRange.setStart(range.endContainer, 0);
-        workRange.setEnd(range.endContainer, range.endOffset);
-
-        if (ridi.isWhiteSpaceRange(workRange) === false) {
-            workRects = workRange.getClientRects();
-            for (i = 0; i < workRects.length; i++) {
-                textNodeRects.push(workRects[i]);
-            }
-        }
-
-        return textNodeRects;
-    },
-
-    isWhiteSpaceRange: function(/*Range*/range) {
-        return /^\s*$/.test(range.toString());
-    },
-
-    rectsToJsonWithRelativeCoord: function(/*ClientRectList*/rects) {
-        var result = '';
-        for (var i = 0; i < rects.length; i++) {
-            var rect = rects[i];
-            result += rect.left + ',';
-            result += rect.top + ',';
-            result += rect.width + ',';
-            result += rect.height + ',';
-        }
-
-        return result;
-    },
-
-    getMatchedStyle : function(/*HTMLElement*/el, /*String*/property, /*Boolean*/recursive) {
-        recursive = recursive || false;
-        var getMatchedStyle = function(/*HTMLElement*/el, /*String*/property) {
-            // element property has highest priority
-            var val = el.style.getPropertyValue(property);
-
-            // if it's important, we are done
-            if (el.style.getPropertyPriority(property)) {
-                return val;
-            }
-
-            // get matched rules
-            var rules = window.getMatchedCSSRules(el);
-            if (rules === null) {
-                return val;
-            }
-
-            // iterate the rules backwards
-            // rules are ordered by priority, highest last
-            for (var i = rules.length; i --> 0;) {
-                var rule = rules[i];
-
-                var important = rule.style.getPropertyPriority(property);
-
-                // if set, only reset if important
-                if (val === null || important) {
-                    val = rule.style.getPropertyValue(property);
-
-                    // done if important
-                    if (important) {
-                        break;
-                    }
+            for (var i = 1; ; i++) {
+                var start = (i - 1) * pageUnit;
+                var end = i * pageUnit;
+                if (start <= offset && offset < end) {
+                    return (i - 1);
                 }
             }
-            return val;
         };
 
-        var val = null;
-        var target = el;
-        while (!(val = getMatchedStyle(target, property))) {
-            target = target.parentElement;
-            if (target === null || recursive === false) {
-                break;
-            }
+        var isZero = function(/*ClientRect*/rect) {
+            return ((typeof rect !== 'object') || (rect.left === 0 && rect.width === 0 && rect.right === 0 && rect.top === 0 && rect.height === 0 && rect.bottom === 0));
+        };
+
+        var notFound = {pageOffset: -1};
+
+        var nodes = this.textAndImageNodes;
+        if (pageUnit === 0 || nodeIndex == -1 || wordIndex == -1 || nodes === null || nodes.length <= nodeIndex) {
+            return notFound;
         }
-        return val;
+
+        var node = nodes[nodeIndex];
+        if (!node) {
+            return notFound;
+        }
+
+        var range = doc.createRange();
+        range.selectNodeContents(node);
+
+        var rect = range.getAdjustedBoundingClientRect();
+        if (isZero(rect)) {
+            return notFound;
+        }
+
+        var pageOffset = calcPageOffset(rect);
+        if (pageOffset == -1 || totalPageSize <= pageUnit * pageOffset) {
+            return notFound;
+        }
+
+        if (node.nodeName == 'IMG' && wordIndex === 0) {
+            return {pageOffset: pageOffset, rect: rect};
+        }
+
+        var string = node.nodeValue;
+        if (string === null) {
+            return notFound;
+        }
+
+        var words = string.split(/' |\\u00A0'/);
+        if (words.length <= wordIndex) {
+            wordIndex = words.length - 1;
+        }
+
+        var offset = 0, length = string.length, word = null;
+        for (var i = 0; i <= wordIndex; i++) {
+            word = words[i];
+            offset += (word.length + 1);
+        }
+        try {
+            range.setStart(range.startContainer, offset - word.length - 1);
+            range.setEnd(range.startContainer, offset - 1);
+        } catch(e) {
+            return notFound;
+        }
+
+        pageOffset = calcPageOffset((rect = range.getAdjustedBoundingClientRect()));
+        if (pageOffset == -1 || totalPageSize <= pageUnit * pageOffset) {
+            return notFound;
+        }
+
+        var origin = rect.left - (pageUnit * pageOffset) + rect.width + 1;
+        if (scrollMode || origin < pageUnit) {
+            return {pageOffset: pageOffset, rect: rect};
+        } else {
+            return {pageOffset: pageOffset + 1, rect: rect};
+        }
     },
+
+    getPageOffsetFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
+        return this.getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex).pageOffset;
+    },
+
+    getScrollYOffsetFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
+        var result = this.getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex);
+        var rect = result.rect;
+        if (rect === undefined) {
+            return -1;
+        } else {
+            return rect.top;
+        }
+    },
+
 };
+
+var RidiEpub = function() {};
+RidiEpub.prototype = new Epub();

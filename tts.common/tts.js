@@ -84,260 +84,266 @@
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
 
-var tts = {
-  debug: false,
+var TTS = function() {};
+TTS.prototype = {
+    debug: false,
 
-  chunks: [],
-  maxNodeIndex: 0,
+    chunks: [],
+    maxNodeIndex: 0,
 
-  getPageOffsetOfChunkId: function(/*Number*/chunkId) {
+    getPageOffsetFromChunkId: function(/*Number*/chunkId) {
+        mustOverride('getPageOffsetFromChunkId');
+    },
 
-  },
+    getScrollYOffsetFromChunkId: function(/*Number*/chunkId) {
+        mustOverride('getScrollYOffsetFromChunkId');
+    },
 
-  getScrollOffsetOfChunkId: function(/*Number*/chunkId) {
+    didPlaySpeech: function(/*Number*/chunkId) {
+        mustOverride('didPlaySpeech');
+    },
 
-  },
+    didFinishSpeech: function(/*Number*/chunkId) {
+        mustOverride('didFinishSpeech');
+    },
 
-  didPlaySpeech: function(/*Number*/chunkId) {
+    didFinishMakeChunks: function(/*Number*/index) {
+        mustOverride('didFinishMakeChunks');
+    },
 
-  },
+    makeChunksByRange: function(/*String*/serializedRange) {
+        var range = rangy.deserializeRange(serializedRange, body),
+            nodeIndex = -1, wordIndex = 0,
+            nodes = epub.textAndImageNodes;
 
-  didFinishSpeech: function(/*Number*/chunkId) {
-
-  },
-
-  didFinishMakeChunks: function(/*Number*/index) {
-
-  },
-
-  makeChunksByRange: function(/*String*/serializedRange) {
-    var range = rangy.deserializeRange(serializedRange, document.body),
-        nodeIndex = -1, wordIndex = 0,
-        nodes = epub.textAndImageNodes;
-
-    if (nodes === null) {
-      throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
-    }
-
-    if (range === null) {
-      throw 'tts: range is invalid.';
-    }
-
-    for (var i = 0, offset = 0; i < nodes.length; i++, offset = 0) {
-      if (nodes[i] === range.startContainer) {
-        nodeIndex = i;
-        var words = range.startContainer.textContent.split(regexSplitWhitespace());
-        for (; wordIndex < words.length; wordIndex++) {
-          if (range.startOffset <= offset + words[wordIndex].length) {
-            break;
-          } else {
-            offset += (words[wordIndex].length + 1);
-          }
+        if (nodes === null) {
+            throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
         }
-        break;
-      }
-    }
 
-    return tts.makeChunksByNodeLocation(nodeIndex, wordIndex);
-  },
-
-  makeChunksByNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-    var nodes = epub.textAndImageNodes;
-    if (nodes === null) {
-      throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
-    }
-
-    if (nodeIndex === undefined || wordIndex === undefined) {
-      throw 'tts: nodeIndex or wordIndex is invalid.';
-    }
-
-    nodeIndex = Math.max(nodeIndex, 0);
-    wordIndex = Math.max(wordIndex, 0);
-
-    var index = tts.chunks.length,
-        maxIndex = Math.min(nodeIndex + 50, nodes.length);
-
-    for (; nodeIndex < maxIndex; nodeIndex++, wordIndex = 0) {
-      var piece;
-      try {
-        piece = new TTSPiece(nodeIndex, wordIndex);
-      } catch (e) {
-        console.log(e);
-        break;
-      }
-
-      var pieces = [piece];
-      if (piece.isInvalid() || piece.isOnlyWhitespace()) {
-        maxIndex = Math.min(maxIndex + 1, nodes.length);
-        continue;
-      } else {
-        if (piece.isNextSiblingToBr() || (piece.length > 1 && piece.isSentence())) {
-          tts.addChunk(pieces);
-        } else {
-          if (nodeIndex == maxIndex - 1) {
-            maxIndex = Math.min(maxIndex + 1, nodes.length);
-          }
-          for (++nodeIndex; nodeIndex < maxIndex; ++nodeIndex) {
-            var nextPiece;
-            try {
-              nextPiece = new TTSPiece(nodeIndex);
-            } catch (e) {
-              console.log(e);
-              break;
-            }
-
-            if (nextPiece.isInvalid()) {
-              maxIndex = Math.min(maxIndex + 1, nodes.length);
-            } else if (nextPiece.isOnlyWhitespace()) {
-              tts.addChunk(pieces);
-              nodeIndex--;
-              break;
-            } else if (nextPiece.isNextSiblingToBr()) {
-              pieces.push(nextPiece);
-              tts.addChunk(pieces);
-              break;
-            } else {
-              pieces.push(nextPiece);
-              if (nextPiece.length > 1 && nextPiece.isSentence()) {
-                tts.addChunk(pieces);
-                break;
-              }
-            }
-
-            if (nodeIndex == maxIndex - 1) {
-              maxIndex = Math.min(maxIndex + 1, nodes.length);
-            }
-            if (nodeIndex == nodes.length - 1) {
-              tts.addChunk(pieces);
-            }
-          }// end for
-          if (maxIndex < nodeIndex) {
-            maxIndex = nodeIndex;
-          }
+        if (range === null) {
+            throw 'tts: range is invalid.';
         }
-      }
-    }// end for
-    tts.maxNodeIndex = maxIndex;
 
-    tts.didFinishMakeChunks(index);
-
-    return tts.chunks.length;
-  },
-
-  addChunk: function(/*Array<TTSPiece>*/pieces) {
-    var RIDI = 'RidiDelimiter';
-
-    // 문자열을 문장 단위(기준: .|。|?|!)로 나눈다
-    var split = function(text) {
-      text = text.replace(/([.。?!])/gm, '$1[' + RIDI + ']');
-      return text.split('[' + RIDI + ']');
-    };
-
-    // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
-    var isPointOrName = function(/*String*/text, /*String*/nextText) {
-      if (text === undefined || nextText === undefined) {
-        return false;
-      }
-      var hit = 0, index = text.search(/[.](\s{0,})$/gm);
-      if (index > 0 && isDigitOrLatin(text[index - 1])) {
-        hit++;
-      }
-      index = nextText.search(/[^\s]/gm);
-      if (index >= 0 && isDigitOrLatin(nextText[index])) {
-        hit++;
-      }
-      return hit == 2;
-    };
-
-    // 문장의 마지막이 아닐 경우 true
-    var isNotEndOfSentence = function(/*String*/nextText) {
-      return nextText !== undefined && nextText.match(regexSentence('^')) !== null;
-    };
-
-    // Test Code
-    var debug = function(/*Number*/caseNum) {
-      if (tts.debug) {
-        console.log('chunkId: ' + (tts.chunks.length - 1)
-                   + ', Case: ' + caseNum
-                   + ', Text: ' + tts.chunks[tts.chunks.length - 1].getText());
-      }
-    };
-
-    var chunk = new TTSChunk(pieces);
-    var tokens = split(chunk.getText());
-    if (tokens.length > 1) {
-      var offset = 0, startOffset = 0;
-      var subText = '';
-      for (var i = 0; i < tokens.length; i++) {
-        var token = tokens[i];
-        var openBracket, closeBracket, otherBracket;
-        subText += token;
-        offset += token.length;
-        if ((openBracket = getFirstOpenBracket(token)) !== null) {
-          // 괄호의 짝을 맞추지 않고 문장을 나누게 되면 괄호를 읽을 수도 있기 때문에 여는 괄호를 만나면 닫는 괄호를 찾는 과정을 진행한다
-          var endLoop = false;
-          for (var j = i; j < tokens.length; j++) {
-            var nextToken = tokens[j];
-            if (i < j) {
-              subText += nextToken;
-              offset += nextToken.length;
-            }
-            // TDD - 괄호가 섞였을 때는 어쩔건가 // 예) [{~~~]}
-            if ((closeBracket = getLastCloseBracket(nextToken)) !== null && isOnePairBracket(openBracket, closeBracket)) {
-              if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.lastIndexOf(openBracket)) {
-                // 한 쌍의 괄호는 만들어졌으나 서로 마주 보고 있지 않다
-                continue;
-              } else if (i < j && (otherBracket = getFirstOpenBracket(nextToken)) !== null) {
-                // 닫는 괄호가 있는 곳에서 새로운 여는 괄호를 만나버렸다 // 예) (~~) ~~ '('~~)
-                openBracket = otherBracket;
-                if ((otherBracket = getLastCloseBracket(nextToken)) !== null && isOnePairBracket(openBracket, otherBracket)) {
-                  endLoop = true;
+        for (var i = 0, offset = 0; i < nodes.length; i++, offset = 0) {
+            if (nodes[i] === range.startContainer) {
+                nodeIndex = i;
+                var words = range.startContainer.textContent.split(regexSplitWhitespace());
+                for (; wordIndex < words.length; wordIndex++) {
+                    if (range.startOffset <= offset + words[wordIndex].length) {
+                        break;
+                    } else {
+                        offset += (words[wordIndex].length + 1);
+                    }
                 }
-                continue;
-              }
-              endLoop = true;
+                break;
             }
-            if (isPointOrName(subText, tokens[j + 1]) || isNotEndOfSentence(tokens[j + 1])) {
-              // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 현재 토큰을 더해주고 과정을 끝낸다
-              endLoop = true;
-              continue;
-            }
-            if (endLoop) {
-              tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
-              subText = '';
-              startOffset = offset;
-              i = j;
-              debug(1);
-              break;
-            }
-          }// end for j
-        } else {
-          if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
-            // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
-            continue;
-          }
-          if (subText.length) {
-            tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
-            subText = '';
-            debug(2);
-          }
-          startOffset = offset;
         }
-      } // end for i
-      if (subText.length) {
-        // 루프가 끝나도록 추가되지 못한 애들을 추가한다
-        tts.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
-        debug(3);
-      }
-    } else {
-      // piece가 하나 뿐이라 바로 추가한다
-      tts.chunks.push(chunk);
-      debug(4);
-    }
-  },
 
-  flush: function() {
+        return this.makeChunksByNodeLocation(nodeIndex, wordIndex);
+    },
 
-  },
+    makeChunksByNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
+        var nodes = epub.textAndImageNodes;
+        if (nodes === null) {
+            throw 'tts: nodes is empty. make call epub.findTextAndImageNodes().';
+        }
+
+        if (nodeIndex === undefined || wordIndex === undefined) {
+            throw 'tts: nodeIndex or wordIndex is invalid.';
+        }
+
+        nodeIndex = max(nodeIndex, 0);
+        wordIndex = max(wordIndex, 0);
+
+        var index = this.chunks.length,
+        maxIndex = min(nodeIndex + 50, nodes.length);
+
+        for (; nodeIndex < maxIndex; nodeIndex++, wordIndex = 0) {
+            var piece;
+            try {
+                piece = new TTSPiece(nodeIndex, wordIndex);
+            } catch (e) {
+                console.log(e);
+                break;
+            }
+
+            var pieces = [piece];
+            if (piece.isInvalid() || piece.isOnlyWhitespace()) {
+                maxIndex = min(maxIndex + 1, nodes.length);
+                continue;
+            } else {
+                if (piece.isNextSiblingToBr() || (piece.length > 1 && piece.isSentence())) {
+                    this.addChunk(pieces);
+                } else {
+                    if (nodeIndex == maxIndex - 1) {
+                        maxIndex = min(maxIndex + 1, nodes.length);
+                    }
+                    for (++nodeIndex; nodeIndex < maxIndex; ++nodeIndex) {
+                        var nextPiece;
+                        try {
+                            nextPiece = new TTSPiece(nodeIndex);
+                        } catch (e) {
+                            console.log(e);
+                            break;
+                        }
+
+                        if (nextPiece.isInvalid()) {
+                            maxIndex = min(maxIndex + 1, nodes.length);
+                        } else if (nextPiece.isOnlyWhitespace()) {
+                            this.addChunk(pieces);
+                            nodeIndex--;
+                            break;
+                        } else if (nextPiece.isNextSiblingToBr()) {
+                            pieces.push(nextPiece);
+                            this.addChunk(pieces);
+                            break;
+                        } else {
+                            pieces.push(nextPiece);
+                            if (nextPiece.length > 1 && nextPiece.isSentence()) {
+                                this.addChunk(pieces);
+                                break;
+                            }
+                        }
+
+                        if (nodeIndex == maxIndex - 1) {
+                            maxIndex = min(maxIndex + 1, nodes.length);
+                        }
+                        if (nodeIndex == nodes.length - 1) {
+                            this.addChunk(pieces);
+                        }
+                    }// end for
+                    if (maxIndex < nodeIndex) {
+                        maxIndex = nodeIndex;
+                    }
+                }
+            }
+        }// end for
+        this.maxNodeIndex = maxIndex;
+
+        this.didFinishMakeChunks(index);
+
+        return this.chunks.length;
+    },
+
+    addChunk: function(/*[TTSPiece]*/pieces) {
+        var RIDI = 'RidiDelimiter';
+
+        // 문자열을 문장 단위(기준: .|。|?|!)로 나눈다
+        var split = function(/*String*/text) {
+            text = text.replace(/([.。?!])/gm, '$1[' + RIDI + ']');
+            return text.split('[' + RIDI + ']');
+        };
+
+        // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
+        var isPointOrName = function(/*String*/text, /*String*/nextText) {
+            if (text === undefined || nextText === undefined) {
+                return false;
+            }
+            var hit = 0, index = text.search(/[.](\s{0,})$/gm);
+            if (index > 0 && isDigitOrLatin(text[index - 1])) {
+                hit++;
+            }
+            index = nextText.search(/[^\s]/gm);
+            if (index >= 0 && isDigitOrLatin(nextText[index])) {
+                hit++;
+            }
+            return hit == 2;
+        };
+
+        // 문장의 마지막이 아닐 경우 true
+        var isNotEndOfSentence = function(/*String*/nextText) {
+            return nextText !== undefined && nextText.match(regexSentence('^')) !== null;
+        };
+
+        // Test Code
+        var debug = function(/*Number*/caseNum) {
+            if (tts.debug) {
+                var chunks = this.chunks;
+                var length =  chunks.length;
+                console.log('chunkId: ' + (length - 1)
+                        + ', Case: ' + caseNum
+                        + ', Text: ' + chunks[length - 1].getText());
+            }
+        };
+
+        var chunk = new TTSChunk(pieces);
+        var tokens = split(chunk.getText());
+        if (tokens.length > 1) {
+            var offset = 0, startOffset = 0;
+            var subText = '';
+            for (var i = 0; i < tokens.length; i++) {
+                var token = tokens[i];
+                var openBracket, closeBracket, otherBracket;
+                subText += token;
+                offset += token.length;
+                if ((openBracket = getFirstOpenBracket(token)) !== null) {
+                    // 괄호의 짝을 맞추지 않고 문장을 나누게 되면 괄호를 읽을 수도 있기 때문에 여는 괄호를 만나면 닫는 괄호를 찾는 과정을 진행한다
+                    var endLoop = false;
+                    for (var j = i; j < tokens.length; j++) {
+                        var nextToken = tokens[j];
+                        if (i < j) {
+                            subText += nextToken;
+                            offset += nextToken.length;
+                        }
+                        // TDD - 괄호가 섞였을 때는 어쩔건가 // 예) [{~~~]}
+                        if ((closeBracket = getLastCloseBracket(nextToken)) !== null && isOnePairBracket(openBracket, closeBracket)) {
+                            if (i == j && nextToken.lastIndexOf(closeBracket) < nextToken.lastIndexOf(openBracket)) {
+                                // 한 쌍의 괄호는 만들어졌으나 서로 마주 보고 있지 않다
+                                continue;
+                            } else if (i < j && (otherBracket = getFirstOpenBracket(nextToken)) !== null) {
+                                // 닫는 괄호가 있는 곳에서 새로운 여는 괄호를 만나버렸다 // 예) (~~) ~~ '('~~)
+                                openBracket = otherBracket;
+                                if ((otherBracket = getLastCloseBracket(nextToken)) !== null && isOnePairBracket(openBracket, otherBracket)) {
+                                    endLoop = true;
+                                }
+                                continue;
+                            }
+                            endLoop = true;
+                        }
+                        if (isPointOrName(subText, tokens[j + 1]) || isNotEndOfSentence(tokens[j + 1])) {
+                            // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 현재 토큰을 더해주고 과정을 끝낸다
+                            endLoop = true;
+                            continue;
+                        }
+                        if (endLoop) {
+                            this.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+                            subText = '';
+                            startOffset = offset;
+                            i = j;
+                            debug(1);
+                            break;
+                        }
+                    }// end for j
+                } else {
+                    if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+                        // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
+                        continue;
+                    }
+                    if (subText.length) {
+                        this.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+                        subText = '';
+                        debug(2);
+                    }
+                    startOffset = offset;
+                }
+            } // end for i
+            if (subText.length) {
+                // 루프가 끝나도록 추가되지 못한 애들을 추가한다
+                this.chunks.push(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+                debug(3);
+            }
+        } else {
+            // piece가 하나 뿐이라 바로 추가한다
+            this.chunks.push(chunk);
+            debug(4);
+        }
+    },
+
+    flush: function() {
+        mustOverride('flush');
+    },
 
 };
+
+var RidiTTS = function() {};
+RidiTTS.prototype = new TTS();
