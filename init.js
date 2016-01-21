@@ -1,4 +1,4 @@
-// init.js
+// init.js for common without tts
 
 init('app', RidiApp);
 init('epub', RidiEpub);

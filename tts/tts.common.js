@@ -1,4 +1,4 @@
-// tts.js
+// tts.common.js
 
 //
 // * TTS 노트.

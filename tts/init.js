@@ -1,3 +1,3 @@
-// init.js
+// init.js for tts
 
 init('tts', RidiTTS);
