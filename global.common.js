@@ -84,6 +84,13 @@ function getOnlyTextNodeRectsFromRange(/*Range*/range) {
         return /^\s*$/.test(range.toString());
     };
 
+    var concat = function(/*[ClientRect]*/ary, /*ClientRectList*/rects) {
+        [].forEach.call(rects, function(rect) {
+            ary.push(rect);
+        });
+        return ary;
+    };
+
     if (range.startContainer == range.endContainer) {
         var innerText = range.startContainer.innerText;
         if (innerText !== undefined && innerText.length === 0) {
@@ -99,7 +106,7 @@ function getOnlyTextNodeRectsFromRange(/*Range*/range) {
     var workRange = doc.createRange();
     workRange.setStart(range.startContainer, range.startOffset);
     workRange.setEnd(range.startContainer, range.startContainer.length);
-    textNodeRects = textNodeRects.concat(workRange.getAdjustedClientRects());
+    textNodeRects = concat(textNodeRects, workRange.getAdjustedClientRects());
 
     var node = null;
     while ((node = iterator.nextNode()) !== null) {
@@ -121,14 +128,14 @@ function getOnlyTextNodeRectsFromRange(/*Range*/range) {
             continue;
         }
 
-        textNodeRects = textNodeRects.concat(workRange.getAdjustedClientRects());
+        textNodeRects = concat(textNodeRects, workRange.getAdjustedClientRects());
     }
 
     workRange = doc.createRange();
     workRange.setStart(range.endContainer, 0);
     workRange.setEnd(range.endContainer, range.endOffset);
     if (!isWhiteSpaceRange(workRange)) {
-        textNodeRects = textNodeRects.concat(workRange.getAdjustedClientRects());
+        textNodeRects = concat(textNodeRects, workRange.getAdjustedClientRects());
     }
 
     return textNodeRects;
