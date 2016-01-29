@@ -183,7 +183,10 @@ TTSChunk.prototype = {
           continue;
         }
 
-        rects.concat(range.getAdjustedClientRects());
+        var tempRects = range.getAdjustedClientRects();
+        for (var j = 0; j < tempRects.length; j++) {
+          rects.push(tempRects[j]);
+        }
       }
     }// end for
     return rects;
