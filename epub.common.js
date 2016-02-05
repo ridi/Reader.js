@@ -116,9 +116,13 @@ Epub.prototype = {
     },
 
     getOffsetOfSerializedRange: function(/*String*/serializedRange, /*Function*/block) {
-        var range = this.getRangeFromSerializedRange(serializedRange);
-        var rects = range.getAdjustedClientRects();
-        return block(rects.length > 0 ? rects[0] : null);
+        try {
+            var range = getRangeFromSerializedRange(serializedRange);
+            var rects = range.getAdjustedClientRects();
+            return block(rects.length > 0 ? rects[0] : null);
+        } catch(e) {
+            return block(null);
+        }
     },
 
     getPageOffsetOfSerializedRange: function(/*String*/serializedRange) {
