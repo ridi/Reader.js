@@ -9,6 +9,7 @@
 /*global Node: true */
 /*global NodeFilter: true */
 /*global Range: true */
+/*global ClientRect: true*/
 /*global webView: true */
 /*global android: true */
 /*global app: true */

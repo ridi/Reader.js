@@ -13,8 +13,12 @@ Epub.prototype = {
         return html.scrollHeight;
     },
 
+    getTotalPageSize: function() {
+        return app.scrollMode ? this.getTotalHeight() : this.getTotalWidth();
+    },
+
     scrollTo: function(/*Number*/offset) {
-        if (app.isScrollMode()) {
+        if (app.scrollMode) {
             scroll(0, offset);
         } else {
             scroll(offset, 0);
@@ -68,8 +72,8 @@ Epub.prototype = {
         return null;
     },
 
-    getOffsetDirectionFromElement: function(/*HTMLElement*/el, /*Boolean*/scrollMode) {
-        var offsetDirection = scrollMode ? 'top' : 'left';
+    getOffsetDirectionFromElement: function(/*HTMLElement*/el) {
+        var offsetDirection = app.scrollMode ? 'top' : 'left';
         if (el && offsetDirection == 'left' && getMatchedStyle(el, 'position', true) == 'absolute') {
             offsetDirection = 'top';
         }
@@ -284,7 +288,7 @@ Epub.prototype = {
         //        (이미지의 상단 여백은 '-webkit-text-size-adjust'에 영향 받고 있으니 참고하자.)
         //
 
-        if (!app.isScrollMode()) {
+        if (!app.scrollMode) {
             var mHeight = size.dHeight;
             if (cssHeight.length) {
                 mHeight = parseInt(cssHeight);
@@ -383,10 +387,10 @@ Epub.prototype = {
         return nodes;
     },
 
-    findTopNodeRectOfCurrentPage: function(/*ClientRectList*/rects, /*Number*/startOffset, /*Number*/endOffset, /*Boolean*/scrollMode) {
+    findTopNodeRectOfCurrentPage: function(/*ClientRectList*/rects, /*Number*/startOffset, /*Number*/endOffset) {
         for (var j = 0; j < rects.length; j++) {
             // rect 값이 현재 보고있는 페이지의 최상단에 위치하고 있는지.
-            var origin = scrollMode ? rects[j].top : rects[j].left;
+            var origin = app.scrollMode ? rects[j].top : rects[j].left;
             if (startOffset <= origin && origin <= endOffset) {
                 var rect = rects[j];
                 return {top: (rect.top ? rect.top : 0),
@@ -401,7 +405,7 @@ Epub.prototype = {
         return null;
     },
 
-    findTopNodeRectAndLocationOfCurrentPage: function(/*NodeList*/nodes, /*Number*/startOffset, /*Number*/endOffset, /*String*/posSeparator, /*Boolean*/scrollMode) {
+    findTopNodeRectAndLocationOfCurrentPage: function(/*NodeList*/nodes, /*Number*/startOffset, /*Number*/endOffset, /*String*/posSeparator) {
         if (!nodes) {
             return null;
         }
@@ -417,7 +421,7 @@ Epub.prototype = {
             }
 
             // 노드가 현재 보고있는 페이지의 최상단에 위치하거나 걸쳐있는지.
-            var origin = scrollMode ? (rect.top + rect.height) : (rect.left + rect.width);
+            var origin = app.scrollMode ? (rect.top + rect.height) : (rect.left + rect.width);
             if (rect.width === 0 || origin < startOffset) {
                 continue;
             }
@@ -428,7 +432,7 @@ Epub.prototype = {
                     continue;
                 }
 
-                var words = string.split(/' |\\u00A0'/);
+                var words = string.split(WORD_REGEX);
                 var offset = range.startOffset, length = string.length;
                 for (var j = 0; j < words.length; j++) {
                     var word = words[j];
@@ -439,14 +443,14 @@ Epub.prototype = {
                         } catch (e) {
                             return null;
                         }
-                        if ((rect = this.findTopNodeRectOfCurrentPage(range.getAdjustedClientRects(), startOffset, endOffset, scrollMode)) !== null) {
+                        if ((rect = this.findTopNodeRectOfCurrentPage(range.getAdjustedClientRects(), startOffset, endOffset)) !== null) {
                             return {rect: rect, location: (i + posSeparator + min(j + rect.index, words.length - 1))};
                         }
                     }
                     offset += (word.length + 1);
                 }
             } else if (node.nodeName == 'IMG') {
-                if ((rect = this.findTopNodeRectOfCurrentPage(range.getAdjustedClientRects(), startOffset, endOffset, scrollMode)) !== null) {
+                if ((rect = this.findTopNodeRectOfCurrentPage(range.getAdjustedClientRects(), startOffset, endOffset)) !== null) {
                     // 이미지 노드는 워드 인덱스를 구할 수 없기 때문에 0을 사용하며, 위치를 찾을때 이미지 노드의 rect가 현재 위치다.
                     return {rect: rect, location: (i + posSeparator + '0')};
                 }
@@ -456,7 +460,7 @@ Epub.prototype = {
         return null;
     },
 
-    showTopNodeLocation: function(/*Object*/result, /*Boolean*/scrollMode) {
+    showTopNodeLocation: function(/*Object*/result) {
         if (!this.debugTopNodeLocation) {
             return;
         }
@@ -468,23 +472,23 @@ Epub.prototype = {
             body.appendChild(topNode);
         }
 
-        var left = result.rect.left, top = result.rect.top;
-        if (scrollMode) {
-            top += win.pageYOffset;
+        var rect = result.rect;
+        if (app.scrollMode) {
+            rect.top += win.pageYOffset;
         } else {
-            left += win.pageXOffset;
+            rect.left += win.pageXOffset;
         }
 
         topNode.style.cssText = 
-        'position: absolute !important;' +
-        'background-color: red !important;' +
-        'left: ' + left + 'px !important;' +
-        'top: ' + top + 'px !important;' +
-        'width: ' + (result.rect.width ? result.rect.width : 3) + 'px !important;' +
-        'height: ' + result.rect.height + 'px !important;' +
-        'display: block !important;' +
-        'opacity: 0.4 !important;' +
-        'z-index: 99 !important;';
+            'position: absolute !important;' +
+            'background-color: red !important;' +
+            'left: ' + rect.left + 'px !important;' +
+            'top: ' + rect.top + 'px !important;' +
+            'width: ' + (rect.width ? rect.width : 3) + 'px !important;' +
+            'height: ' + rect.height + 'px !important;' +
+            'display: block !important;' +
+            'opacity: 0.4 !important;' +
+            'z-index: 99 !important;';
     },
 
     getTopNodeLocationOfCurrentPage: function(/*String*/posSeparator) {
@@ -492,29 +496,8 @@ Epub.prototype = {
     },
 
     getPageOffsetAndRectFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-        var scrollMode = app.isScrollMode();
-        var pageUnit = scrollMode ? app.pageHeightUnit : app.pageWidthUnit;
-        var totalPageSize = scrollMode ? epub.getTotalHeight() : epub.getTotalWidth();
-
-        var calcPageOffset = function(/*ClientRect*/rect) {
-            var offset = scrollMode ? rect.top : rect.left;
-            if (offset === null || offset < 0) {
-                return -1;
-            }
-
-            for (var i = 1; ; i++) {
-                var start = (i - 1) * pageUnit;
-                var end = i * pageUnit;
-                if (start <= offset && offset < end) {
-                    return (i - 1);
-                }
-            }
-        };
-
-        var isZero = function(/*ClientRect*/rect) {
-            return ((typeof rect !== 'object') || (rect.left === 0 && rect.width === 0 && rect.right === 0 && rect.top === 0 && rect.height === 0 && rect.bottom === 0));
-        };
-
+        var pageUnit = app.getPageUnit();
+        var totalPageSize = epub.getTotalPageSize();
         var notFound = {pageOffset: -1};
 
         var nodes = this.textAndImageNodes;
@@ -531,11 +514,11 @@ Epub.prototype = {
         range.selectNodeContents(node);
 
         var rect = range.getAdjustedBoundingClientRect();
-        if (isZero(rect)) {
+        if (rect.isZero()) {
             return notFound;
         }
 
-        var pageOffset = calcPageOffset(rect);
+        var pageOffset = this.getPageOffsetFromRect(rect);
         if (pageOffset == -1 || totalPageSize <= pageUnit * pageOffset) {
             return notFound;
         }
@@ -549,7 +532,7 @@ Epub.prototype = {
             return notFound;
         }
 
-        var words = string.split(/' |\\u00A0'/);
+        var words = string.split(WORD_REGEX);
         if (words.length <= wordIndex) {
             wordIndex = words.length - 1;
         }
@@ -566,17 +549,13 @@ Epub.prototype = {
             return notFound;
         }
 
-        pageOffset = calcPageOffset((rect = range.getAdjustedBoundingClientRect()));
+        rect = range.getAdjustedBoundingClientRect();
+        pageOffset = this.getPageOffsetFromRect(rect);
         if (pageOffset == -1 || totalPageSize <= pageUnit * pageOffset) {
             return notFound;
         }
 
-        var origin = rect.left - (pageUnit * pageOffset) + rect.width + 1;
-        if (scrollMode || origin < pageUnit) {
-            return {pageOffset: pageOffset, rect: rect};
-        } else {
-            return {pageOffset: pageOffset + 1, rect: rect};
-        }
+        return {pageOffset: pageOffset, rect: rect};
     },
 
     getPageOffsetFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
@@ -584,13 +563,7 @@ Epub.prototype = {
     },
 
     getScrollYOffsetFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-        var result = this.getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex);
-        var rect = result.rect;
-        if (rect === undefined) {
-            return -1;
-        } else {
-            return rect.top;
-        }
+        return (this.getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex).rect || {top: -1}).top;
     },
 
 };

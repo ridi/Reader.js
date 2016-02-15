@@ -12,6 +12,8 @@ var floor = Math.floor;
 var min = Math.min;
 var max = Math.max;
 
+var WORD_REGEX = /' |\\u00A0'/;
+
 function init(/*String*/name, /*Class*/Cls) {
     Object.defineProperty(win, name, {value: new Cls(), writable: false, enumerable: true, configurable: true});
 }
@@ -157,7 +159,7 @@ function getRectsFromSerializedRange(/*String*/serializedRange) {
 function rectsToCoord(/*ClientRectList*/rects, /*Boolean*/absolute) {
     var insets = {left: 0, top: 0};
     if (absolute) {
-        if (app.isScrollMode()) {
+        if (app.scrollMode) {
             insets.top = win.pageYOffset;
         } else {
             insets.left = win.pageXOffset;
@@ -183,6 +185,15 @@ function rectsToRelativeCoord(/*ClientRectList*/rects) {
     return rectsToCoord(rects, false);
 }
 
+ClientRect.prototype.isZero = function() {
+    return (this.left || 0) === 0 && 
+           (this.width || 0) === 0 &&
+           (this.right || 0) === 0 &&
+           (this.top || 0) === 0 &&
+           (this.height || 0) === 0 &&
+           (this.bottom || 0) === 0;
+};
+
 var MutableClientRect = function(/*ClientRect*/rect) {
     this.left = rect.left || 0;
     this.top = rect.top || 0;
@@ -192,6 +203,8 @@ var MutableClientRect = function(/*ClientRect*/rect) {
     this.height = rect.height || 0;
     return this;
 };
+
+MutableClientRect.prototype.isZero = ClientRect.prototype.isZero;
 
 function adjustPoint(/*Number*/x, /*Number*/y) {
     return {x: x, y: y};
