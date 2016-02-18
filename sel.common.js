@@ -3,6 +3,7 @@
 var Sel = function() {};
 Sel.prototype = {
     maxLength: 0,
+    overflowed: false,
     startContainer: null,
     startOffset: null,
     endContainer: null,
@@ -88,12 +89,18 @@ Sel.prototype = {
             return false;
         }
 
-        if (!this.isValidRange(range)) {
+        if (!this.isValidLength(range)) {
+            if (!this.overflowed) {
+                app.toast('최대 1,000자까지 선택할 수 있습니다');
+            }
+            this.overflowed = true;
+
             return false;
         }
 
         this.startContainer = exRange.startContainer;
         this.startOffset = exRange.startOffset;
+        this.overflowed = false;
 
         return true;
     },
@@ -132,28 +139,24 @@ Sel.prototype = {
             return false;
         }
 
-        if (!this.isValidRange(range)) {
+        if (!this.isValidLength(range)) {
+            if (!this.overflowed) {
+                app.toast('최대 1,000자까지 선택할 수 있습니다');
+            }
+            this.overflowed = true;
+
             return false;
         }
 
         this.endContainer = exRange.endContainer;
         this.endOffset = exRange.endOffset;
+        this.overflowed = false;
 
         return true;
     },
 
-    isValidRange: function(/*Range*/range) {
-        if (range.collapsed) {
-            return false;
-        }
-
-        var length = range.toString().length;
-        if (this.maxLength > 0 && length > this.maxLength) {
-            app.toast('최대 1,000자까지 선택할 수 있습니다');
-            return false;
-        }
-
-        return true;
+    isValidLength: function(/*Range*/range) {
+        return range.toString().length <= this.maxLength;
     },
 
     expandRangeByWord: function(/*Range*/range) {
