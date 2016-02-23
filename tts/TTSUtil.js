@@ -33,7 +33,7 @@ function regex(/*String*/prefix, /*String*/pattern, /*String*/suffix, /*String*/
 }
 
 function regexSplitWhitespace(/*String*/prefix, /*String*/suffix, /*String*/flags) {
-  return regex(prefix, ' |\\u00A0', suffix, flags);
+  return regex(prefix, REGEX_SPLIT_WORD, suffix, flags);
 }
 
 function regexWhitespace(/*String*/prefix, /*String*/suffix, /*String*/flags) {

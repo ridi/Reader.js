@@ -12,7 +12,9 @@ var floor = Math.floor;
 var min = Math.min;
 var max = Math.max;
 
-var WORD_REGEX = /' |\\u00A0'/;
+var REGEX_SPLIT_WORD = ' |\\u00A0';
+
+var NOT_FOUND = null;
 
 function init(/*String*/name, /*Class*/Cls) {
     Object.defineProperty(win, name, {value: new Cls(), writable: false, enumerable: true, configurable: true});
@@ -33,9 +35,16 @@ function createTextNodeIterator(/*Node*/node) {
     );
 }
 
-function getMatchedStyle(/*HTMLElement*/el, /*String*/property, /*Boolean*/recursive) {
-    recursive = recursive || false;
-    var getMatchedStyleInternal = function(/*HTMLElement*/el, /*String*/property) {
+function getStylePropertyIntValue(/*HTMLElement or CSSStyleDeclaration*/target, /*String*/property) {
+    var style = target;
+    if (target.nodeType) {
+        style = win.getComputedStyle(target);
+    }
+    return parseInt(style[property]) || 0;
+}
+
+function getMatchedCSSValue(/*HTMLElement*/el, /*String*/property, /*Boolean*/recursive) {
+    var getMatchedCSSValueInternal = function(/*HTMLElement*/el, /*String*/property) {
         // element property has highest priority
         var val = el.style.getPropertyValue(property);
 
@@ -72,9 +81,9 @@ function getMatchedStyle(/*HTMLElement*/el, /*String*/property, /*Boolean*/recur
 
     var val = null;
     var target = el;
-    while (!(val = getMatchedStyleInternal(target, property))) {
+    while (!(val = getMatchedCSSValueInternal(target, property))) {
         target = target.parentElement;
-        if (target === null || recursive === false) {
+        if (target === null || !(recursive || false)) {
             break;
         }
     }

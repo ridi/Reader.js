@@ -74,7 +74,7 @@ Epub.prototype = {
 
     getOffsetDirectionFromElement: function(/*HTMLElement*/el) {
         var offsetDirection = app.scrollMode ? 'top' : 'left';
-        if (el && offsetDirection == 'left' && getMatchedStyle(el, 'position', true) == 'absolute') {
+        if (el && offsetDirection == 'left' && getMatchedCSSValue(el, 'position', true) == 'absolute') {
             offsetDirection = 'top';
         }
         return offsetDirection;
@@ -102,7 +102,7 @@ Epub.prototype = {
             // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
             return block(el.getAdjustedBoundingClientRect(), el);
         } else {
-            return block({left: -1, top: -1}, null);
+            return block({left: NOT_FOUND, top: NOT_FOUND}, null);
         }
     },
 
@@ -119,7 +119,7 @@ Epub.prototype = {
         });
     },
 
-    getOffsetOfSerializedRange: function(/*String*/serializedRange, /*Function*/block) {
+    getOffsetFromSerializedRange: function(/*String*/serializedRange, /*Function*/block) {
         try {
             var range = getRangeFromSerializedRange(serializedRange);
             var rects = range.getAdjustedClientRects();
@@ -129,15 +129,16 @@ Epub.prototype = {
         }
     },
 
-    getPageOffsetOfSerializedRange: function(/*String*/serializedRange) {
-        return this.getOffsetOfSerializedRange(serializedRange, function(rect) {
-            return this.getPageOffsetFromRect(rect);
+    getPageOffsetFromSerializedRange: function(/*String*/serializedRange) {
+        var that = this;
+        return this.getOffsetFromSerializedRange(serializedRange, function(rect) {
+            return that.getPageOffsetFromRect(rect);
         });
     },
 
-    getScrollYOffsetOfSerializedRange: function(/*String*/serializedRange) {
-        return this.getOffsetOfSerializedRange(serializedRange, function(rect) {
-            return (rect || {top: -1}).top;
+    getScrollYOffsetFromSerializedRange: function(/*String*/serializedRange) {
+        return this.getOffsetFromSerializedRange(serializedRange, function(rect) {
+            return (rect || {top: NOT_FOUND}).top;
         });
     },
 
@@ -163,8 +164,8 @@ Epub.prototype = {
             nWidth: imgEl.naturalWidth,
             nHeight: imgEl.naturalHeight,
             // CSS에서 명시된 크기
-            sWidth: getMatchedStyle(imgEl, 'width'),
-            sHeight: getMatchedStyle(imgEl, 'height'),
+            sWidth: getMatchedCSSValue(imgEl, 'width'),
+            sHeight: getMatchedCSSValue(imgEl, 'height'),
             // 엘리먼트 속성으로 명시된 크기
             aWidth: (attrs.width || zeroAttr).value,
             aHeight: (attrs.height || zeroAttr).value
@@ -320,12 +321,12 @@ Epub.prototype = {
         //     영향을 받아 빈 페이지가 들어가기 때문이다.)
         //
 
-        var maxWidth = getMatchedStyle(imgEl, 'max-width');
+        var maxWidth = getMatchedCSSValue(imgEl, 'max-width');
         if (isPercentValue(maxWidth) && parseInt(maxWidth) > 100) {
             cssMaxWidth = '100%';
         }
 
-        var maxHeight = getMatchedStyle(imgEl, 'max-height');
+        var maxHeight = getMatchedCSSValue(imgEl, 'max-height');
         if (isPercentValue(maxHeight) && parseInt(maxHeight) > 95) {
             cssMaxHeight = '95%';
         }
@@ -432,7 +433,7 @@ Epub.prototype = {
                     continue;
                 }
 
-                var words = string.split(WORD_REGEX);
+                var words = string.split(/REGEX_SPLIT_WORD/);
                 var offset = range.startOffset, length = string.length;
                 for (var j = 0; j < words.length; j++) {
                     var word = words[j];
@@ -498,7 +499,7 @@ Epub.prototype = {
     getPageOffsetAndRectFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
         var pageUnit = app.getPageUnit();
         var totalPageSize = epub.getTotalPageSize();
-        var notFound = {pageOffset: -1};
+        var notFound = {pageOffset: NOT_FOUND};
 
         var nodes = this.textAndImageNodes;
         if (pageUnit === 0 || nodeIndex == -1 || wordIndex == -1 || nodes === null || nodes.length <= nodeIndex) {
@@ -519,7 +520,7 @@ Epub.prototype = {
         }
 
         var pageOffset = this.getPageOffsetFromRect(rect);
-        if (pageOffset == -1 || totalPageSize <= pageUnit * pageOffset) {
+        if (pageOffset === NOT_FOUND || totalPageSize <= pageUnit * pageOffset) {
             return notFound;
         }
 
@@ -532,7 +533,7 @@ Epub.prototype = {
             return notFound;
         }
 
-        var words = string.split(WORD_REGEX);
+        var words = string.split(/REGEX_SPLIT_WORD/);
         if (words.length <= wordIndex) {
             wordIndex = words.length - 1;
         }
@@ -551,7 +552,7 @@ Epub.prototype = {
 
         rect = range.getAdjustedBoundingClientRect();
         pageOffset = this.getPageOffsetFromRect(rect);
-        if (pageOffset == -1 || totalPageSize <= pageUnit * pageOffset) {
+        if (pageOffset === NOT_FOUND || totalPageSize <= pageUnit * pageOffset) {
             return notFound;
         }
 
@@ -563,7 +564,7 @@ Epub.prototype = {
     },
 
     getScrollYOffsetFromTopNodeLocation: function(/*Number*/nodeIndex, /*Number*/wordIndex) {
-        return (this.getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex).rect || {top: -1}).top;
+        return (this.getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex).rect || {top: NOT_FOUND}).top;
     },
 
 };
