@@ -433,7 +433,7 @@ Epub.prototype = {
                     continue;
                 }
 
-                var words = string.split(/REGEX_SPLIT_WORD/);
+                var words = string.split(new RegExp(REGEX_SPLIT_WORD));
                 var offset = range.startOffset, length = string.length;
                 for (var j = 0; j < words.length; j++) {
                     var word = words[j];
@@ -533,7 +533,7 @@ Epub.prototype = {
             return notFound;
         }
 
-        var words = string.split(/REGEX_SPLIT_WORD/);
+        var words = string.split(new RegExp(REGEX_SPLIT_WORD));
         if (words.length <= wordIndex) {
             wordIndex = words.length - 1;
         }
@@ -554,6 +554,14 @@ Epub.prototype = {
         pageOffset = this.getPageOffsetFromRect(rect);
         if (pageOffset === NOT_FOUND || totalPageSize <= pageUnit * pageOffset) {
             return notFound;
+        }
+
+        if (rect.left < 0) {
+            if (rect.width < pageUnit) {
+                pageOffset++;
+            } else {
+                pageOffset += floor(rect.width / pageUnit);
+            }
         }
 
         return {pageOffset: pageOffset, rect: rect};
