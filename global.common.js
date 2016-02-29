@@ -204,6 +204,7 @@ ClientRect.prototype.isZero = function() {
 };
 
 var MutableClientRect = function(/*ClientRect*/rect) {
+    rect = rect || {};
     this.left = rect.left || 0;
     this.top = rect.top || 0;
     this.right = rect.right || 0;
