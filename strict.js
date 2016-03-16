@@ -8,6 +8,7 @@
 /*global location: true */
 /*global Node: true */
 /*global NodeFilter: true */
+/*global HTMLElement: true */
 /*global Range: true */
 /*global ClientRect: true*/
 /*global webView: true */

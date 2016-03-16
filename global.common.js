@@ -241,3 +241,13 @@ Range.prototype.getAdjustedClientRects = function() {
     var rects = this.getClientRects() || [];
     return adjustRects(rects);
 };
+
+HTMLElement.prototype.getAdjustedBoundingClientRect = function() {
+    var rect = this.getBoundingClientRect() || new MutableClientRect();
+    return adjustRect(rect);
+};
+
+HTMLElement.prototype.getAdjustedClientRects = function() {
+    var rects = this.getClientRects() || [];
+    return adjustRects(rects);
+};
