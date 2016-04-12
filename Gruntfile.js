@@ -1,56 +1,135 @@
 module.exports = function(grunt) {
-  var bannerText = '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n';
-  var commonPath = 'common';
-  var srcPath = 'src';
-  var intermediatePath = 'intermediate';
-  var distPath = '../Reader/EPub/Javascripts';
+  var platform = grunt.option('platform');
+  if (platform === undefined || platform != 'android' || platform != 'ios') {
+    throw 'Usage: grunt [default|test] --platform=[android|ios]';
+  }
 
-  var srcPaths = function(targets, options) {
-    var paths = [];
-    options = options || [{basePath: '', extPrefix: ''}];
-    targets.forEach(function(target) {
-      options.forEach(function(option) {
-        paths.push(option.basePath + '/' + target + (option.extPrefix || '') + '.js');
+  var targets = [];
+  if (platform == 'android') {
+    targets = [
+      {
+        path: 'main',
+        src: 'epub.js'
+      },
+      {
+        path: 'full',
+        src: 'tts.js'
+      }
+    ];
+  }
+
+  var srcPath = 'src';
+  var commonPath = 'src/common';
+  var platformPath = 'src/' + platform;
+  var libsPath = 'src/libs';
+  var intermediatePath = 'intermediate';
+
+  var getDestPath = function() {
+    if (platform == 'android') {
+      var paths = [];
+      targets.forEach(function(target) {
+        var path = '../src/' + target.path + '/assets/javascripts';
+        paths.push(path);
+        target.path = path;
       });
-    });
-    return paths;
+      return paths;
+    } else {
+      return '../Reader/EPub/Javascripts';
+    }
   };
 
-  var config = {
+  var getUglifyMappingFiles = function() {
+    function createFile(src, dest) {
+      return {
+        expand: true,
+        flatten: true,
+        cwd: intermediatePath,
+        src: src,
+        dest: dest,
+        ext: '.min.js',
+        extDot: 'last'
+      };
+    }
+
+    if (platform == 'android') {
+      var files = [];
+      targets.forEach(function(target) {
+        files.push(createFile(target.src, target.path));
+      });
+      return files;
+    } else {
+      return createFile('**.js', getDestPath(platform));
+    }
+  };
+
+  grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    clean: {
-      all: {
-        src: [distPath],
-        options: {
-          force: true
+    variants: {
+      srcPath: srcPath,
+      commonPath: commonPath,
+      platformPath: platformPath,
+      src: [
+        commonPath + '/**/*.js',
+        platformPath + '/*.js',
+        libsPath + '/*.js'
+      ],
+      dest: getDestPath(),
+      uglify: {
+        dynamic_mappings: {
+          files: getUglifyMappingFiles()
         }
       }
     },
+
+    clean: {
+      src: [
+        '<%= variants.dest %>',
+        intermediatePath
+      ],
+      options: {
+        force: true
+      }
+    },
+
     concat: {
       epub: {
         src: [
-          srcPaths(['global', 'app', 'epub', 'sel', 'handler'], [{basePath: commonPath, extPrefix: '.common'}, {basePath: srcPath, extPrefix: '.ios'}]),
-          srcPaths(['searcher', 'init', 'rangy'], [{basePath: commonPath}]),
-          (srcPath + '/init.js')
+          '<%= variants.src %>',
+          '!<%= variants.commonPath %>/tts/*.js',
+          '!<%= variants.platformPath %>/tts*.js',
+          '!<%= variants.platformPath %>/epub.init.js',
+          '<%= variants.srcPath %>/epub.init.js',
+          '<%= variants.platformPath %>/epub.init.js'
         ],
         dest: intermediatePath + '/epub.js',
         options: {
-          banner: "'use strict';\n"
+          banner: '\'use strict\';\n'
         }
       },
       tts: {
         src: [
-          srcPaths(['TTSUtil', 'TTSRange', 'TTSPiece', 'TTSChunk', 'TTSUtterance', 'tts.common'], [{basePath: commonPath + '/tts'}]),
-          srcPath + '/tts/tts.ios.js',
-          commonPath + '/tts/init.js',
-          srcPath + '/tts/init.js'
+          '!<%= variants.src %>',
+          '<%= variants.commonPath %>/tts/*.js',
+          '<%= variants.platformPath %>/tts*.js',
+          '<%= variants.srcPath %>/tts.init.js'
         ],
         dest: intermediatePath + '/tts.js',
         options: {
-          banner: "'use strict';\n"
+          banner: '\'use strict\';\n'
+        }
+      },
+      ridi: {
+        src: [
+          '<%= concat.epub.src %>',
+          '<%= concat.tts.src %>'
+        ],
+        dest: intermediatePath + '/ridi.js',
+        options: {
+          banner: '\'use strict\';\n'
         }
       }
     },
+
     jshint: {
       options: {
         laxbreak: true,
@@ -100,44 +179,23 @@ module.exports = function(grunt) {
         intermediatePath + '/*.js'
       ]
     },
+
     uglify: {
       options: {
-        banner: bannerText,
+        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
         mangle: false,
       },
       dynamic_mappings: {
         files: [
-          {
-            expand: true,
-            flatten: true,
-            cwd: intermediatePath,
-            src: '*.js',
-            dest: distPath,
-            ext: '.min.js',
-            extDot: 'last'
-          }
+          '<%= variants.uglify.dynamic_mappings.files %>'
         ]
       }
     },
-    copy: {
-      dynamic_mappings: {
-        files: [
-          {
-            expand: true,
-            cwd: intermediatePath,
-            src: ['*.js'],
-            dest: distPath,
-            rename: function(dest, src) {
-              return dest + '/' + src.replace('.js', '.min.js');
-            }
-          }
-        ]
-      }
-    },
-    qunit: ['common/test/**/test-*.html']
-  };
 
-  grunt.initConfig(config);
+    qunit: [
+      'test/**/test-*.html'
+    ]
+  });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -146,7 +204,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-copy');
 
-  grunt.registerTask('default', ['clean:all', 'concat', 'jshint', 'uglify']);
-  grunt.registerTask('no-uglify', ['clean:all', 'concat', 'jshint', 'copy']);
-  grunt.registerTask('test', ['clean:all', 'jshint', 'qunit']);
+  grunt.registerTask('default', ['clean', 'concat', 'jshint', 'uglify']);
+  grunt.registerTask('test', ['clean', 'concat', 'jshint', 'qunit']);
+
+  grunt.registerTask('config', function() {
+    grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
+  });
 };

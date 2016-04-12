@@ -1,4 +1,4 @@
-// init.js for common without tts
+// epub.init.js
 
 (function(){
     epub.setViewport();
