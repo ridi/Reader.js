@@ -1,6 +1,6 @@
 module.exports = function(grunt) {
   var platform = grunt.option('platform');
-  if (platform === undefined || platform != 'android' || platform != 'ios') {
+  if (platform === undefined || (platform != 'android' && platform != 'ios')) {
     throw 'Usage: grunt [default|test] --platform=[android|ios]';
   }
 
@@ -192,6 +192,22 @@ module.exports = function(grunt) {
       }
     },
 
+    copy: {
+      dynamic_mappings: {
+        files: [
+          {
+            expand: true,
+            cwd: intermediatePath,
+            src: ['*.js'],
+            dest: getDestPath(),
+            rename: function(dest, src) {
+              return dest + '/' + src.replace('.js', '.min.js');
+            }
+          }
+        ]
+      }
+    },
+
     qunit: [
       'test/**/test-*.html'
     ]
@@ -206,8 +222,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', ['clean', 'concat', 'jshint', 'uglify']);
   grunt.registerTask('test', ['clean', 'concat', 'jshint', 'qunit']);
+  grunt.registerTask('epub-debug', ['clean', 'concat', 'jshint', 'copy']); // iOS only
 
-  grunt.registerTask('config', function() {
+  grunt.registerTask('config', function() { // debug
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
 };
