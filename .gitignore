@@ -1,5 +1,5 @@
 # Glob
 .DS_Store
 node_modules
-intermediate
+build
 .idea

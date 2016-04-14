@@ -1,4 +1,4 @@
-// epub.init.js
+// init.js
 
 (function(){
     epub.setViewport();

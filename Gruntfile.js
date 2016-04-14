@@ -1,90 +1,40 @@
 module.exports = function(grunt) {
   var platform = grunt.option('platform');
   if (platform === undefined || (platform != 'android' && platform != 'ios')) {
-    throw 'Usage: grunt [default|test] --platform=[android|ios]';
+    throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios]';
   }
 
-  var targets = [];
+  var basePath = 'src';
+  var commonPath = basePath + '/common';
+  var platformPath = basePath + '/' + platform;
+  var libsPath = basePath + '/libs';
+  var buildPath = 'build';
+  var distPath = '../Reader/EPub/Javascripts';
   if (platform == 'android') {
-    targets = [
-      {
-        path: 'main',
-        src: 'epub.js'
-      },
-      {
-        path: 'full',
-        src: 'tts.js'
-      }
-    ];
+    distPath = '../src/main/assets/javascripts';
   }
-
-  var srcPath = 'src';
-  var commonPath = 'src/common';
-  var platformPath = 'src/' + platform;
-  var libsPath = 'src/libs';
-  var intermediatePath = 'intermediate';
-
-  var getDestPath = function() {
-    if (platform == 'android') {
-      var paths = [];
-      targets.forEach(function(target) {
-        var path = '../src/' + target.path + '/assets/javascripts';
-        paths.push(path);
-        target.path = path;
-      });
-      return paths;
-    } else {
-      return '../Reader/EPub/Javascripts';
-    }
-  };
-
-  var getUglifyMappingFiles = function() {
-    function createFile(src, dest) {
-      return {
-        expand: true,
-        flatten: true,
-        cwd: intermediatePath,
-        src: src,
-        dest: dest,
-        ext: '.min.js',
-        extDot: 'last'
-      };
-    }
-
-    if (platform == 'android') {
-      var files = [];
-      targets.forEach(function(target) {
-        files.push(createFile(target.src, target.path));
-      });
-      return files;
-    } else {
-      return createFile('**.js', getDestPath(platform));
-    }
-  };
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     variants: {
-      srcPath: srcPath,
+      name: 'ridi',
+      platform: platform,
+      basePath: basePath,
       commonPath: commonPath,
       platformPath: platformPath,
+      buildPath: buildPath,
       src: [
         commonPath + '/**/*.js',
         platformPath + '/*.js',
         libsPath + '/*.js'
       ],
-      dest: getDestPath(),
-      uglify: {
-        dynamic_mappings: {
-          files: getUglifyMappingFiles()
-        }
-      }
+      dist: distPath
     },
 
     clean: {
       src: [
-        '<%= variants.dest %>',
-        intermediatePath
+        '<%= variants.buildPath %>',
+        '<%= variants.dist %>'
       ],
       options: {
         force: true
@@ -92,38 +42,18 @@ module.exports = function(grunt) {
     },
 
     concat: {
-      epub: {
+      ridi: {
         src: [
           '<%= variants.src %>',
           '!<%= variants.commonPath %>/tts/*.js',
           '!<%= variants.platformPath %>/tts*.js',
-          '!<%= variants.platformPath %>/epub.init.js',
-          '<%= variants.srcPath %>/epub.init.js',
-          '<%= variants.platformPath %>/epub.init.js'
-        ],
-        dest: intermediatePath + '/epub.js',
-        options: {
-          banner: '\'use strict\';\n'
-        }
-      },
-      tts: {
-        src: [
-          '!<%= variants.src %>',
+          '!<%= variants.platformPath %>/init.js',
           '<%= variants.commonPath %>/tts/*.js',
           '<%= variants.platformPath %>/tts*.js',
-          '<%= variants.srcPath %>/tts.init.js'
+          '<%= variants.basePath %>/init.js',
+          '<%= variants.platformPath %>/init.js'
         ],
-        dest: intermediatePath + '/tts.js',
-        options: {
-          banner: '\'use strict\';\n'
-        }
-      },
-      ridi: {
-        src: [
-          '<%= concat.epub.src %>',
-          '<%= concat.tts.src %>'
-        ],
-        dest: intermediatePath + '/ridi.js',
+        dest: '<%= variants.buildPath %>/<%= variants.name %>.js',
         options: {
           banner: '\'use strict\';\n'
         }
@@ -172,22 +102,29 @@ module.exports = function(grunt) {
           "init": true,
           "mustOverride": true,
           "rectsToAbsoluteCoord": true,
-          "HTMLElement": true,
+          "HTMLElement": true
         }
       },
       files: [
-        intermediatePath + '/*.js'
+        '<%= variants.buildPath %>/<%= variants.name %>.js'
       ]
     },
 
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
-        mangle: false,
+        mangle: false
       },
       dynamic_mappings: {
         files: [
-          '<%= variants.uglify.dynamic_mappings.files %>'
+          {
+            expand: true,
+            flatten: true,
+            src: '<%= concat.ridi.dest %>',
+            dest: '<%= variants.dist %>',
+            ext: '.min.js',
+            extDot: 'last'
+          }
         ]
       }
     },
@@ -197,9 +134,8 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            cwd: intermediatePath,
-            src: ['*.js'],
-            dest: getDestPath(),
+            src: '<%= concat.ridi.dest %>',
+            dest: '<%= variants.dist %>',
             rename: function(dest, src) {
               return dest + '/' + src.replace('.js', '.min.js');
             }
@@ -224,7 +160,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['clean', 'concat', 'jshint', 'qunit']);
   grunt.registerTask('epub-debug', ['clean', 'concat', 'jshint', 'copy']); // iOS only
 
-  grunt.registerTask('config', function() { // debug
+  grunt.registerTask('show-config', function() { // debug
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
 };
