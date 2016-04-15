@@ -4,11 +4,6 @@ module.exports = function(grunt) {
     throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios]';
   }
 
-  var basePath = 'src';
-  var commonPath = basePath + '/common';
-  var platformPath = basePath + '/' + platform;
-  var libsPath = basePath + '/libs';
-  var buildPath = 'build';
   var distPath = '../Reader/EPub/Javascripts';
   if (platform == 'android') {
     distPath = '../src/main/assets/javascripts';
@@ -18,23 +13,25 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     variants: {
       name: 'ridi',
+      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       platform: platform,
-      basePath: basePath,
-      commonPath: commonPath,
-      platformPath: platformPath,
-      buildPath: buildPath,
+      basePath: 'src',
+      commonPath: '<%= variants.basePath %>/common',
+      platformPath: '<%= variants.basePath %>/<%= variants.platform %>',
+      libsPath: '<%= variants.basePath %>/libs',
+      buildPath: 'build',
       distPath: distPath,
       src: {
         es6: [
-          commonPath + '/**/*.es6',
-          platformPath + '/*.es6'
+          '<%= variants.commonPath %>/**/*.es6',
+          '<%= variants.platformPath %>/*.es6'
         ],
         js: [
-          libsPath + '/*.js'
+          '<%= variants.libsPath %>/*.js'
         ]
       },
-      intermediate: buildPath + '/<%= variants.name %>.js',
-      dist: distPath + '/<%= variants.name %>.js'
+      intermediate: '<%= variants.buildPath %>/<%= variants.name %>.js',
+      dist: '<%= variants.distPath %>/<%= variants.name %>.js'
     },
 
     clean: {
@@ -49,6 +46,7 @@ module.exports = function(grunt) {
 
     jshint: {
       options: {
+        strict: false,
         laxbreak: true,
         globalstrict: true,
         globals: {
@@ -61,7 +59,9 @@ module.exports = function(grunt) {
     },
 
     eslint: {
-      files: ['<%= variants.src.es6 %>']
+      files: [
+        '<%= variants.src.es6 %>'
+      ]
     },
 
     babel: {
@@ -82,13 +82,14 @@ module.exports = function(grunt) {
 
     browserify: {
       build: {
-        files: {
-          '<%= variants.intermediate %>': ['build/**/*.js']
-        },
+        src: [
+          '<%= variants.buildPath %>/<%= variants.platformPath %>/Init.js'
+        ],
+        dest: '<%= variants.intermediate %>',
         options: {
           browserifyOptions: {
             paths: ['js'],
-            standalone: '<%= variants.name %>'
+            standalone: 'Ridi'
           }
         }
       }
@@ -102,19 +103,18 @@ module.exports = function(grunt) {
         ],
         dest: '<%= variants.intermediate %>',
         options: {
-          banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+          banner: '<%= variants.banner %>'
         }
       }
     },
 
     uglify: {
       options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+        banner: '<%= variants.banner %>',
         mangle: false
       },
       dynamic_mappings: {
-        files: [
-          {
+        files: [{
             expand: true,
             flatten: true,
             src: '<%= variants.intermediate %>',
@@ -129,8 +129,7 @@ module.exports = function(grunt) {
 
     copy: {
       dynamic_mappings: {
-        files: [
-          {
+        files: [{
             expand: true,
             src: '<%= variants.intermediate %>',
             dest: '<%= variants.dist %>',
