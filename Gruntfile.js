@@ -23,57 +23,87 @@ module.exports = function(grunt) {
       commonPath: commonPath,
       platformPath: platformPath,
       buildPath: buildPath,
-      src: [
-        commonPath + '/**/*.es6',
-        platformPath + '/*.es6',
-        libsPath + '/*.es6'
-      ],
-      dist: distPath
+      distPath: distPath,
+      src: {
+        es6: [
+          commonPath + '/**/*.es6',
+          platformPath + '/*.es6'
+        ],
+        js: [
+          libsPath + '/*.js'
+        ]
+      },
+      intermediate: buildPath + '/<%= variants.name %>.js',
+      dist: distPath + '/<%= variants.name %>.js'
     },
 
     clean: {
       src: [
         '<%= variants.buildPath %>',
-        '<%= variants.dist %>'
+        '<%= variants.distPath %>'
       ],
       options: {
         force: true
       }
     },
 
-    concat: {
-      ridi: {
-        src: [
-          '<%= variants.src %>',
-          '!<%= variants.commonPath %>/tts/*.es6',
-          '!<%= variants.platformPath %>/tts*.es6',
-          '!<%= variants.platformPath %>/init.es6',
-          '<%= variants.commonPath %>/tts/*.es6',
-          '<%= variants.platformPath %>/tts*.es6',
-          '<%= variants.basePath %>/init.es6',
-          '<%= variants.platformPath %>/init.es6'
-        ],
-        dest: '<%= variants.buildPath %>/<%= variants.name %>.es6'
-      }
+    jshint: {
+      options: {
+        laxbreak: true,
+        globalstrict: true,
+        globals: {
+          'document': true
+        }
+      },
+      files: [
+        '<%= variants.src.js %>'
+      ]
     },
 
     eslint: {
-      files: ['<%= concat.ridi.dest %>']
+      files: ['<%= variants.src.es6 %>']
     },
 
     babel: {
-      ridi: {
+      build: {
         options: {
           presets: ['es2015'],
           sourceMaps: false
         },
         files: [{
           expand: true,
-          src: ['<%= concat.ridi.dest %>'],
-          dest: '',
+          src: ['<%= variants.src.es6 %>'],
+          dest: '<%= variants.buildPath %>',
           ext: '.js',
           extDot: 'last'
         }]
+      }
+    },
+
+    browserify: {
+      build: {
+        files: {
+          '<%= variants.intermediate %>': ['build/**/*.js']
+        },
+        options: {
+          browserifyOptions: {
+            paths: ['js'],
+            standalone: '<%= variants.name %>'
+          }
+        }
+      }
+    },
+
+    concat: {
+      build: {
+        src: [
+          '<%= variants.intermediate %>',
+          '<%= variants.src.js %>'
+        ],
+        dest: '<%= variants.intermediate %>',
+        options: {
+          banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        }
       }
     },
 
@@ -87,10 +117,11 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: '<%= variants.buildPath %>/<%= variants.name %>.js',
+            src: '<%= variants.intermediate %>',
             dest: '<%= variants.dist %>',
-            ext: '.min.js',
-            extDot: 'last'
+            rename: function(dest) {
+              return dest.replace('.js', '.min.js');
+            }
           }
         ]
       }
@@ -101,10 +132,10 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            src: '<%= variants.buildPath %>/<%= variants.name %>.js',
+            src: '<%= variants.intermediate %>',
             dest: '<%= variants.dist %>',
-            rename: function(dest, src) {
-              return dest + '/' + src.replace('.js', '.min.js');
+            rename: function(dest) {
+              return dest.replace('.js', '.min.js');
             }
           }
         ]
@@ -117,6 +148,7 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-babel');
+  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -125,11 +157,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('gruntify-eslint');
 
-  grunt.registerTask('default', ['clean', 'concat', 'eslint', 'babel', 'uglify']);
-  grunt.registerTask('test', ['clean', 'concat', 'eslint', 'babel', 'qunit']);
-  grunt.registerTask('epub-debug', ['clean','concat', 'eslint', 'babel', 'copy']); // iOS only
-
+  grunt.registerTask('default', ['clean', 'lint', 'bundle', 'uglify']);
+  grunt.registerTask('test', ['clean', 'lint', 'bundle', 'qunit']);
+  grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']); // iOS only
   grunt.registerTask('show-config', function() { // debug
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
+
+  grunt.registerTask('lint', ['jshint', 'eslint']);
+  grunt.registerTask('bundle', ['babel', 'browserify', 'concat']);
 };
