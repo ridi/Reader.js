@@ -1,7 +1,7 @@
-import Handler from '../common/Handler';
-import RidiUtil from './RidiUtil';
+import _Handler from '../common/_Handler';
+import Util from './Util';
 
-export default class RidiHandler extends Handler {
+export default class Handler extends _Handler {
   static processSingleTapEvent(x, y, rawX, rawY, canvasWidth, canvasHeight, isVerticalPagingOn) {
     const link = this.getLinkFromPoint(x, y);
     if (link !== null) {
@@ -11,7 +11,7 @@ export default class RidiHandler extends Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = RidiUtil.rectsToAbsoluteCoord(range.getAdjustedClientRects());
+        const rects = Util.rectsToAbsoluteCoord(range.getAdjustedClientRects());
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         const regex = /^(\[|\{|\(|주|)[0-9]*(\)|\}|\]|\.|)$/gm;

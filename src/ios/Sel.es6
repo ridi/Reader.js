@@ -1,8 +1,8 @@
-import Sel from '../common/Sel';
-import RidiUtil from './RidiUtil';
-import RidiApp from './RidiApp';
+import _Sel from '../common/_Sel';
+import Util from './Util';
+import App from './App';
 
-export default class RidiSel extends Sel {
+export default class Sel extends _Sel {
   constructor(maxLength = 0) {
     super(maxLength);
     this._overflowed = false;
@@ -12,7 +12,7 @@ export default class RidiSel extends Sel {
     const rects = this.getSelectedRangeRects();
     if (rects.length) {
       this._overflowed = false;
-      return RidiUtil.rectsToAbsoluteCoord(rects);
+      return Util.rectsToAbsoluteCoord(rects);
     }
     return '';
   }
@@ -48,7 +48,7 @@ export default class RidiSel extends Sel {
   validLength(range) {
     if (!super.validLength(range)) {
       if (!this._overflowed) {
-        RidiApp.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다`);
+        App.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다`);
       }
       this._overflowed = true;
       return false;

@@ -1,6 +1,6 @@
-import App from '../common/App';
+import _App from '../common/_App';
 
-export default class RidiApp extends App {
+export default class App extends _App {
   constructor(width, height, systemMajorVersion, doublePageMode, scrollMode) {
     super(width, height, systemMajorVersion, doublePageMode, scrollMode);
     this._appInBackground = false;

@@ -1,4 +1,4 @@
-export default class Searcher {
+export default class _Searcher {
   static searchText(keyword) {
     if (find(keyword, 0)) { // Case insensitive
       return rangy.serializeRange(getSelection().getRangeAt(0), true, document.body);

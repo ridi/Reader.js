@@ -1,8 +1,8 @@
-import App from '../common/App';
-import RidiUtil from './RidiUtil';
-import RidiEPub from './RidiEPub';
+import _App from '../common/_App';
+import Util from './Util';
+import EPub from './EPub';
 
-export default class RidiApp extends App {
+export default class App extends _App {
   get chromeMajorVersion() { return this._chromeMajorVersion; }
   get pageWeightForChrome() { return this._pageWeightForChrome; }
   get pageOverflowForChrome() { return this._pageOverflowForChrome; }
@@ -14,7 +14,7 @@ export default class RidiApp extends App {
     const version = parseInt((chrome.match(/[\d]+/g) || [''])[0], 10);
     if (!isNaN(version)) {
       this._chromeMajorVersion = version;
-      if (RidiUtil.checkCurseInChrome(version) && !this.scrollMode) {
+      if (Util.checkCurseInChrome(version) && !this.scrollMode) {
         this._pageWeightForChrome = Math.min(pageOffset, CURSE);
         this._pageOverflowForChrome = false;
         this._prevPage = pageOffset;
@@ -25,7 +25,7 @@ export default class RidiApp extends App {
   }
 
   getColumnGap() {
-    return RidiUtil.getStylePropertyIntValue(document.documentElement, '-webkit-column-gap');
+    return Util.getStylePropertyIntValue(document.documentElement, '-webkit-column-gap');
   }
 
   getCurPage() {
@@ -37,7 +37,7 @@ export default class RidiApp extends App {
 
   _setScrollListener() {
     window.addEventListener('scroll', () => {
-      if (RidiUtil.checkCurseInChrome()) {
+      if (Util.checkCurseInChrome()) {
         // * Chrome 47, 49 대응
         // 현재 페이지를 기준으로 rect를 구할 때 left의 기준이 변경됨에 따라 아래와 같이 대응함 (rectToRelativeForChrome)
         // 1) 다음 페이지 이동만 할 때
@@ -97,15 +97,15 @@ export default class RidiApp extends App {
   }
 
   moveToAnchor(anchor) {
-    this._movoTo(RidiEPub, 'Anchor', anchor);
+    this._movoTo(EPub, 'Anchor', anchor);
   }
 
   moveToSerializedRange(serializedRange) {
-    this._movoTo(RidiEPub, 'SerializedRange', serializedRange);
+    this._movoTo(EPub, 'SerializedRange', serializedRange);
   }
 
   moveToTopNodeLocation(nodeIndex, wordIndex) {
-    this._movoTo(RidiEPub, 'TopNodeLocation', nodeIndex, wordIndex);
+    this._movoTo(EPub, 'TopNodeLocation', nodeIndex, wordIndex);
   }
 
   moveToChunkId(chunkId) {

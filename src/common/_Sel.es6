@@ -1,6 +1,6 @@
-import Util from './Util';
+import _Util from './_Util';
 
-export default class Sel {
+export default class _Sel {
   constructor(maxLength = 0) {
     this._maxLength = maxLength;
     this._startContainer = null;
@@ -10,7 +10,7 @@ export default class Sel {
   }
 
   _caretRangeFromPoint(x, y, expand = 'word', allowCollapsed = false) {
-    const point = Util.adjustPoint(x, y);
+    const point = _Util.adjustPoint(x, y);
     const range = document.caretRangeFromPoint(point.x, point.y);
     if (range === null) {
       return null;
@@ -196,7 +196,7 @@ export default class Sel {
   }
 
   getSelectedRangeRects() {
-    return Util.getOnlyTextNodeRectsFromRange(this.getSelectedRange());
+    return _Util.getOnlyTextNodeRectsFromRange(this.getSelectedRange());
   }
 
   getSelectedText() {

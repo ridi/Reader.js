@@ -1,10 +1,10 @@
-import Util from './Util';
+import _Util from './_Util';
 import MutableClientRect from './MutableClientRect';
 
 let debugTopNodeLocation = false;
 let textAndImageNodes = null;
 
-export default class EPub {
+export default class _EPub {
   static getTotalWidth() {
     return document.documentElement.scrollWidth;
   }
@@ -75,7 +75,7 @@ export default class EPub {
   static getOffsetDirectionFromElement(el) {
     let direction = app.scrollMode ? 'top' : 'left';
     if (el) {
-      const position = Util.getMatchedCSSValue(el, 'position', true);
+      const position = _Util.getMatchedCSSValue(el, 'position', true);
       if (direction === 'left' && position === 'absolute') {
         direction = 'top';
       }
@@ -86,7 +86,7 @@ export default class EPub {
   static _getOffsetFromAnchor(anchor, block) {
     const el = document.getElementById(anchor);
     if (el) {
-      const iterator = Util.createTextNodeIterator(el);
+      const iterator = _Util.createTextNodeIterator(el);
       const node = iterator.nextNode();
       if (node) {
         // 첫번째 텍스트만 확인
@@ -115,7 +115,7 @@ export default class EPub {
 
   static _getOffsetFromSerializedRange(serializedRange, block) {
     try {
-      const range = Util.getRangeFromSerializedRange(serializedRange);
+      const range = _Util.getRangeFromSerializedRange(serializedRange);
       const rects = range.getAdjustedClientRects();
       return block(rects.length ? rects[0] : null);
     } catch (e) {
@@ -381,8 +381,8 @@ export default class EPub {
       nWidth: imgEl.naturalWidth,
       nHeight: imgEl.naturalHeight,
       // CSS에서 명시된 크기
-      sWidth: Util.getMatchedCSSValue(imgEl, 'width'),
-      sHeight: Util.getMatchedCSSValue(imgEl, 'height'),
+      sWidth: _Util.getMatchedCSSValue(imgEl, 'width'),
+      sHeight: _Util.getMatchedCSSValue(imgEl, 'height'),
       // 엘리먼트 속성으로 명시된 크기
       aWidth: (attrs.width || zeroAttr).value,
       aHeight: (attrs.height || zeroAttr).value
@@ -540,12 +540,12 @@ export default class EPub {
     //     영향을 받아 빈 페이지가 들어가기 때문이다.)
     //
 
-    const maxWidth = Util.getMatchedCSSValue(imgEl, 'max-width');
+    const maxWidth = _Util.getMatchedCSSValue(imgEl, 'max-width');
     if (isPercentValue(maxWidth) && parseInt(maxWidth, 10) > 100) {
       cssMaxWidth = '100%';
     }
 
-    const maxHeight = Util.getMatchedCSSValue(imgEl, 'max-height');
+    const maxHeight = _Util.getMatchedCSSValue(imgEl, 'max-height');
     if (isPercentValue(maxHeight) && parseInt(maxHeight, 10) > 95) {
       cssMaxHeight = '95%';
     }

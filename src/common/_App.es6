@@ -1,6 +1,4 @@
-import EPub from './EPub';
-
-export default class App {
+export default class _App {
   get doublePageMode() { return this._doublePageMode; }
   get scrollMode() { return this._scrollMode; }
   get pageWidthUnit() { return this._width; }

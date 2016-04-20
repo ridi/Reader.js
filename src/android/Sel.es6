@@ -1,8 +1,8 @@
-import Sel from '../common/Sel';
-import RidiUtil from './RidiUtil';
-import RidiApp from './RidiApp';
+import _Sel from '../common/_Sel';
+import Util from './Util';
+import App from './App';
 
-export default class RidiSel extends Sel {
+export default class Sel extends _Sel {
   constructor(maxLength = 0) {
     super(maxLength);
     this._overflowed = false;
@@ -12,7 +12,7 @@ export default class RidiSel extends Sel {
     // 화면 하단 바깥쪽으로 드레그 했을 때 viewport 밖인데도 caretRangeFromPoint로 노드를 잡을 수 있어
     // 하이라이트가 뒷페이지까지 이어지는 문제가 발생하고 있다(Android 4.x~)
     // 이를 해결하기 위해 caretRangeFromPoint로 잡은 Range의 left가 현재 페이지를 벗어났는지를 확인한다
-    const pageWidth = RidiUtil.getStylePropertyIntValue(document.documentElement, 'width');
+    const pageWidth = Util.getStylePropertyIntValue(document.documentElement, 'width');
     const testRange = document.createRange();
     testRange.selectNode(range.endContainer);
     const testRect = testRange.getAdjustedBoundingClientRect();
@@ -23,7 +23,7 @@ export default class RidiSel extends Sel {
     const rects = this.getSelectedRangeRects();
     if (rects.length) {
       this._overflowed = false;
-      return RidiUtil.rectsToAbsoluteCoord(rects);
+      return Util.rectsToAbsoluteCoord(rects);
     }
     return '';
   }
@@ -71,7 +71,7 @@ export default class RidiSel extends Sel {
   validLength(range) {
     if (!super.validLength(range)) {
       if (!this._overflowed) {
-        RidiApp.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다`);
+        App.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다`);
       }
       this._overflowed = true;
       return false;

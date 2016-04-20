@@ -1,6 +1,6 @@
 import MutableClientRect from './MutableClientRect';
 
-export default class Util {
+export default class _Util {
   static createTextNodeIterator(node) {
     return document.createNodeIterator(
       node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true

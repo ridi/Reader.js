@@ -1,9 +1,9 @@
-import EPub from '../common/EPub';
-import RidiUtil from './RidiUtil';
+import _EPub from '../common/_EPub';
+import Util from './Util';
 
 let scrollTimer = null;
 
-export default class RidiEPub extends EPub {
+export default class EPub extends _EPub {
   static applyColumnProperty(width, gap) {
     document.documentElement.setAttribute('style',
       `-webkit-column-width: ${width}px !important; ` +
@@ -49,7 +49,7 @@ export default class RidiEPub extends EPub {
     if (app.scrollMode) {
       // 네이티브의 getContentHeight 값을 신뢰할 수 없어서 paddingBottom에 대한 보정은 여기서 한다
       const height = app.pageHeightUnit;
-      const paddingBottom = RidiUtil.getStylePropertyIntValue(document.body, 'padding-bottom');
+      const paddingBottom = Util.getStylePropertyIntValue(document.body, 'padding-bottom');
       const maxOffset = this.getTotalHeight() - height - paddingBottom;
       if (finalPageInSpine) {
         adjustOffset = maxOffset;
@@ -220,13 +220,13 @@ export default class RidiEPub extends EPub {
     //
 
     if (app.chromeMajorVersion >= 39) {
-      const _sWidth = RidiUtil.getStylePropertyIntValue(imgEl, 'width');
-      const _sHeight = RidiUtil.getStylePropertyIntValue(imgEl, 'height');
+      const _sWidth = Util.getStylePropertyIntValue(imgEl, 'width');
+      const _sHeight = Util.getStylePropertyIntValue(imgEl, 'height');
       const boundWidth = canvasWidth;
       let boundHeight = canvasHeight;
       if (_sWidth > boundWidth || _sHeight > boundHeight) {
         // img 태그에 들어간 lineHeight을 없애줘야 스파인 하나에 이미지 하나 있는 아이가 두 페이지로 계산되는 일을 피할 수 있다
-        boundHeight -= RidiUtil.getStylePropertyIntValue(imgEl, 'line-height');
+        boundHeight -= Util.getStylePropertyIntValue(imgEl, 'line-height');
         if (_sWidth > boundWidth) {
           size.dWidth = boundWidth;
           size.dHeight = Math.min(boundWidth / size.nWidth * size.nHeight, boundHeight);

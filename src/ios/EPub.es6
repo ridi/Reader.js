@@ -1,8 +1,8 @@
-import EPub from '../common/EPub';
+import _EPub from '../common/_EPub';
 
 let onImagesRevise = false;
 
-export default class RidiEPub extends EPub {
+export default class EPub extends _EPub {
   static setViewport() {
     const value = `width=${window.innerWidth}, height=${window.innerHeight}, ` +
                   'initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';

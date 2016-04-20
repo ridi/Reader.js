@@ -1,7 +1,7 @@
-import Util from '../common/Util';
+import _Util from '../common/_Util';
 import MutableClientRect from '../common/MutableClientRect';
 
-export default class RidiUtil extends Util {
+export default class Util extends _Util {
   static getRectsFromSerializedRange(idx, serializedRange) {
     const range = this.getRangeFromSerializedRange(serializedRange);
     const rects = this.getOnlyTextNodeRectsFromRange(range);

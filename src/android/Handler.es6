@@ -1,10 +1,10 @@
-import Handler from '../common/Handler';
-import RidiUtil from './RidiUtil';
-import RidiEPub from './RidiEPub';
+import _Handler from '../common/_Handler';
+import Util from './Util';
+import EPub from './EPub';
 
-export default class RidiHandler extends Handler {
+export default class Handler extends _Handler {
   static processSingleTapEvent(x, y, nativePoints) {
-    const link = this.getLinkFromPoint(RidiUtil.adjustPoint(x, y));
+    const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';
@@ -12,7 +12,7 @@ export default class RidiHandler extends Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = RidiUtil.rectsToAbsoluteCoord(range.getAdjustedClientRects());
+        const rects = Util.rectsToAbsoluteCoord(range.getAdjustedClientRects());
 
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
@@ -28,14 +28,14 @@ export default class RidiHandler extends Handler {
   }
 
   static processLongTapZoomEvent(x, y) {
-    const point = RidiUtil.adjustPoint(x, y);
+    const point = Util.adjustPoint(x, y);
 
-    let src = RidiEPub.getImagePathFromPoint(point.x, point.y);
+    let src = EPub.getImagePathFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onImageLongTapZoom(src);
     }
 
-    src = RidiEPub.getSvgElementFromPoint(point.x, point.y);
+    src = EPub.getSvgElementFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onSvgElementLongTapZoom(src);
     }

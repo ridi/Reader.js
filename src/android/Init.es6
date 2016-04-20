@@ -1,20 +1,20 @@
-import RidiApp from './RidiApp';
-import RidiSel from './RidiSel';
-import RidiEPub from './RidiEPub';
-import RidiHandler from './RidiHandler';
-import RidiSearcher from './RidiSearcher';
-import RidiUtil from './RidiUtil';
+import App from './App';
+import Sel from './Sel';
+import EPub from './EPub';
+import Handler from './Handler';
+import Searcher from './Searcher';
+import Util from './Util';
 import MutableClientRect from '../common/MutableClientRect';
 
 export default function (width, height, systemMajorVersion, selMaxLength,
                          doublePageMode, scrollMode, pageOffset) {
-  window.app = new RidiApp(width, height, systemMajorVersion,
+  window.app = new App(width, height, systemMajorVersion,
     doublePageMode, scrollMode, pageOffset);
-  window.sel = new RidiSel(selMaxLength);
-  window.epub = RidiEPub;
-  window.handler = RidiHandler;
-  window.searcher = RidiSearcher;
-  window.util = RidiUtil;
+  window.sel = new Sel(selMaxLength);
+  window.epub = EPub;
+  window.handler = Handler;
+  window.searcher = Searcher;
+  window.util = Util;
 }
 
 function getBoundingClientRect() {
@@ -39,12 +39,12 @@ function getBoundingClientRect() {
 
 function getAdjustedBoundingClientRect() {
   const rect = this.getBoundingClientRect() || new MutableClientRect();
-  return RidiUtil.adjustRect(rect);
+  return Util.adjustRect(rect);
 }
 
 function getAdjustedClientRects() {
   const rects = this.getClientRects() || [];
-  return RidiUtil.adjustRects(rects);
+  return Util.adjustRects(rects);
 }
 
 // iOS5.x, Android 4.x 버전에서 getBoundingClientRect가 null을 리턴하는 현상이 있어 직접 구현했다.
