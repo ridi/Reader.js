@@ -53,7 +53,7 @@ export default class Sel {
     }
   }
 
-  _isOutOfBounds(range) {
+  isOutOfBounds(range) {
     return false;
   }
 
@@ -159,7 +159,7 @@ export default class Sel {
         exRange.endContainer.childNodes[exRange.endOffset].textContent.length);
     }
 
-    if (this._isOutOfBounds(exRange)) {
+    if (this.isOutOfBounds(exRange)) {
       return false;
     }
 

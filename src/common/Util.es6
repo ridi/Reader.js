@@ -68,9 +68,9 @@ export default class Util {
   }
 
   static _concatArray(array, rects, adjust = (rect) => rect) {
-    Array.from(rects).forEach((rect) => {
-      array.push(adjust(rect));
-    });
+    for (let i = 0; i < rects.length; i++) {
+      array.push(adjust(rects[i]));
+    }
     return array;
   }
 

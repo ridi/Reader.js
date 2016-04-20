@@ -1,6 +1,7 @@
 import EPub from './EPub';
 
 export default class App {
+  get doublePageMode() { return this._doublePageMode; }
   get scrollMode() { return this._scrollMode; }
   get pageWidthUnit() { return this._width; }
   get pageHeightUnit() { return this._height; }
@@ -12,10 +13,11 @@ export default class App {
     return this.pageWidthUnit;
   }
 
-  constructor(width, height, systemMajorVersion) {
+  constructor(width, height, systemMajorVersion, doublePageMode, scrollMode) {
     this._width = width;
     this._height = height;
-    this._scrollMode = height !== EPub.getTotalHeight();
+    this._doublePageMode = doublePageMode;
+    this._scrollMode = scrollMode;
 
     // * Android
     //   ex) 14, 17, 19, ... (API level)

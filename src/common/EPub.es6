@@ -36,16 +36,20 @@ export default class EPub {
       el = el.parentElement;
       if (el.nodeName === 'SVG') {
         let prefix = '<svg';
-        Array.from(el.attributes).forEach((attr) => {
-          prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
-        });
+
+        const attributes = el.attributes;
+        for (let i = 0; i < attributes.length; i++) {
+          const attribute = attributes[i];
+          prefix += ` ${attribute.nodeName}="${attribute.nodeValue}"`;
+        }
         prefix += '>';
 
         // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
         const svgEl = document.createElement('svgElement');
-        Array.from(el.childNodes).forEach((node) => {
-          svgEl.appendChild(node.cloneNode(true));
-        });
+        const childNodes = el.childNodes;
+        for (let j = 0; j < childNodes.length; j++) {
+          svgEl.appendChild(childNodes[j].cloneNode(true));
+        }
 
         return `${prefix}${svgEl.innerHTML}<\/svg>`;
       }
@@ -190,8 +194,9 @@ export default class EPub {
   }
 
   static findTopNodeRectAndLocationOfCurrentPage(startOffset, endOffset, posSeparator) {
-    const nodes = textAndImageNodes;
+    const nodes = this.getTextAndImageNodes();
     if (!nodes) {
+      this.setTextAndImageNodes();
       return null;
     }
 
@@ -286,7 +291,7 @@ export default class EPub {
   }
 
   static _getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex) {
-    const pageUnit = app.getPageUnit();
+    const pageUnit = app.pageUnit;
     const totalPageSize = this.getTotalPageSize();
     const notFound = { pageOffset: null };
 

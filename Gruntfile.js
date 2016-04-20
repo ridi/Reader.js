@@ -4,8 +4,10 @@ module.exports = function(grunt) {
     throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios]';
   }
 
+  var bundleTasks = ['babel', 'browserify', 'concat:build'];
   var distPath = '../Reader/EPub/Javascripts';
   if (platform == 'android') {
+    bundleTasks.push('concat:android');
     distPath = '../src/main/assets/javascripts';
   }
 
@@ -105,6 +107,13 @@ module.exports = function(grunt) {
         options: {
           banner: '<%= variants.banner %>'
         }
+      },
+      android: {
+        src: [
+          '<%= variants.intermediate %>',
+          '<%= variants.platformPath %>/init.js'
+        ],
+        dest: '<%= variants.intermediate %>'
       }
     },
 
@@ -156,7 +165,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('gruntify-eslint');
 
-  grunt.registerTask('default', ['clean', 'lint', 'bundle', 'uglify']);
+  grunt.registerTask('default', ['clean', 'lint', 'bundle', 'copy']);
   grunt.registerTask('test', ['clean', 'lint', 'bundle', 'qunit']);
   grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']); // iOS only
   grunt.registerTask('show-config', function() { // debug
@@ -164,5 +173,5 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('lint', ['jshint', 'eslint']);
-  grunt.registerTask('bundle', ['babel', 'browserify', 'concat']);
+  grunt.registerTask('bundle', bundleTasks);
 };

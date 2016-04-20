@@ -50,12 +50,6 @@ export default class RidiEPub extends EPub {
       return notFound;
     }
 
-    const nodes = this.getTextAndImageNodes();
-    if (!nodes) {
-      this.setTextAndImageNodes();
-      return notFound;
-    }
-
     const result =
       this.findTopNodeRectAndLocationOfCurrentPage(startOffset, endOffset, posSeparator);
     if (!result) {
@@ -77,19 +71,19 @@ export default class RidiEPub extends EPub {
 
   static reviseImagesInSpine() {
     let paddingTop = 0;
-    const imgEls = [];
-    const els = document.getElementsByTagName('img');
+    const elList = [];
+    const els = document.images;
     const tryReviseImages = () => {
-      if (els.length === imgEls.length) {
+      if (els.length === elList.length) {
         const results = [];
-        imgEls.forEach((imgEl) => {
+        elList.forEach((el) => {
           const result =
-            this.reviseImage(imgEl, app.pageWidthUnit, app.pageHeightUnit, paddingTop);
+            this.reviseImage(el, app.pageWidthUnit, app.pageHeightUnit, paddingTop);
           if (result.width.length || result.height.length ||
             result.maxWidth.length || result.maxHeight.length || result.position.length) {
             paddingTop += result.paddingTop;
             results.push({
-              el: imgEl,
+              el,
               width: result.width,
               height: result.height,
               maxWidth: result.maxWidth,
@@ -126,23 +120,24 @@ export default class RidiEPub extends EPub {
 
     onImagesRevise = false;
 
-    Array.from(els).forEach((el) => {
+    for (let i = 0; i < els.length; i++) {
+      const el = els[i];
       if (el.complete) {
-        imgEls.push(el);
+        elList.push(el);
       } else {
         if (app.systemMajorVersion >= 8) {
           el.setAttribute('src', `${el.getAttribute('src')}?stamp=${Math.random()}`);
         }
         el.addEventListener('load', () => { // 이미지 로드 완료
-          imgEls.push(el);
+          elList.push(el);
           tryReviseImages();
         });
         el.addEventListener('error', () => { // 이미지 로드 실패
-          imgEls.push(null);
+          elList.push(null);
           tryReviseImages();
         });
       }
-    });
+    }
 
     tryReviseImages();
   }

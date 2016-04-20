@@ -1,9 +1,13 @@
 module.exports = {
   "extends": "airbnb",
   "globals": {
+    // Common
     "rangy": true,
+    "app": true,
+    // Android
+    "CURSE": true,
     "android": true,
-    "app": true
+    "webView": true
   },
   "rules": {
     "comma-dangle": 0,

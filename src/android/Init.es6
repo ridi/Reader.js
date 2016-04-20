@@ -6,13 +6,12 @@ import RidiSearcher from './RidiSearcher';
 import RidiUtil from './RidiUtil';
 
 export default function (width, height, systemMajorVersion, selMaxLength,
-                         doublePageMode, scrollMode) {
-  window.app = new RidiApp(width, height, systemMajorVersion, doublePageMode, scrollMode);
+                         doublePageMode, scrollMode, pageOffset) {
+  window.app = new RidiApp(width, height, systemMajorVersion,
+    doublePageMode, scrollMode, pageOffset);
   window.sel = new RidiSel(selMaxLength);
   window.epub = RidiEPub;
   window.handler = RidiHandler;
   window.searcher = RidiSearcher;
   window.util = RidiUtil;
-
-  RidiEPub.setViewport();
 }
