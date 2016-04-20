@@ -16,6 +16,7 @@ module.exports = function(grunt) {
     variants: {
       name: 'ridi',
       banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+      strict: '\"use strict\";\n',
       platform: platform,
       basePath: 'src',
       commonPath: '<%= variants.basePath %>/common',
@@ -105,7 +106,7 @@ module.exports = function(grunt) {
         ],
         dest: '<%= variants.intermediate %>',
         options: {
-          banner: '<%= variants.banner %>'
+          banner: '<%= variants.banner %><%= variants.strict %>'
         }
       },
       android: {
@@ -165,7 +166,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('gruntify-eslint');
 
-  grunt.registerTask('default', ['clean', 'lint', 'bundle', 'copy']);
+  grunt.registerTask('default', ['clean', 'lint', 'bundle', 'uglify']);
   grunt.registerTask('test', ['clean', 'lint', 'bundle', 'qunit']);
   grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']); // iOS only
   grunt.registerTask('show-config', function() { // debug

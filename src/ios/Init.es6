@@ -4,6 +4,7 @@ import RidiEPub from './RidiEPub';
 import RidiHandler from './RidiHandler';
 import RidiSearcher from './RidiSearcher';
 import RidiUtil from './RidiUtil';
+import MutableClientRect from '../common/MutableClientRect';
 
 export default function (width, height, systemMajorVersion, selMaxLength,
                          doublePageMode, scrollMode) {
@@ -16,3 +17,19 @@ export default function (width, height, systemMajorVersion, selMaxLength,
 
   RidiEPub.setViewport();
 }
+
+function getAdjustedBoundingClientRect() {
+  const rect = this.getBoundingClientRect() || new MutableClientRect();
+  return RidiUtil.adjustRect(rect);
+}
+
+function getAdjustedClientRects() {
+  const rects = this.getClientRects() || [];
+  return RidiUtil.adjustRects(rects);
+}
+
+Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
+Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
+
+HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
+HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;

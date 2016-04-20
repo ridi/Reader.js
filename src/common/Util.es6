@@ -175,23 +175,3 @@ export default class Util {
     return this._concatArray([], rects, this.adjustRect);
   }
 }
-
-Range.prototype.getAdjustedBoundingClientRect = function getAdjustedBoundingClientRect() {
-  const rect = this.getBoundingClientRect() || new MutableClientRect();
-  return Util.adjustRect(rect);
-};
-
-Range.prototype.getAdjustedClientRects = function getAdjustedClientRects() {
-  const rects = this.getClientRects() || [];
-  return Util.adjustRects(rects);
-};
-
-HTMLElement.prototype.getAdjustedBoundingClientRect = function getAdjustedBoundingClientRect() {
-  const rect = this.getBoundingClientRect() || new MutableClientRect();
-  return Util.adjustRect(rect);
-};
-
-HTMLElement.prototype.getAdjustedClientRects = function getAdjustedClientRects() {
-  const rects = this.getClientRects() || [];
-  return Util.adjustRects(rects);
-};

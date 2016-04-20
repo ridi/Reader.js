@@ -3,7 +3,7 @@ import RidiUtil from './RidiUtil';
 
 export default class RidiHandler extends Handler {
   static processSingleTapEvent(x, y, rawX, rawY, canvasWidth, canvasHeight, isVerticalPagingOn) {
-    const link = this.getLink(x, y);
+    const link = this.getLinkFromPoint(x, y);
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';
