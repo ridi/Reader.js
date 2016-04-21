@@ -11,6 +11,8 @@ module.exports = function(grunt) {
     distPath = '../src/main/assets/javascripts';
   }
 
+  require('time-grunt')(grunt);
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     variants: {
