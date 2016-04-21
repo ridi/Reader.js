@@ -67,7 +67,7 @@ export default class _Util {
     return /^\s*$/.test(range.toString());
   }
 
-  static _concatArray(array, rects, adjust = (rect) => rect) {
+  static concatArray(array, rects, adjust = (rect) => rect) {
     for (let i = 0; i < rects.length; i++) {
       array.push(adjust(rects[i]));
     }
