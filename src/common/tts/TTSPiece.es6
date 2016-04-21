@@ -91,4 +91,8 @@ export default class TTSPiece {
     }
     return only;
   }
+
+  isSentence() {
+    return this.text.trim().match(TTSUtil.getSentenceRegex(null, '$')) !== null;
+  }
 }
