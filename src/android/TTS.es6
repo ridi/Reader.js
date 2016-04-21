@@ -32,7 +32,7 @@ export default class TTS extends _TTS {
   }
 
   didFinishMakeChunks(index) {
-    this._flushed = true;
+    this._flushed = false;
     if (this.chunks.length - index > 0) {
       for (let i = index; i < this.chunks.length; i++) {
         const chunk = this.chunks[i];
