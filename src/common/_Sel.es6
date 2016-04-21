@@ -183,7 +183,7 @@ export default class _Sel {
   }
 
   validLength(range) {
-    if (!range.toString().length <= this._maxLength) {
+    if (!(range.toString().length <= this._maxLength)) {
       if (!this._overflowed) {
         _App.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다`);
       }
