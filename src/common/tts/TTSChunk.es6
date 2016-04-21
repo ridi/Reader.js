@@ -181,13 +181,14 @@ export default class TTSChunk {
             range.setEnd(node, endOffset);
             range.expand('character');
           } catch (e) {
-            throw `TSChunk:getClientRects() Error!! ${e.toString()}\n`
-                + ` => {chunkId: ${this.id}`
-                + `, startOffset: ${startOffset}`
-                + `, endOffset: ${endOffset}`
-                + `, offset: ${offset}`
-                + `, nodeIndex: ${piece.nodeIndex}`
-                + `, wordIndex: ${piece.wordIndex}}`;
+            console.log(
+              `TSChunk:getClientRects() Error!! ${e.toString()}\n`
+            + ` => {chunkId: ${this.id}`
+            + `, startOffset: ${startOffset}`
+            + `, endOffset: ${endOffset}`
+            + `, offset: ${offset}`
+            + `, nodeIndex: ${piece.nodeIndex}`
+            + `, wordIndex: ${piece.wordIndex}}`);
           }
 
           // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
@@ -221,7 +222,7 @@ export default class TTSChunk {
 
   getBoundingClientRect() {
     const rects = this.getClientRects(false);
-    const bounds = new MutableClientRect();
+    const bounds = new MutableClientRect(rects[0]);
     for (let i = 0; i < rects.length; i++) {
       const rect = rects[i];
       bounds.top = Math.min(bounds.top, rect.top || 0);
@@ -231,7 +232,6 @@ export default class TTSChunk {
     }
     bounds.width = Math.max(bounds.right - bounds.left, 0);
     bounds.height = Math.max(bounds.bottom - bounds.top, 0);
-
     return bounds;
   }
 

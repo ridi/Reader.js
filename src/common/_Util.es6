@@ -89,7 +89,7 @@ export default class _Util {
     let workRange = document.createRange();
     workRange.setStart(range.startContainer, range.startOffset);
     workRange.setEnd(range.startContainer, range.startContainer.length);
-    textNodeRects = this._concatArray(textNodeRects, workRange.getAdjustedClientRects());
+    textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
 
     let node;
     while ((node = iterator.nextNode())) {
@@ -111,14 +111,14 @@ export default class _Util {
         continue;
       }
 
-      textNodeRects = this._concatArray(textNodeRects, workRange.getAdjustedClientRects());
+      textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
     }
 
     workRange = document.createRange();
     workRange.setStart(range.endContainer, 0);
     workRange.setEnd(range.endContainer, range.endOffset);
     if (!this._isWhiteSpaceRange(workRange)) {
-      textNodeRects = this._concatArray(textNodeRects, workRange.getAdjustedClientRects());
+      textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
     }
 
     return textNodeRects;
@@ -172,6 +172,6 @@ export default class _Util {
   }
 
   static adjustRects(rects) {
-    return this._concatArray([], rects, this.adjustRect);
+    return this.concatArray([], rects, this.adjustRect);
   }
 }

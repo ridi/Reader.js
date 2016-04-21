@@ -22,7 +22,15 @@ export default class EPub extends _EPub {
     }
 
     const direction = this.getOffsetDirectionFromElement(el);
-    const origin = rect[direction];
+    let origin = rect[direction];
+    if (app.systemMajorVersion >= 8) {
+      if (app.scrollMode) {
+        origin += window.pageYOffset;
+      } else {
+        origin += window.pageXOffset;
+      }
+    }
+
     return Math.floor(origin / app.pageUnit);
   }
 

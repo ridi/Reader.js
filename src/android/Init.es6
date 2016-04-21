@@ -29,7 +29,7 @@ function getBoundingClientRect() {
     return null;
   }
 
-  const bounds = new MutableClientRect();
+  const bounds = new MutableClientRect(rects[0]);
   for (let i = 0; i < rects.length; i++) {
     const rect = rects[i];
     bounds.top = Math.min(bounds.top, rect.top || 0);
