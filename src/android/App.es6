@@ -109,8 +109,7 @@ export default class App extends _App {
   }
 
   moveToChunkId(chunkId) {
-    // TODO: TTS 모듈 작업할 때 활성화
-    // this._movoTo(RidiTTS, 'ChunkId', chunkId);
+    this._movoTo(tts, 'ChunkId', chunkId);
   }
 
   static toast(message = '') {

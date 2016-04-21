@@ -368,7 +368,7 @@ export default class _EPub {
     return (rect || { top: null }).top;
   }
 
-  static getImageSize(imgEl) {
+  static _getImageSize(imgEl) {
     const attrs = imgEl.attributes;
     const zeroAttr = document.createAttribute('size');
     zeroAttr.value = '0px';
@@ -430,7 +430,7 @@ export default class _EPub {
       return (n / m) * 100;
     };
 
-    const size = this.getImageSize(imgEl);
+    const size = this._getImageSize(imgEl);
 
     let cssWidth = '';
     let cssHeight = '';

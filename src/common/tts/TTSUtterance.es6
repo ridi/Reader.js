@@ -340,7 +340,7 @@ export default class TTSUtterance {
     return new TTSUtterance(this.text.replace(/([^=])([=]{1})([^=])/gm, '$1는 $3'));
   }
 
-  // TODO - 영문 월을 한글로 변환하기
+  // TODO: 영문 월을 한글로 변환하기
   replaceDate() {
     // const abbrMonth = [
     //   "jan", "feb", "mar", "may", "apr", "jun", "jul", "aug", "sep", "oct", "nov", "dec"
