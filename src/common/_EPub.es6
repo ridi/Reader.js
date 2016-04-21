@@ -1,10 +1,11 @@
+import _Object from './_Object';
 import _Util from './_Util';
 import MutableClientRect from './MutableClientRect';
 
 let debugTopNodeLocation = false;
 let textAndImageNodes = null;
 
-export default class _EPub {
+export default class _EPub extends _Object {
   static getTotalWidth() {
     return document.documentElement.scrollWidth;
   }

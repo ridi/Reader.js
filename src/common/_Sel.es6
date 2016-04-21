@@ -1,4 +1,5 @@
 import _Util from './_Util';
+import _App from './_App';
 
 export default class _Sel {
   constructor(maxLength = 0) {
@@ -7,6 +8,7 @@ export default class _Sel {
     this._startOffset = null;
     this._endContainer = null;
     this._endOffset = null;
+    this._overflowed = false;
   }
 
   _caretRangeFromPoint(x, y, expand = 'word', allowCollapsed = false) {
@@ -181,7 +183,14 @@ export default class _Sel {
   }
 
   validLength(range) {
-    return range.toString().length <= this._maxLength;
+    if (!range.toString().length <= this._maxLength) {
+      if (!this._overflowed) {
+        _App.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다`);
+      }
+      this._overflowed = true;
+      return false;
+    }
+    return true;
   }
 
   getSelectedRange() {
@@ -201,5 +210,14 @@ export default class _Sel {
 
   getSelectedText() {
     return this.getSelectedRange().toString();
+  }
+
+  getSelectedRectsCoord() {
+    const rects = this.getSelectedRangeRects();
+    if (rects.length) {
+      this._overflowed = false;
+      return _Util.rectsToAbsoluteCoord(rects);
+    }
+    return '';
   }
 }

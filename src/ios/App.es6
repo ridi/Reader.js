@@ -22,3 +22,5 @@ export default class App extends _App {
     location.href = `ridi+epub://navigation/toast?${encodeURIComponent(message)}`;
   }
 }
+
+App.staticOverride(App, _App, ['toast']);

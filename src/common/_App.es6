@@ -1,4 +1,6 @@
-export default class _App {
+import _Object from './_Object';
+
+export default class _App extends _Object {
   get doublePageMode() { return this._doublePageMode; }
   get scrollMode() { return this._scrollMode; }
   get pageWidthUnit() { return this._width; }
@@ -12,6 +14,8 @@ export default class _App {
   }
 
   constructor(width, height, systemMajorVersion, doublePageMode, scrollMode) {
+    super();
+
     this._width = width;
     this._height = height;
     this._doublePageMode = doublePageMode;

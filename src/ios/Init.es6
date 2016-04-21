@@ -7,7 +7,6 @@ import Util from './Util';
 import TTS from './TTS';
 import TTSUtterance from '../common/tts/TTSUtterance';
 import TTSUtil from '../common/tts/TTSUtil';
-import MutableClientRect from '../common/MutableClientRect';
 
 export default function (width, height, systemMajorVersion, selMaxLength,
                          doublePageMode, scrollMode) {
@@ -23,19 +22,3 @@ export default function (width, height, systemMajorVersion, selMaxLength,
 
   EPub.setViewport();
 }
-
-function getAdjustedBoundingClientRect() {
-  const rect = this.getBoundingClientRect() || new MutableClientRect();
-  return Util.adjustRect(rect);
-}
-
-function getAdjustedClientRects() {
-  const rects = this.getClientRects() || [];
-  return Util.adjustRects(rects);
-}
-
-Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
-
-HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;

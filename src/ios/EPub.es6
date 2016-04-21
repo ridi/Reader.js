@@ -154,3 +154,5 @@ export default class EPub extends _EPub {
     return onImagesRevise;
   }
 }
+
+EPub.staticOverride(EPub, _EPub, ['getPageOffsetFromRect']);

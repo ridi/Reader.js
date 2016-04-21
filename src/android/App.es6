@@ -116,3 +116,5 @@ export default class App extends _App {
     android.onShowToast(message, message.length > 20 ? 1 : 0);
   }
 }
+
+App.staticOverride(App, _App, ['toast']);

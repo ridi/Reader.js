@@ -1,4 +1,7 @@
-export default class _Searcher {
+import _Object from './_Object';
+import _EPub from './_EPub';
+
+export default class _Searcher extends _Object {
   static searchText(keyword) {
     if (find(keyword, 0)) { // Case insensitive
       return rangy.serializeRange(getSelection().getRangeAt(0), true, document.body);
@@ -23,5 +26,10 @@ export default class _Searcher {
     range.setEnd(range.endContainer, endOffset);
 
     return result;
+  }
+
+  static getPageOffsetOfSearchResult() {
+    const rects = getSelection().getRangeAt(0).getAdjustedClientRects();
+    return _EPub.getPageOffsetFromRect(rects[0]);
   }
 }

@@ -1,6 +1,7 @@
+import _Object from './_Object';
 import MutableClientRect from './MutableClientRect';
 
-export default class _Util {
+export default class _Util extends _Object {
   static createTextNodeIterator(node) {
     return document.createNodeIterator(
       node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true
@@ -175,3 +176,19 @@ export default class _Util {
     return this.concatArray([], rects, this.adjustRect);
   }
 }
+
+function getAdjustedBoundingClientRect() {
+  const rect = this.getBoundingClientRect() || new MutableClientRect();
+  return _Util.adjustRect(rect);
+}
+
+function getAdjustedClientRects() {
+  const rects = this.getClientRects() || [];
+  return _Util.adjustRects(rects);
+}
+
+Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
+Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
+
+HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
+HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;
