@@ -61,7 +61,7 @@ export default class Util extends _Util {
     if (this.checkCurseInChrome() && !app.scrollMode) {
       return this._rectToRelativeForChromeInternal(rect, app.getColumnGap(), app.getCurPage());
     }
-    return rect;
+    return new MutableClientRect(rect);
   }
 
   static _rectsToRelativeForChrome(rects) {
