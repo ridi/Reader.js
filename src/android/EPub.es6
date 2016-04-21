@@ -44,6 +44,16 @@ export default class EPub extends _EPub {
     return Math.ceil(totalWidth / app.pageWidthUnit);
   }
 
+  static _easeInOut(currentTime, start, change, duration) {
+    let time = currentTime;
+    time /= duration / 2;
+    if (time < 1) {
+      return change / 2 * time * time + start;
+    }
+    time--;
+    return -change / 2 * (time * (time - 2) - 1) + start;
+  }
+
   static scrollTo(offset, animated, finalPageInSpine) {
     let adjustOffset = offset;
     if (app.scrollMode) {
@@ -56,6 +66,7 @@ export default class EPub extends _EPub {
       }
       adjustOffset = Math.min(adjustOffset, maxOffset);
     }
+
     if (animated) {
       if (scrollTimer) {
         clearTimeout(scrollTimer);
@@ -66,19 +77,9 @@ export default class EPub extends _EPub {
       const change = adjustOffset - start;
       const increment = 20;
       const duration = 200;
-
-      const easeInOut = (currentTime, _start, _change) => {
-        let time = currentTime / duration / 2;
-        if (time < 1) {
-          return _change / 2 * time * time + _start;
-        }
-        time--;
-        return -_change / 2 * (time * (time - 2) - 1) + _start;
-      };
-
       const animateScroll = (elapsedTime) => {
         const time = elapsedTime + increment;
-        super.scrollTo(easeInOut(time, start, change));
+        super.scrollTo(this._easeInOut(time, start, change, duration));
         if (time < duration) {
           scrollTimer = setTimeout(() => {
             animateScroll(time);

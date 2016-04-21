@@ -310,7 +310,7 @@ export default class _EPub {
     range.selectNodeContents(node);
 
     let rect = range.getAdjustedBoundingClientRect();
-    if (rect.isZero()) {
+    if (rect.left === 0 && rect.top === 0 && rect.right === 0 && rect.bottom === 0) {
       return notFound;
     }
 
