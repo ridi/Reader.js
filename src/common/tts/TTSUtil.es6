@@ -1,8 +1,18 @@
 import EPub from '../_EPub';
 
 export default class TTSUtil {
-  static _createRegex(prefix = '', pattern = '', suffix = '', flags = 'gm') {
-    return new RegExp(`${prefix}${pattern}${suffix}`, flags);
+  static find(list, callback) {
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      if (callback(item)) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  static _createRegex(prefix, pattern, suffix, flags) {
+    return new RegExp(`${prefix || ''}${pattern || ''}${suffix || ''}`, flags || 'gm');
   }
 
   static getSplitWordRegex() {
@@ -37,11 +47,19 @@ export default class TTSUtil {
   }
 
   static getFirstOpenBracket(text = '') {
-    return text.match(/[\({\[]/gm)[0] || null;
+    try {
+      return text.match(/[\({\[]/gm)[0];
+    } catch (e) {
+      return null;
+    }
   }
 
   static getLastCloseBracket(text = '') {
-    return text.match(/[\)}\]]/gm).pop() || null;
+    try {
+      return text.match(/[\)}\]]/gm).pop();
+    } catch (e) {
+      return null;
+    }
   }
 
   static isOnePairBracket(open = '', close = '') {
@@ -216,8 +234,8 @@ export default class TTSUtil {
           return `백${convertTens(_num % 100)}`;
         }
         const unit = isHangul ? '백' : ' hundred ';
-        return `${ones[Math.floor(_num / 100)]}${unit}
-                ${convertTens([_num % 100])}`;
+        return `${ones[Math.floor(_num / 100)]}${unit}`
+             + `${convertTens([_num % 100])}`;
       }
       return convertTens(_num);
     };
@@ -228,8 +246,8 @@ export default class TTSUtil {
           return `천${convertHundreds(_num % 1000)}`;
         }
         const unit = isHangul ? '천' : ' thousand ';
-        return `${convertThousands(Math.floor(_num / 1000))}${unit}
-                ${convertHundreds([_num % 1000])}`;
+        return `${convertThousands(Math.floor(_num / 1000))}${unit}`
+             + `${convertHundreds([_num % 1000])}`;
       }
       return convertHundreds(_num);
     };
@@ -241,8 +259,8 @@ export default class TTSUtil {
           return `만${convertThousands(_num % base)}`;
         }
         const unit = isHangul ? '만' : ' million ';
-        return `${convertMillions(Math.floor(_num / base))}${unit}
-                ${convertThousands([_num % base])}`;
+        return `${convertMillions(Math.floor(_num / base))}${unit}`
+             + `${convertThousands([_num % base])}`;
       }
       return convertThousands(_num);
     };
@@ -277,8 +295,8 @@ export default class TTSUtil {
         if (_num < 100 * 2) {
           return `백${convertTens(_num % 100)}`;
         }
-        return `${this.numericToNotationString(Math.floor(_num / 100))}백
-                ${convertTens(_num % 100)}`;
+        return `${this.numericToNotationString(Math.floor(_num / 100))}백`
+             + `${convertTens(_num % 100)}`;
       }
       return convertTens(_num);
     };
@@ -288,8 +306,8 @@ export default class TTSUtil {
         if (_num < 1000 * 2) {
           return `천${convertHundreds(_num % 1000)}`;
         }
-        return `${this.numericToNotationString(Math.floor(_num / 1000))}천
-                ${convertHundreds(_num % 1000)}`;
+        return `${this.numericToNotationString(Math.floor(_num / 1000))}천`
+             + `${convertHundreds(_num % 1000)}`;
       }
       return convertHundreds(_num);
     };
@@ -299,8 +317,8 @@ export default class TTSUtil {
         if (_num < 10000 * 2) {
           return `만${convertThousands(_num % 10000)}`;
         }
-        return `${this.numericToNotationString(Math.floor(_num / 10000))}만
-                ${convertThousands(_num % 10000)}`;
+        return `${this.numericToNotationString(Math.floor(_num / 10000))}만`
+             + `${convertThousands(_num % 10000)}`;
       }
       return convertThousands(_num);
     };
@@ -311,15 +329,3 @@ export default class TTSUtil {
     return convertMillions(num);
   }
 }
-
-function find(callback) {
-  for (let i = 0; i < this.length; i++) {
-    const item = this[i];
-    if (callback(item)) {
-      return item;
-    }
-  }
-  return null;
-}
-
-[].prototype.find = [].prototype.find || find;

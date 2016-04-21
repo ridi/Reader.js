@@ -168,14 +168,10 @@ export default class TTSUtterance {
               const index = TTSUtil.getMedialCharCodeIndex(prevCode);
               text = text.replace(text.substr(i, 1), extendTable[index]);
               offset = i;
-              break;
             } else if (TTSUtil.isLatinCharCode(prevCode)) {
               // 틸드의 뒷문자가 영문일 때는 앞문자와 같게 틸드를 바꿔준다. (Oh~ -> Ohh)
               text = text.replace(text.substr(i, 1), text.substr(i - 1, 1));
               offset = i;
-              break;
-            } else {
-              break;
             }
           }
         }
@@ -288,7 +284,7 @@ export default class TTSUtterance {
         } else if (endOffset < i && (type === Type.Latin || TTSUtil.isLatinCharCode(code, 'l'))) {
           type = Type.Latin;
           break;
-        } else if (type !== Type.Lation && ch === '.') {
+        } else if (type !== Type.Latin && ch === '.') {
           type = Type.None;
           break;
         } else if (ch === '장' || ch === '권') {

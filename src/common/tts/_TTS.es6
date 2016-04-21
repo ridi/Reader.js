@@ -163,7 +163,7 @@ export default class _TTS {
           for (++_nodeIndex; _nodeIndex < maxIndex; ++_nodeIndex) {
             let nextPiece;
             try {
-              nextPiece = new TTSPiece(_nodeIndex, _wordIndex);
+              nextPiece = new TTSPiece(_nodeIndex, 0);
             } catch (e) {
               console.log(e);
               break;
@@ -212,7 +212,20 @@ export default class _TTS {
   }
 
   didFinishSpeech(chunkId) {
-
+    const nodes = _EPub.getTextAndImageNodes() || [];
+    if (nodes.length > this.maxNodeIndex) {
+      const curChunk = this.chunks[chunkId];
+      const lastChunk = this.getLastChunk();
+      if (curChunk !== null && lastChunk !== null) {
+        const curPiece = curChunk.getPiece(curChunk.range.endOffset);
+        const lastPiece = lastChunk.getPiece(lastChunk.range.endOffset);
+        if (Math.max(lastPiece.nodeIndex - 30, 0) < curPiece.nodeIndex) {
+          this.makeChunksByNodeLocation(lastPiece.nodeIndex + 1, 0);
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   didFinishMakeChunks(index) {
@@ -349,5 +362,6 @@ export default class _TTS {
 
   flush() {
     this._chunks = [];
+    this.maxNodeIndex = 0;
   }
 }

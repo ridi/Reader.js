@@ -4,6 +4,9 @@ import EPub from './EPub';
 import Handler from './Handler';
 import Searcher from './Searcher';
 import Util from './Util';
+import TTS from './TTS';
+import TTSUtterance from '../common/tts/TTSUtterance';
+import TTSUtil from '../common/tts/TTSUtil';
 import MutableClientRect from '../common/MutableClientRect';
 
 export default function (width, height, systemMajorVersion, selMaxLength,
@@ -14,6 +17,9 @@ export default function (width, height, systemMajorVersion, selMaxLength,
   window.handler = Handler;
   window.searcher = Searcher;
   window.util = Util;
+  window.tts = new TTS();
+  window.TTSUtterance = TTSUtterance;
+  window.TTSUtil = TTSUtil;
 
   EPub.setViewport();
 }

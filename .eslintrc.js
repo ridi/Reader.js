@@ -4,6 +4,7 @@ module.exports = {
     // Common
     "rangy": true,
     "app": true,
+    "tts": true,
     // Android
     "CURSE": true,
     "android": true,

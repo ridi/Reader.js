@@ -11,7 +11,7 @@ export default class TTSChunk {
     if (newRange instanceof TTSRange) {
       this._range = newRange;
     } else {
-      this._range = new TTSRange(0, this.getText().length);
+      this._range = new TTSRange(0, this._getFullText().length);
     }
   }
 
@@ -21,12 +21,16 @@ export default class TTSChunk {
     this.range = range;
   }
 
-  getText() {
+  _getFullText() {
     let fullText = '';
     this._pieces.forEach((piece) => {
       fullText += piece.text;
     });
-    return fullText.substring(this.range.startOffset, this.range.endOffset);
+    return fullText;
+  }
+
+  getText() {
+    return this._getFullText().substring(this.range.startOffset, this.range.endOffset);
   }
 
   getUtterance() {
@@ -46,8 +50,8 @@ export default class TTSChunk {
 
   getPiece(offset) {
     let length = 0;
-    return this._pieces.find((item) => {
-      length += item.length;
+    return TTSUtil.find(this._pieces, (piece) => {
+      length += piece.length;
       return offset <= length;
     });
   }

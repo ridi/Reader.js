@@ -28,6 +28,7 @@ export default class TTSPiece {
 
     const nodeValue = this._node.nodeValue;
     this._paddingLeft = 0;
+    this._text = '';
     if (typeof nodeValue === 'string') {
       if (wordIndex > 0) {
         const words = nodeValue.split(TTSUtil.getSplitWordRegex());
