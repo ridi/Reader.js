@@ -184,7 +184,7 @@ export default class _EPub extends _Object {
     for (let j = 0; j < rects.length; j++) {
       // rect 값이 현재 보고있는 페이지의 최상단에 위치하고 있는지
       const rect = rects[j];
-      if (startOffset <= rect[origin] && rect[origin] <= endOffset) {
+      if (startOffset <= rect[origin] && rect[origin] <= endOffset && rect.width > 0) {
         return {
           rect: new MutableClientRect(rect),
           index: j
