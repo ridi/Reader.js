@@ -4,11 +4,6 @@ module.exports = function(grunt) {
     throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios]';
   }
 
-  var distPath = '../Reader/EPub/Javascripts';
-  if (platform == 'android') {
-    distPath = '../src/main/assets/javascripts';
-  }
-
   require('time-grunt')(grunt);
 
   grunt.initConfig({
@@ -23,7 +18,6 @@ module.exports = function(grunt) {
       platformPath: '<%= variants.basePath %>/<%= variants.platform %>',
       libsPath: '<%= variants.basePath %>/libs',
       buildPath: 'build',
-      distPath: distPath,
       src: {
         es6: [
           '<%= variants.commonPath %>/**/*.es6',
@@ -34,13 +28,12 @@ module.exports = function(grunt) {
         ]
       },
       intermediate: '<%= variants.buildPath %>/<%= variants.name %>.js',
-      dist: '<%= variants.distPath %>/<%= variants.name %>.js'
+      dist: '<%= variants.buildPath %>/<%= variants.name %>.js'
     },
 
     clean: {
       src: [
         '<%= variants.buildPath %>',
-        '<%= variants.distPath %>'
       ],
       options: {
         force: true
