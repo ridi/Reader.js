@@ -4,10 +4,8 @@ module.exports = function(grunt) {
     throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios]';
   }
 
-  var bundleTasks = ['babel', 'browserify', 'concat:build'];
   var distPath = '../Reader/EPub/Javascripts';
   if (platform == 'android') {
-    bundleTasks.push('concat:android');
     distPath = '../src/main/assets/javascripts';
   }
 
@@ -110,13 +108,6 @@ module.exports = function(grunt) {
         options: {
           banner: '<%= variants.banner %><%= variants.strict %>'
         }
-      },
-      android: {
-        src: [
-          '<%= variants.intermediate %>',
-          '<%= variants.platformPath %>/init.js'
-        ],
-        dest: '<%= variants.intermediate %>'
       }
     },
 
@@ -176,5 +167,5 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('lint', ['jshint', 'eslint']);
-  grunt.registerTask('bundle', bundleTasks);
+  grunt.registerTask('bundle', ['babel', 'browserify', 'concat']);
 };
