@@ -1,8 +1,11 @@
 module.exports = function(grunt) {
   var platform = grunt.option('platform');
   if (platform === undefined || (platform != 'android' && platform != 'ios')) {
-    throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios]';
+    throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios] --dist=path';
   }
+
+  var buildPath = 'build';
+  var distPath = grunt.option('dist') || buildPath;
 
   require('time-grunt')(grunt);
 
@@ -17,7 +20,8 @@ module.exports = function(grunt) {
       commonPath: '<%= variants.basePath %>/common',
       platformPath: '<%= variants.basePath %>/<%= variants.platform %>',
       libsPath: '<%= variants.basePath %>/libs',
-      buildPath: 'build',
+      buildPath: buildPath,
+      distPath: distPath,
       src: {
         es6: [
           '<%= variants.commonPath %>/**/*.es6',
@@ -28,12 +32,13 @@ module.exports = function(grunt) {
         ]
       },
       intermediate: '<%= variants.buildPath %>/<%= variants.name %>.js',
-      dist: '<%= variants.buildPath %>/<%= variants.name %>.js'
+      dist: '<%= variants.distPath %>/<%= variants.name %>.js'
     },
 
     clean: {
       src: [
         '<%= variants.buildPath %>',
+        '<%= variants.dist %>'
       ],
       options: {
         force: true
