@@ -7,8 +7,7 @@ module.exports = {
     "tts": true,
     // Android
     "CURSE": true,
-    "android": true,
-    "webView": true
+    "android": true
   },
   "rules": {
     "comma-dangle": 0,
