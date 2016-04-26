@@ -1,5 +1,5 @@
 import TTSUtil from './TTSUtil';
-import EPub from '../_EPub';
+import _EPub from '../_EPub';
 
 export default class TTSPiece {
   get nodeIndex() { return this._nodeIndex; }
@@ -14,7 +14,7 @@ export default class TTSPiece {
       throw 'TTSPiece: nodeIndex or wordIndex is invalid.';
     }
 
-    const nodes = EPub.getTextAndImageNodes();
+    const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
       throw 'TTSPiece: nodes is empty. make call epub.setTextAndImageNodes().';
     } else if (nodes.length - 1 < nodeIndex) {
@@ -64,6 +64,10 @@ export default class TTSPiece {
     } else if (readable !== 'yes') {
       if (el.style.display === 'none' || el.offsetWidth === 0) {
         // 눈에 보이지 않는 것은 읽지 않는다
+        valid = false;
+      } else if (el.nodeName === 'A' &&
+        (el.textContent || '').match(_EPub.getFootnoteRegex()) !== null) {
+        // 주석 링크는 읽지 않는다
         valid = false;
       } else {
         do { // 이미지, 독음(후리가나)과 첨자는 읽지 않는다

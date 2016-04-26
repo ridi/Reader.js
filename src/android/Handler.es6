@@ -1,6 +1,6 @@
 import _Handler from '../common/_Handler';
+import _EPub from '../common/EPub';
 import Util from './Util';
-import EPub from './EPub';
 
 export default class Handler extends _Handler {
   static processSingleTapEvent(x, y, nativePoints) {
@@ -16,9 +16,8 @@ export default class Handler extends _Handler {
 
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
-        const regex = /^(\[|\{|\(|주|)[0-9]*(\)|\}|\]|\.|)$/gm;
         const canUseFootnote = href.match(/^file:\/\//gm) !== null &&
-          (text.trim().match(regex) !== null || footnoteType >= 3.0);
+          (text.trim().match(_EPub.getFootnoteRegex()) !== null || footnoteType >= 3.0);
 
         android.onLinkPressed(href, rects, canUseFootnote, footnoteType >= 3.0 ? text : null);
         return;
@@ -30,12 +29,12 @@ export default class Handler extends _Handler {
   static processLongTapZoomEvent(x, y) {
     const point = Util.adjustPoint(x, y);
 
-    let src = EPub.getImagePathFromPoint(point.x, point.y);
+    let src = _EPub.getImagePathFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onImageLongTapZoom(src);
     }
 
-    src = EPub.getSvgElementFromPoint(point.x, point.y);
+    src = _EPub.getSvgElementFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onSvgElementLongTapZoom(src);
     }

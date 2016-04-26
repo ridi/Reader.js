@@ -134,6 +134,10 @@ export default class _EPub extends _Object {
       (rect) => (rect || { top: null }).top);
   }
 
+  static getFootnoteRegex() {
+    return /^(\[|\{|\(|주|)[0-9].*(\)|\}|\]|\.|)$/gm;
+  }
+
   static getSplitWordRegex() {
     return new RegExp(' |\\u00A0');
   }
