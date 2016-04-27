@@ -1,5 +1,5 @@
 import _Handler from '../common/_Handler';
-import _EPub from '../common/EPub';
+import _EPub from '../common/_EPub';
 import Util from './Util';
 
 export default class Handler extends _Handler {
