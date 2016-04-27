@@ -260,6 +260,22 @@ export default class EPub extends _EPub {
 
     return result;
   }
+
+  static refreshStyle(style) {
+    const styleElements = document.getElementsByTagName('style');
+    const styleElement = styleElements[styleElements.length - 1];
+    styleElement.innerHTML = style;
+  }
+
+  static preventOverPaging() {
+    let totalPages = Math.floor(super.getTotalWidth() / app.pageWidthUnit);
+    if (app.chromeMajorVersion >= 43) {
+      totalPages -= 3;
+    }
+    if (totalPages < window.pageXOffset / app.pageWidthUnit) {
+      super.scrollTo(totalPages * app.pageWidthUnit);
+    }
+  }
 }
 
 EPub.staticOverride(EPub, _EPub, ['getPageOffsetFromRect']);

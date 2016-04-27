@@ -24,6 +24,11 @@ export default class App extends _App {
     this.calcPageForDoublePageMode = false;
   }
 
+  updatePageSize(width, height) {
+    this._width = width;
+    this._height = height;
+  }
+
   getColumnGap() {
     return Util.getStylePropertyIntValue(document.documentElement, '-webkit-column-gap');
   }
