@@ -268,7 +268,7 @@ export default class EPub extends _EPub {
   }
 
   static preventOverPaging() {
-    let totalPages = Math.floor(super.getTotalWidth() / app.pageWidthUnit);
+    let totalPages = Math.floor(this.getTotalWidth() / app.pageWidthUnit);
     if (app.chromeMajorVersion >= 43) {
       totalPages -= 3;
     }
