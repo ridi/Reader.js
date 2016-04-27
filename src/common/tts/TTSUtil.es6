@@ -95,8 +95,23 @@ export default class TTSUtil {
     return code === 0x003A;
   }
 
+  static hangulCodeTable() {
+    return [
+      0xAC00, 0xD7AF
+    ];
+  }
+
   static isHangulCharCode(code) {
-    return this._containCharCode(code, [0xAC00, 0xD7AF]);
+    return this._containCharCode(code, this.hangulCodeTable());
+  }
+
+  static latinCodeTable() {
+    return [
+      0x0020, 0x007F, // Latin Basic
+      0x00A0, 0x00FF, // Latin Supplement
+      0x0100, 0x017F, // Latin Extended-A
+      0x0180, 0x024F  // Latin Extended-B
+    ];
   }
 
   static isLatinCharCode(code, flag) {
@@ -145,16 +160,52 @@ export default class TTSUtil {
     return this._containCharCode(code, table);
   }
 
+  static chineseCodeTable() {
+    return [
+      0x4E00, 0x9FFF,   // CJK Unified Ideographs
+      0xF900, 0xFAFF,   // CJK Compatibility Ideographs
+      0x3300, 0x33FF,   // CJK Compatibility
+      0x3400, 0x4DBF,   // CJK Unified Ideographs Extension A
+      0x20000, 0x2A6DF, // CJK Unified Ideographs Extension B
+      0x2A700, 0x2B73F, // CJK Unified Ideographs Extension C
+      0x2B740, 0x2B81F, // CJK Unified Ideographs Extension D
+      0x2B820, 0x2CEAF, // CJK Unified Ideographs Extension E
+      0x2CEB0, 0x2EBEF, // CJK Unified Ideographs Extension F
+      0x2F800, 0x2FA1F  // CJK Compatibility Ideographs Supplement
+    ];
+  }
+
   static isChineseCharCode(code) {
-    return this._containCharCode(code, [
-      0x4E00, 0x9FBF,
-      0xF900, 0xFAFF,
-      0x3400, 0x4DBF,
-      0x20000, 0x2A6DF,
-      0x2A700, 0x2B73F,
-      0x2B740, 0x2B81F,
-      0x2F800, 0x2FA1F
-    ]);
+    return this._containCharCode(code, this.chineseCodeTable());
+  }
+
+  static japaneseCodeTable() {
+    return [
+      0x3000, 0x303F,   // Japanese-style punctuation
+      0x3040, 0x309F,   // Hiragana
+      0x30a0, 0x30FF,   // Katakana
+      0xFF00, 0xFFEF,   // Full-width roman characters and half-width katakana
+      0x4E00, 0x9FFF    // CJK Unified Ideographs
+    ];
+  }
+
+  static isJapaneseCharCode(code) {
+    return this._containCharCode(code, this.japaneseCodeTable());
+  }
+
+  static _toHex(num) {
+    return `0000${num.toString(16)}`.substr(-4);
+  }
+
+  static getContainCharRegex(tables = []) {
+    let string = '[';
+    tables.forEach((table) => {
+      for (let i = 0; i < table.length; i += 2) {
+        string += `\\u${this._toHex(table[i])}-\\u${this._toHex(table[i + 1])}`;
+      }
+    });
+    string += ']';
+    return new RegExp(`^${string}$`, 'gm');
   }
 
   // Hangel

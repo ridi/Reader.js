@@ -1,5 +1,6 @@
 import _Util from './_Util';
 import _App from './_App';
+import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel {
   constructor(maxLength = 0) {
@@ -29,6 +30,12 @@ export default class _Sel {
   _expandRangeByWord(range) {
     const startContainer = range.startContainer;
     if (startContainer.nodeValue === null) {
+      return;
+    }
+
+    const tables = [TTSUtil.chineseCodeTable(), TTSUtil.japaneseCodeTable()];
+    if (TTSUtil.getContainCharRegex(tables).test(range.toString())) {
+      range.expand('character');
       return;
     }
 
