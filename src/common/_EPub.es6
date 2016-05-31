@@ -507,27 +507,22 @@ export default class _EPub extends _Object {
     // * 이미지 잘림 보정(1)
     //   - 앞선 과정에서 보정된 또는 보정되지 않은 사이즈가 페이지를 벗어날 때 페이지에 맞게 보정해 준다.
     //    (높이만 보정을 하는 이유는 DOM 너비는 화면 너비에 맞게 되어있고 DOM 높이는 스크롤의 전체 길이이기 때문이다.)
-    //     --> 원본 높이 또는 랜더링된 이미지의 높이가 페이지 보다 같거나 클 때 페이지에 맞게 보정한다.
+    //     --> 랜더링된 이미지의 높이가 페이지 보다 크거나 같을 때 페이지에 맞게 보정한다.
     //        (단순히 페이지보다 작게 만드는게 아니라 이미지의 상단 여백을 가져와 페이지 높이에 뺀 값으로 보정한다.)
     //        (이미지의 상단 여백은 '-webkit-text-size-adjust'에 영향 받고 있으니 참고하자.)
+    //     --> 랜더링된 이미지의 높이가 페이지 보다 작지만 부모의 padding-top에 의해 페이지를 벗어나는 경우 페이지에 맞게 보정한다.
+    //        (bookId=321000105의 커버 페이지가 그러함)
     //
 
     let _paddingTop = paddingTop;
     if (!app.scrollMode) {
-      let mHeight = size.dHeight;
-      if (cssHeight.length) {
-        mHeight = parseInt(cssHeight, 10);
-        if (isNaN(mHeight)) {
-          mHeight = size.dHeight;
-        }
-      }
-      if (mHeight >= canvasHeight) {
-        let offsetTop = (imgEl.offsetTop + paddingTop) % canvasHeight;
-        if (isNaN(offsetTop)) {
-          offsetTop = 0;
-        }
+      const mHeight = parseInt(cssHeight, 10) || size.dHeight;
+      let offsetTop = imgEl.offsetTop || 0;
+      if (mHeight >= canvasHeight
+        || (offsetTop < canvasHeight && mHeight + offsetTop >= canvasHeight)) {
+        offsetTop = (offsetTop + paddingTop) % canvasHeight;
         if (offsetTop > 0) {
-          cssHeight = `${(canvasHeight * 0.95)}px`;
+          cssHeight = `${canvasHeight - offsetTop}px`;
         }
         _paddingTop += offsetTop;
         if (cssWidth.length) {
