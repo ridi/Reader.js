@@ -268,12 +268,17 @@ export default class EPub extends _EPub {
   }
 
   static preventOverPaging() {
-    let totalPages = Math.floor(this.getTotalWidth() / app.pageWidthUnit);
-    if (app.chromeMajorVersion >= 43) {
+    const pageUnit = app.scrollMode ? app.pageHeightUnit : app.pageWidthUnit;
+    const totalLength = app.scrollMode ? this.getTotalHeight() : this.getTotalWidth();
+    const pageOffset = app.scrollMode ? window.pageYOffset : window.pageXOffset;
+    let totalPages = Math.floor(totalLength / pageUnit);
+
+    if (!app.scrollMode && app.chromeMajorVersion >= 43) {
       totalPages -= 3;
     }
-    if (totalPages < window.pageXOffset / app.pageWidthUnit) {
-      super.scrollTo(totalPages * app.pageWidthUnit);
+
+    if (totalPages < pageOffset / pageUnit) {
+      this.scrollTo(totalPages * pageUnit);
     }
   }
 }
