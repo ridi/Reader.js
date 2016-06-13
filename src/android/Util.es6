@@ -9,7 +9,27 @@ export default class Util extends _Util {
   }
 
   static adjustPoint(x, y) {
-    return { x: this._offsetToAbsoluteForChrome(x), y };
+    const version = app.chromeMajorVersion;
+    const point = { x, y };
+    if (app.scrollMode) {
+      return point;
+    } else if (this.checkCurseInChrome()) {
+      const gap = app.getColumnGap();
+      const curPage = app.getCurPage();
+      const pageUnit = app.pageWidthUnit;
+      const pageWeight = app.pageWeightForChrome;
+      if (curPage < CURSE || app.pageOverflowForChrome) {
+        point.x += (pageUnit * pageWeight);
+      } else {
+        point.x += ((pageUnit - gap) * pageWeight);
+        if (pageWeight > 0 && pageWeight < CURSE) {
+          point.x -= (gap * (CURSE - pageWeight));
+        }
+      }
+    } else if (version <= 41 && version >= 40) {
+      point.x += window.pageXOffset;
+    }
+    return point;
   }
 
   static adjustRect(rect) {
@@ -18,25 +38,6 @@ export default class Util extends _Util {
 
   static adjustRects(rects) {
     return this._rectsToRelativeForChrome(rects);
-  }
-
-  static _offsetToAbsoluteForChrome(offset) {
-    let adjustOffset = offset;
-    if (this.checkCurseInChrome() && !app.scrollMode) {
-      const gap = app.getColumnGap();
-      const curPage = app.getCurPage();
-      const pageUnit = app.pageWidthUnit;
-      const pageWeight = app.pageWeightForChrome;
-      if (curPage < CURSE || app.pageOverflowForChrome) {
-        adjustOffset += (pageUnit * pageWeight);
-      } else {
-        adjustOffset += ((pageUnit - gap) * pageWeight);
-        if (pageWeight > 0 && pageWeight < CURSE) {
-          adjustOffset -= (gap * (CURSE - pageWeight));
-        }
-      }
-    }
-    return adjustOffset;
   }
 
   static _rectToRelativeForChromeInternal(rect, gap, curPage) {
@@ -107,7 +108,6 @@ Range.prototype.getBoundingClientRect =
   Range.prototype.getBoundingClientRect || getBoundingClientRect;
 
 Util.staticOverride(Util, _Util, [
-  '_offsetToAbsoluteForChrome',
   '_rectToRelativeForChromeInternal',
   '_rectToRelativeForChrome',
   '_rectsToRelativeForChrome',
