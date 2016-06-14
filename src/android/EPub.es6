@@ -271,7 +271,11 @@ export default class EPub extends _EPub {
     const pageUnit = app.scrollMode ? app.pageHeightUnit : app.pageWidthUnit;
     const totalLength = app.scrollMode ? this.getTotalHeight() : this.getTotalWidth();
     const pageOffset = app.scrollMode ? window.pageYOffset : window.pageXOffset;
-    const totalPages = Math.max(Math.floor(totalLength / pageUnit) - 3, 0);
+
+    const bodyBottomMargin = Util.getStylePropertyIntValue(document.body, 'margin-bottom');
+    const extraPages =
+      bodyBottomMargin / (app.doublePageMode ? app.pageHeightUnit * 2 : app.pageHeightUnit);
+    const totalPages = Math.max(Math.floor(totalLength / pageUnit) - extraPages, 0);
 
     if (totalPages < pageOffset / pageUnit) {
       this.scrollTo(totalPages * pageUnit);
