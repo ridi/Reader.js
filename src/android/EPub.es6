@@ -271,11 +271,7 @@ export default class EPub extends _EPub {
     const pageUnit = app.scrollMode ? app.pageHeightUnit : app.pageWidthUnit;
     const totalLength = app.scrollMode ? this.getTotalHeight() : this.getTotalWidth();
     const pageOffset = app.scrollMode ? window.pageYOffset : window.pageXOffset;
-    let totalPages = Math.floor(totalLength / pageUnit);
-
-    if (!app.scrollMode && app.chromeMajorVersion >= 43) {
-      totalPages -= 3;
-    }
+    const totalPages = Math.max(Math.floor(totalLength / pageUnit) - 3, 0);
 
     if (totalPages < pageOffset / pageUnit) {
       this.scrollTo(totalPages * pageUnit);
