@@ -24,9 +24,44 @@ export default class App extends _App {
     this.calcPageForDoublePageMode = false;
   }
 
-  updatePageSize(width, height) {
+  applyColumnProperty(width, gap) {
+    document.documentElement.setAttribute('style',
+      `-webkit-column-width: ${width}px !important; ` +
+      `-webkit-column-gap: ${gap}px !important;`);
+    let style = (document.body.attributes.style || { nodeValue: '' }).nodeValue;
+    const originStyle = style;
+    style += 'margin-top: -1px !important;';
+    document.body.setAttribute('style', style);
+    setTimeout(() => {
+      document.body.setAttribute('style', originStyle);
+    }, 0);
+  }
+
+  changePageSizeWithStyle(width, height, style) {
+    const prevPage = this.getCurPage();
+
     this._width = width;
     this._height = height;
+
+    // KitKat에서 html의 width를 변경해도 innerWidth가 갱신되지 않아 형광펜이 틀어지고 본문이 잘려보이는 문제가 있다
+    // 이를 해결하기 위해 PhoneGap쪽 대응 코드를 참고하여 적용했다
+    const version = this.systemMajorVersion;
+    if (version <= 20 && version >= 19) {
+      let viewport = document.querySelector('meta[name=viewport]');
+      if (viewport === null) {
+        viewport = document.createElement('meta');
+        viewport.id = 'viewport';
+        viewport.name = 'viewport';
+        document.getElementsByTagName('head')[0].appendChild(viewport);
+      }
+      viewport.content = 'initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
+      document.body.style.zoom = 1;
+    }
+
+    const styleElements = document.getElementsByTagName('style');
+    const styleElement = styleElements[styleElements.length - 1];
+    styleElement.innerHTML = style;
+    EPub.scrollTo(prevPage * this.pageUnit);
   }
 
   getColumnGap() {

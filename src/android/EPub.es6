@@ -4,19 +4,6 @@ import Util from './Util';
 let scrollTimer = null;
 
 export default class EPub extends _EPub {
-  static applyColumnProperty(width, gap) {
-    document.documentElement.setAttribute('style',
-      `-webkit-column-width: ${width}px !important; ` +
-      `-webkit-column-gap: ${gap}px !important;`);
-    let style = (document.body.attributes.style || { nodeValue: '' }).nodeValue;
-    const originStyle = style;
-    style += 'margin-top: -1px !important;';
-    document.body.setAttribute('style', style);
-    setTimeout(() => {
-      document.body.setAttribute('style', originStyle);
-    }, 0);
-  }
-
   static calcPageCount(columnWidth) {
     if (app.scrollMode) {
       return Math.round(this.getTotalHeight() / app.pageHeightUnit);
@@ -54,10 +41,13 @@ export default class EPub extends _EPub {
     return -change / 2 * (time * (time - 2) - 1) + start;
   }
 
-  static scrollTo(offset, animated, finalPageInSpine) {
+  static scrollTo(offset = 0, animated = false, finalPageInSpine = false) {
+    // offset이 maxOffset을 넘길 수 없도록 보정한다. 이게 필요한 이유는 아래와 같다.
+    // - 스크롤 보기에서 잘못해서 paddingBottom 영역으로 이동해 다음 스파인으로 이동되는 것을 방지
+    // - 보기 설정 미리보기를 보여주는 중에 마지막 페이지보다 뒤로 이동해 빈 페이지가 보이는 것을 방지
+    // 네이티브에서 보정하지 않는 것은 WebView.getContentHeight 값을 신뢰할 수 없기 때문이다.
     let adjustOffset = offset;
     if (app.scrollMode) {
-      // 네이티브의 getContentHeight 값을 신뢰할 수 없어서 paddingBottom에 대한 보정은 여기서 한다
       const height = app.pageHeightUnit;
       const paddingBottom = Util.getStylePropertyIntValue(document.body, 'padding-bottom');
       const maxOffset = this.getTotalHeight() - height - paddingBottom;
@@ -65,6 +55,13 @@ export default class EPub extends _EPub {
         adjustOffset = maxOffset;
       }
       adjustOffset = Math.min(adjustOffset, maxOffset);
+    } else {
+      const width = app.pageWidthUnit;
+      const height = app.pageHeightUnit;
+      const marginBottom = Util.getStylePropertyIntValue(document.body, 'margin-bottom');
+      const extraPages = marginBottom / (app.doublePageMode ? height * 2 : height);
+      const maxPage = Math.max(Math.ceil(this.getTotalWidth() / width) - 1 - extraPages, 0);
+      adjustOffset = Math.min(adjustOffset, maxPage * width);
     }
 
     if (animated) {
@@ -259,27 +256,6 @@ export default class EPub extends _EPub {
     }
 
     return result;
-  }
-
-  static refreshStyle(style) {
-    const styleElements = document.getElementsByTagName('style');
-    const styleElement = styleElements[styleElements.length - 1];
-    styleElement.innerHTML = style;
-  }
-
-  static preventOverPaging() {
-    const pageUnit = app.scrollMode ? app.pageHeightUnit : app.pageWidthUnit;
-    const totalLength = app.scrollMode ? this.getTotalHeight() : this.getTotalWidth();
-    const pageOffset = app.scrollMode ? window.pageYOffset : window.pageXOffset;
-
-    const bodyBottomMargin = Util.getStylePropertyIntValue(document.body, 'margin-bottom');
-    const extraPages =
-      bodyBottomMargin / (app.doublePageMode ? app.pageHeightUnit * 2 : app.pageHeightUnit);
-    const totalPages = Math.max(Math.floor(totalLength / pageUnit) - extraPages, 0);
-
-    if (totalPages < pageOffset / pageUnit) {
-      this.scrollTo(totalPages * pageUnit);
-    }
   }
 }
 
