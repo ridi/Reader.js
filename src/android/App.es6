@@ -43,21 +43,6 @@ export default class App extends _App {
     this._width = width;
     this._height = height;
 
-    // KitKat에서 html의 width를 변경해도 innerWidth가 갱신되지 않아 형광펜이 틀어지고 본문이 잘려보이는 문제가 있다
-    // 이를 해결하기 위해 PhoneGap쪽 대응 코드를 참고하여 적용했다
-    const version = this.systemMajorVersion;
-    if (version <= 20 && version >= 19) {
-      let viewport = document.querySelector('meta[name=viewport]');
-      if (viewport === null) {
-        viewport = document.createElement('meta');
-        viewport.id = 'viewport';
-        viewport.name = 'viewport';
-        document.getElementsByTagName('head')[0].appendChild(viewport);
-      }
-      viewport.content = 'initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
-      document.body.style.zoom = 1;
-    }
-
     const styleElements = document.getElementsByTagName('style');
     const styleElement = styleElements[styleElements.length - 1];
     styleElement.innerHTML = style;
