@@ -13,6 +13,15 @@ export default class Sel extends _Sel {
     return testRect.left > pageWidth;
   }
 
+  expandNextPage() {
+    if (super.expandNextPage()) {
+      const coord = this.getSelectedRectsCoord();
+      if (coord.length) {
+        android.onSelectionChanged(coord, this.getSelectedText());
+      }
+    }
+  }
+
   startSelectionMode(x, y) {
     if (super.startSelectionMode(x, y)) {
       const coord = this.getSelectedRectsCoord();

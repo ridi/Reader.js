@@ -1,6 +1,13 @@
 import _Sel from '../common/_Sel';
 
 export default class Sel extends _Sel {
+  expandNextPage() {
+    if (super.expandNextPage()) {
+      return this.getSelectedRectsCoord();
+    }
+    return '';
+  }
+
   startSelectionMode(x, y) {
     if (super.startSelectionMode(x, y)) {
       return this.getSelectedRectsCoord();

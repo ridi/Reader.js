@@ -3,6 +3,8 @@ import _App from './_App';
 import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel {
+  get continuable() { return this._continuable; }
+
   constructor(maxLength = 0) {
     this._maxLength = maxLength;
     this._startContainer = null;
@@ -10,6 +12,8 @@ export default class _Sel {
     this._endContainer = null;
     this._endOffset = null;
     this._overflowed = false;
+    this._continuable = false; // PageBased mode only
+    this._continueOffset = null;
   }
 
   _caretRangeFromPoint(x, y, expand = 'word', allowCollapsed = false) {
@@ -67,6 +71,8 @@ export default class _Sel {
   }
 
   startSelectionMode(x, y, expand) {
+    this._continuable = false;
+
     const range = this._caretRangeFromPoint(x, y, expand);
     if (range === null) {
       return false;
@@ -84,6 +90,8 @@ export default class _Sel {
   }
 
   changeInitialSelection(x, y, expand) {
+    this._continuable = false;
+
     const range = this._caretRangeFromPoint(x, y, expand);
     if (range === null) {
       return false;
@@ -185,6 +193,32 @@ export default class _Sel {
 
     this._endContainer = exRange.endContainer;
     this._endOffset = exRange.endOffset;
+
+    if (!app.scrollMode) {
+      const textLength = this._endContainer.textContent.length;
+      let endOffset = this._endOffset;
+      while (textLength - 1 > endOffset) {
+        // TODO: 다음 페이지의 한 글자만 선택되는 것을 최대 두~세 단어가 선택되도록
+        exRange.setStart(exRange.endContainer, endOffset);
+        exRange.setEnd(exRange.endContainer, ++endOffset);
+        if (!(/\s/.test(exRange.toString())) && exRange.getAdjustedBoundingClientRect().left >= app.pageWidthUnit) {
+          this._continuable = true;
+          this._continueOffset = endOffset;
+          break;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  expandNextPage() {
+    if (!this.continuable) {
+      return false;
+    }
+
+    this._endOffset = this._continueOffset;
+    this._continuable = false;
 
     return true;
   }
