@@ -201,8 +201,12 @@ export default class _Sel {
         // TODO: 다음 페이지의 한 글자만 선택되는 것을 최대 두~세 단어가 선택되도록
         exRange.setStart(exRange.endContainer, endOffset);
         exRange.setEnd(exRange.endContainer, ++endOffset);
-        if (!(/\s/.test(exRange.toString()))
-          && exRange.getAdjustedBoundingClientRect().left >= app.pageWidthUnit) {
+        if (/\s/.test(exRange.toString())) {
+          continue;
+        } else if (exRange.getAdjustedBoundingClientRect().left < app.pageWidthUnit) {
+          this._continuable = false;
+          break;
+        } else {
           this._continuable = true;
           this._continueOffset = endOffset;
           break;
