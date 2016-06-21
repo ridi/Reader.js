@@ -23,12 +23,10 @@ export default class EPub extends _EPub {
 
     const direction = this.getOffsetDirectionFromElement(el);
     let origin = rect[direction];
-    if (app.systemMajorVersion >= 8) {
-      if (app.scrollMode) {
-        origin += window.pageYOffset;
-      } else {
-        origin += window.pageXOffset;
-      }
+    if (app.scrollMode) {
+      origin += window.pageYOffset;
+    } else {
+      origin += window.pageXOffset;
     }
 
     return Math.floor(origin / app.pageUnit);
@@ -36,16 +34,8 @@ export default class EPub extends _EPub {
 
   static getTopNodeLocationOfCurrentPage(posSeparator) {
     const pageUnit = app.pageUnit;
-    let startOffset;
-    let endOffset;
-    if (app.systemMajorVersion >= 8) {
-      startOffset = 0;
-      endOffset = pageUnit;
-    } else {
-      startOffset = app.scrollMode ? window.pageYOffset : window.pageXOffset;
-      endOffset = startOffset + pageUnit;
-    }
-
+    const startOffset = 0;
+    const endOffset = pageUnit;
     const notFound = `-1${posSeparator}-1`;
 
     // 앱이 백그라운드 상태일 때는 계산하지 않는다.
@@ -71,7 +61,7 @@ export default class EPub extends _EPub {
 
   static getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
     let scrollYOffset = super.getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex);
-    if (scrollYOffset !== null && app.systemMajorVersion >= 8) {
+    if (scrollYOffset !== null) {
       scrollYOffset += window.pageYOffset;
     }
     return scrollYOffset;

@@ -21,11 +21,7 @@ export default class TTS extends _TTS {
     }
 
     const rect = chunk.getBoundingClientRect();
-    let origin = rect.left;
-    if (app.systemMajorVersion >= 8) {
-      origin += window.pageXOffset;
-    }
-
+    const origin = rect.left + window.pageXOffset;
     return Math.floor(origin / app.pageWidthUnit) || null;
   }
 
@@ -48,10 +44,7 @@ export default class TTS extends _TTS {
     }
 
     const rect = chunk.getBoundingClientRect();
-    let scrollOffset = rect.top;
-    if (app.systemMajorVersion >= 8) {
-      scrollOffset += window.pageYOffset;
-    }
+    const scrollOffset = rect.top + window.pageYOffset;
     return scrollOffset;
   }
 
