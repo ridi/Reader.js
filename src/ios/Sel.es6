@@ -1,8 +1,8 @@
 import _Sel from '../common/_Sel';
 
 export default class Sel extends _Sel {
-  expandNextPage() {
-    if (super.expandNextPage()) {
+  extendSelectionIntoNextPage() {
+    if (super.extendSelectionIntoNextPage()) {
       return this.getSelectedRectsCoord();
     }
     return '';

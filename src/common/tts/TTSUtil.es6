@@ -194,7 +194,8 @@ export default class TTSUtil {
   }
 
   static _toHex(num) {
-    return `0000${num.toString(16)}`.substr(-4);
+    const hex = num.toString(16);
+    return `0000${hex}`.substr(-Math.max(hex.length, 4));
   }
 
   static getContainCharRegex(tables = []) {

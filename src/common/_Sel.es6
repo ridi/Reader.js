@@ -3,7 +3,7 @@ import _App from './_App';
 import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel {
-  get continuable() { return this._continuable; }
+  get nextPageContinuable() { return this._nextPageContinuable; }
 
   constructor(maxLength = 0) {
     this._maxLength = maxLength;
@@ -11,8 +11,9 @@ export default class _Sel {
     this._startOffset = null;
     this._endContainer = null;
     this._endOffset = null;
-    this._overflowed = false;
-    this._continuable = false; // PageBased mode only
+    this._overflowed = false; // 셀렉션 글자수 제한을 넘긴 상태인지
+    this._nextPageContinuable = false; // 다음 페이지로 이어서 셀렉션을 할 수 있는지(페이지 모드 전용)
+    this._continueContainer = null;
     this._continueOffset = null;
   }
 
@@ -71,8 +72,6 @@ export default class _Sel {
   }
 
   startSelectionMode(x, y, expand) {
-    this._continuable = false;
-
     const range = this._caretRangeFromPoint(x, y, expand);
     if (range === null) {
       return false;
@@ -80,6 +79,8 @@ export default class _Sel {
 
     // 처음 선택시에는 붙어있는 특수문자까지 모두 포함시킨다
     this._expandRangeByWord(range);
+
+    this._checkNextPageContinuable(range);
 
     this._startContainer = range.startContainer;
     this._startOffset = range.startOffset;
@@ -90,12 +91,12 @@ export default class _Sel {
   }
 
   changeInitialSelection(x, y, expand) {
-    this._continuable = false;
-
     const range = this._caretRangeFromPoint(x, y, expand);
     if (range === null) {
       return false;
     }
+
+    this._checkNextPageContinuable(range);
 
     this._startContainer = range.startContainer;
     this._startOffset = range.startOffset;
@@ -191,39 +192,110 @@ export default class _Sel {
       return false;
     }
 
+    this._checkNextPageContinuable(exRange);
+
     this._endContainer = exRange.endContainer;
     this._endOffset = exRange.endOffset;
-
-    if (!app.scrollMode) {
-      const textLength = this._endContainer.textContent.length;
-      let endOffset = this._endOffset;
-      while (textLength - 1 > endOffset) {
-        // TODO: 다음 페이지의 한 글자만 선택되는 것을 최대 두~세 단어가 선택되도록
-        exRange.setStart(exRange.endContainer, endOffset);
-        exRange.setEnd(exRange.endContainer, ++endOffset);
-        if (/\s/.test(exRange.toString())) {
-          continue;
-        } else if (exRange.getAdjustedBoundingClientRect().left < app.pageWidthUnit) {
-          this._continuable = false;
-          break;
-        } else {
-          this._continuable = true;
-          this._continueOffset = endOffset;
-          break;
-        }
-      }
-    }
 
     return true;
   }
 
-  expandNextPage() {
-    if (!this.continuable) {
+  _checkNextPageContinuable(range) {
+    if (!app.scrollMode) {
+      const dummyRange = range.cloneRange();
+      let node = dummyRange.endContainer;
+      let endOffset = dummyRange.endOffset;
+      do {
+        const length = node.textContent.length;
+        while (length > endOffset) {
+          dummyRange.setStart(node, endOffset);
+          dummyRange.setEnd(node, ++endOffset);
+          if (/\s/.test(dummyRange.toString())) {
+            continue;
+          } else if (dummyRange.getAdjustedBoundingClientRect().left < app.pageWidthUnit) {
+            return (this._nextPageContinuable = false);
+          } else {
+            this._expandRangeByWord(dummyRange);
+            this._continueContainer = dummyRange.endContainer;
+            this._continueOffset = dummyRange.endOffset;
+            return (this._nextPageContinuable = true);
+          }
+        }
+        endOffset = 0;
+        this._nextPageContinuable = false;
+      } while ((node = this._getNextTextNode(dummyRange)));
+    }
+    return this._nextPageContinuable;
+  }
+
+  _getNextTextNode(range) {
+    const node = range.endContainer;
+    const nextNode = node.nextSibling;
+    if (nextNode) {
+      if (nextNode.nodeType === Node.TEXT_NODE) {
+        // case 1-1:
+        // p
+        //   text (node)
+        //   text (nextNode)
+        return nextNode;
+      }
+
+      const textNode = _Util.createTextNodeIterator(nextNode).nextNode();
+      if (textNode) {
+        // case 2-1:
+        // p
+        //   text (node)
+        //   b
+        //      text (textNode)
+        //   text
+        return textNode;
+      }
+
+      // case 3
+      // p
+      //   t (node)
+      // div
+      //   img
+      range.setEnd(nextNode, 0);
+      return this._getNextTextNode(range);
+    }
+
+    range.setEndAfter(range.endContainer);
+    if (range.endContainer.nodeName === 'BODY') {
+      // case: 4
+      // body
+      //   p
+      //   p
+      //     text (node)
+      return null;
+    }
+
+    // case 1-2:
+    // p
+    //   text (node)
+    // text (nextNode)
+    // caae 2-2:
+    // p
+    //   text (node)
+    // p
+    //   text (textNode)
+    // case 2-3:
+    // p
+    //   text (node)
+    // div
+    //   p
+    //     text (textNode)
+    return this._getNextTextNode(range);
+  }
+
+  extendSelectionIntoNextPage() {
+    if (!this.nextPageContinuable) {
       return false;
     }
 
+    this._endContainer = this._continueContainer;
     this._endOffset = this._continueOffset;
-    this._continuable = false;
+    this._nextPageContinuable = false;
 
     return true;
   }

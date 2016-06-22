@@ -13,6 +13,7 @@ module.exports = {
     "comma-dangle": 0,
     "no-cond-assign": 0,
     "no-throw-literal": 0,
-    "no-unused-vars": 0
+    "no-unused-vars": 0,
+    "max-len": [1, 121]
   }
 };
