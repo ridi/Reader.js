@@ -193,20 +193,26 @@ export default class TTSUtil {
     return this._containCharCode(code, this.japaneseCodeTable());
   }
 
-  static _toHex(num) {
-    const hex = num.toString(16);
-    return `0000${hex}`.substr(-Math.max(hex.length, 4));
-  }
-
   static getContainCharRegex(tables = []) {
+    const toUnicode = (num) => {
+      // FIXME: BMP를 벗어나는 애들 처리(http://ujinbot.blogspot.kr/2013/10/blog-post.html)
+      if (num > 0xFFFF) {
+        return null;
+      }
+      return String.fromCharCode(num);
+    };
     let string = '[';
     tables.forEach((table) => {
       for (let i = 0; i < table.length; i += 2) {
-        string += `\\u${this._toHex(table[i])}-\\u${this._toHex(table[i + 1])}`;
+        const lower = toUnicode(table[i]);
+        const upper = toUnicode(table[i + 1]);
+        if (lower && upper) {
+          string += `${lower}-${upper}`;
+        }
       }
     });
     string += ']';
-    return new RegExp(`^${string}$`, 'gm');
+    return new RegExp(`^${string}{1,}$`, 'gm');
   }
 
   // Hangel
