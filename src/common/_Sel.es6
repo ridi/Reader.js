@@ -202,6 +202,7 @@ export default class _Sel {
 
   _checkNextPageContinuable(range) {
     if (!app.scrollMode) {
+      const pageUnit = app.pageWidthUnit * (app.doublePageMode ? 2 : 1);
       const dummyRange = range.cloneRange();
       let node = dummyRange.endContainer;
       let endOffset = dummyRange.endOffset;
@@ -212,7 +213,7 @@ export default class _Sel {
           dummyRange.setEnd(node, ++endOffset);
           if (/\s/.test(dummyRange.toString())) {
             continue;
-          } else if (dummyRange.getAdjustedBoundingClientRect().left < app.pageWidthUnit) {
+          } else if (dummyRange.getAdjustedBoundingClientRect().left < pageUnit) {
             return (this._nextPageContinuable = false);
           } else {
             this._expandRangeByWord(dummyRange);
