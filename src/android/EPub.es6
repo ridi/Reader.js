@@ -170,7 +170,7 @@ export default class EPub extends _EPub {
     const els = document.images;
     for (let i = 0; i < els.length; i++) {
       const el = els[i];
-      const result = super.reviseImage(el, canvasWidth, canvasHeight, paddingTop);
+      const result = this.reviseImage(el, canvasWidth, canvasHeight, paddingTop);
       if (result.width.length || result.height.length ||
         result.maxWidth.length || result.maxHeight.length || result.position.length) {
         paddingTop += result.paddingTop;
