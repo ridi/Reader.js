@@ -516,18 +516,19 @@ export default class _EPub extends _Object {
     //
 
     const width = parseInt(cssWidth, 10) || size.dWidth;
-    let height = parseInt(cssHeight, 10) || size.dHeight;
+    const height = parseInt(cssHeight, 10) || size.dHeight;
     if (width > canvasWidth || height > canvasHeight) {
       const margin = _Util.getStylePropertiesIntValue(imgEl,
         ['line-height', 'margin-top', 'margin-bottom', 'padding-top', 'padding-bottom']);
-      height = Math.max((canvasHeight - margin) * maxHeight, Math.min(canvasWidth, canvasHeight) * maxHeight);
-      if (width > canvasWidth) {
-        cssWidth = `${canvasWidth}px`;
-        cssHeight = `${Math.min(canvasWidth / size.nWidth * size.nHeight, height)}px`;
-      } else {
-        cssWidth = `${Math.min(height / size.nHeight * size.nWidth, canvasWidth)}px`;
-        cssHeight = `${height}px`;
+      const vmin = Math.min(canvasWidth, canvasHeight);
+      let adjustHeight = Math.max((canvasHeight - margin) * maxHeight, vmin * maxHeight);
+      let adjustWidth = adjustHeight / size.nHeight * size.nWidth;
+      if (adjustWidth > canvasWidth) {
+        adjustHeight *= canvasWidth / adjustWidth;
+        adjustWidth = canvasWidth;
       }
+      cssWidth = `${adjustWidth}px`;
+      cssHeight = `${adjustHeight}px`;
     }
 
 
