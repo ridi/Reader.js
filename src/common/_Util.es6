@@ -16,6 +16,18 @@ export default class _Util extends _Object {
     return parseInt(style[property], 10) || 0;
   }
 
+  static getStylePropertiesIntValue(target, properties) {
+    let style = target;
+    if (target.nodeType) {
+      style = window.getComputedStyle(target);
+    }
+    let value = 0;
+    for (let i = 0; i < properties.length; i++) {
+      value += (parseInt(style[properties[i]], 10) || 0);
+    }
+    return value;
+  }
+
   static _getMatchedCSSValue(el, property) {
     // element property has highest priority
     let val = el.style.getPropertyValue(property);

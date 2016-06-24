@@ -68,24 +68,18 @@ export default class EPub extends _EPub {
   }
 
   static reviseImagesInSpine() {
-    let paddingTop = 0;
     const elList = [];
     const els = document.images;
     const tryReviseImages = () => {
       if (els.length === elList.length) {
         const results = [];
         elList.forEach((el) => {
-          const result =
-            this.reviseImage(el, app.pageWidthUnit, app.pageHeightUnit, paddingTop);
-          if (result.width.length || result.height.length ||
-            result.maxWidth.length || result.maxHeight.length || result.position.length) {
-            paddingTop += result.paddingTop;
+          const result = this.reviseImage(el, app.pageWidthUnit, app.pageHeightUnit);
+          if (result.width.length || result.height.length || result.position.length) {
             results.push({
               el,
               width: result.width,
               height: result.height,
-              maxWidth: result.maxWidth,
-              maxHeight: result.maxHeight,
               position: result.position
             });
           }
@@ -101,12 +95,6 @@ export default class EPub extends _EPub {
           }
           if (result.height.length) {
             el.style.height = result.height;
-          }
-          if (result.maxWidth.length) {
-            el.style.maxWidth = result.maxWidth;
-          }
-          if (result.maxHeight.length) {
-            el.style.maxHeight = result.maxHeight;
           }
           if (result.position.length) {
             el.style.position = result.position;

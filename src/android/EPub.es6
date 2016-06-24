@@ -165,21 +165,16 @@ export default class EPub extends _EPub {
 
   static reviseImagesInSpine(canvasWidth, canvasHeight) {
     const results = [];
-    let paddingTop = 0;
 
     const els = document.images;
     for (let i = 0; i < els.length; i++) {
       const el = els[i];
-      const result = this.reviseImage(el, canvasWidth, canvasHeight, paddingTop);
-      if (result.width.length || result.height.length ||
-        result.maxWidth.length || result.maxHeight.length || result.position.length) {
-        paddingTop += result.paddingTop;
+      const result = this.reviseImage(el, canvasWidth, canvasHeight);
+      if (result.width.length || result.height.length || result.position.length) {
         results.push({
           el,
           width: result.width,
           height: result.height,
-          maxWidth: result.maxWidth,
-          maxHeight: result.maxHeight,
           position: result.position
         });
       }
@@ -193,49 +188,15 @@ export default class EPub extends _EPub {
       if (result.height.length) {
         el.style.height = result.height;
       }
-      if (result.maxWidth.length) {
-        el.style.maxWidth = result.maxWidth;
-      }
-      if (result.maxHeight.length) {
-        el.style.maxHeight = result.maxHeight;
-      }
       if (result.position.length) {
         el.style.position = result.position;
       }
     });
   }
 
-  static reviseImage(imgEl, canvasWidth, canvasHeight, paddingTop) {
-    const result = super.reviseImage(imgEl, canvasWidth, canvasHeight, paddingTop);
+  static reviseImage(imgEl, canvasWidth, canvasHeight) {
+    const result = super.reviseImage(imgEl, canvasWidth, canvasHeight);
     const size = result.size;
-
-    //
-    // * Chrome 39 관련 보정
-    //   - CSS로 지정된 이미지의 크기가 화면 크기보다 크면 화면 너비에 맞춰 비율을 유지하며 이미지 크기를 조절해 주는데
-    //     39 이상부터 비율을 유지해주지 않고 너비만 화면에 맞춰주는 현상이 있어 이미지 보정에 오작동을 야기시키고 있다
-    //     그래서 모든 스타일이 반영된 이미지 크기가 화면 크기보다 크면 랜더링된 이미지 크기를 화면 크기로 바꿔서
-    //     오작동이 일어나지 않도록 우회시켜주고 있다
-    //
-
-    if (app.chromeMajorVersion >= 39) {
-      const _sWidth = Util.getStylePropertyIntValue(imgEl, 'width');
-      const _sHeight = Util.getStylePropertyIntValue(imgEl, 'height');
-      const boundWidth = canvasWidth;
-      let boundHeight = canvasHeight;
-      if (_sWidth > boundWidth || _sHeight > boundHeight) {
-        // img 태그에 들어간 lineHeight을 없애줘야 스파인 하나에 이미지 하나 있는 아이가 두 페이지로 계산되는 일을 피할 수 있다
-        boundHeight -= Util.getStylePropertyIntValue(imgEl, 'line-height');
-        if (_sWidth > boundWidth) {
-          size.dWidth = boundWidth;
-          size.dHeight = Math.min(boundWidth / size.nWidth * size.nHeight, boundHeight);
-        } else {
-          size.dWidth = Math.min(boundHeight / size.nHeight * size.nWidth, boundWidth);
-          size.dHeight = boundHeight;
-        }
-        result.width = `${size.dWidth}px`;
-        result.height = `${size.dHeight}px`;
-      }
-    }
 
     //
     // * 부모에 의한 크기 소멸 보정.

@@ -394,7 +394,7 @@ export default class _EPub extends _Object {
     };
   }
 
-  static reviseImage(imgEl, canvasWidth, canvasHeight, paddingTop) {
+  static reviseImage(imgEl, canvasWidth, canvasHeight) {
     const isPercentValue = (value) => {
       if (typeof value === 'string') {
         return value.search(/%/);
@@ -435,16 +435,20 @@ export default class _EPub extends _Object {
       return (n / m) * 100;
     };
 
+    const maxHeight = 0.95;
     const size = this._getImageSize(imgEl);
-
     let cssWidth = '';
     let cssHeight = '';
-    let cssMaxWidth = '';
-    let cssMaxHeight = '';
 
     // 원본 사이즈가 없다는 것은 엑박이란 거다
     if (size.nWidth === 0 || size.nHeight === 0) {
-      return null;
+      return {
+        el: imgEl,
+        width: cssWidth,
+        height: cssHeight,
+        position: '',
+        size
+      };
     }
 
     //
@@ -504,50 +508,26 @@ export default class _EPub extends _Object {
     }
 
     //
-    // * 이미지 잘림 보정(1)
-    //   - 앞선 과정에서 보정된 또는 보정되지 않은 사이즈가 페이지를 벗어날 때 페이지에 맞게 보정해 준다.
-    //    (높이만 보정을 하는 이유는 DOM 너비는 화면 너비에 맞게 되어있고 DOM 높이는 스크롤의 전체 길이이기 때문이다.)
-    //     --> 랜더링된 이미지의 높이가 페이지 보다 크거나 같을 때 페이지에 맞게 보정한다.
-    //        (단순히 페이지보다 작게 만드는게 아니라 이미지의 상단 여백을 가져와 페이지 높이에 뺀 값으로 보정한다.)
-    //        (이미지의 상단 여백은 '-webkit-text-size-adjust'에 영향 받고 있으니 참고하자.)
-    //     --> 랜더링된 이미지의 높이가 페이지 보다 작지만 부모의 padding-top에 의해 페이지를 벗어나는 경우 페이지에 맞게 보정한다.
-    //        (bookId=321000105의 커버 페이지가 그러함)
+    // * 이미지 잘림 보정
+    //   - 보정된 이미지의 크기나 랜더링된 크기가 화면을 벗어날 경우 잘려보이기나 찌그러져 보이기 때문에 화면보다 작게 보정한다.
+    //   - 이미지에 붙은 여백, 줄간 때문에 다음 페이지에 빈 페이지가 생길 수 있기 때문에 모든 여백을 뺀다.
+    //     --> TODO: 이미지의 부모들이 가진 여백 때문에 이전/다음 페이지에 빈 페이지가 생기는 문제에 대한 대응 필요 -> 계약직 아내
+    //   - 보정할 높이가 화면의 가장 작은 부분(vmin)보다 작아지지 않도록 한다. (이미지가 작아서 보기 힘들어지기 때문)
     //
 
-    let _paddingTop = paddingTop;
-    if (!app.scrollMode) {
-      const mHeight = parseInt(cssHeight, 10) || size.dHeight;
-      let offsetTop = imgEl.offsetTop || 0;
-      if (mHeight >= canvasHeight
-        || (offsetTop < canvasHeight && mHeight + offsetTop >= canvasHeight)) {
-        offsetTop = (offsetTop + paddingTop) % canvasHeight;
-        if (offsetTop > 0) {
-          cssHeight = `${canvasHeight - offsetTop}px`;
-        }
-        _paddingTop += offsetTop;
-        if (cssWidth.length) {
-          cssWidth = 'initial';
-        }
+    const width = parseInt(cssWidth, 10) || size.dWidth;
+    let height = parseInt(cssHeight, 10) || size.dHeight;
+    if (width > canvasWidth || height > canvasHeight) {
+      const margin = _Util.getStylePropertiesIntValue(imgEl,
+        ['line-height', 'margin-top', 'margin-bottom', 'padding-top', 'padding-bottom']);
+      height = Math.max((canvasHeight - margin) * maxHeight, Math.min(canvasWidth, canvasHeight) * maxHeight);
+      if (width > canvasWidth) {
+        cssWidth = `${canvasWidth}px`;
+        cssHeight = `${Math.min(canvasWidth / size.nWidth * size.nHeight, height)}px`;
+      } else {
+        cssWidth = `${Math.min(height / size.nHeight * size.nWidth, canvasWidth)}px`;
+        cssHeight = `${height}px`;
       }
-    }
-
-    //
-    // * 이미지 잘림 보정(2)
-    //   - 제작 과정에서 이 속성을 사용할 수 있기 때문에 '!important'를 붙이지는 못하고
-    //    수치가 100%를 넘을때나 속성이 없을때 추가해준다.
-    //    (100%를 초과하면 사이즈에 따라 이미지가 잘리는것을 볼 수 있다)
-    //    (높이를 95%로 주는 이유는 spine에 이미지 하나만 있을 때 p테그의 줄간, 서체 크기에
-    //     영향을 받아 빈 페이지가 들어가기 때문이다.)
-    //
-
-    const maxWidth = _Util.getMatchedCSSValue(imgEl, 'max-width');
-    if (isPercentValue(maxWidth) && parseInt(maxWidth, 10) > 100) {
-      cssMaxWidth = '100%';
-    }
-
-    const maxHeight = _Util.getMatchedCSSValue(imgEl, 'max-height');
-    if (isPercentValue(maxHeight) && parseInt(maxHeight, 10) > 95) {
-      cssMaxHeight = '95%';
     }
 
 
@@ -555,10 +535,7 @@ export default class _EPub extends _Object {
       el: imgEl,
       width: cssWidth,
       height: cssHeight,
-      maxWidth: cssMaxWidth,
-      maxHeight: cssMaxHeight,
       position: '',
-      paddingTop: _paddingTop,
       size
     };
   }
