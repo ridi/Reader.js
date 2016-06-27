@@ -216,7 +216,7 @@ export default class _Sel {
           } else if (dummyRange.getAdjustedBoundingClientRect().left < pageUnit) {
             return (this._nextPageContinuable = false);
           } else {
-            this._expandRangeByWord(dummyRange);
+            this._expandRangeBySentenceInPage(dummyRange, pageUnit * 2);
             this._continueContainer = dummyRange.endContainer;
             this._continueOffset = dummyRange.endOffset;
             return (this._nextPageContinuable = true);
@@ -227,6 +227,22 @@ export default class _Sel {
       } while ((node = this._getNextTextNode(dummyRange)));
     }
     return this._nextPageContinuable;
+  }
+
+  _expandRangeBySentenceInPage(range, upperBound) {
+    const originalOffset = range.endOffset;
+    range.expand('sentence');
+
+    let endOffset = range.endOffset;
+    while (endOffset > originalOffset) {
+      if (/\s$/.test(range.toString())) {
+        range.setEnd(range.endContainer, endOffset -= 1);
+        continue;
+      } else if (range.getBoundingClientRect().right < upperBound) {
+        break;
+      }
+      range.setEnd(range.endContainer, endOffset -= 1);
+    }
   }
 
   _getNextTextNode(range) {
