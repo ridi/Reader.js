@@ -128,7 +128,7 @@ export default class EPub extends _EPub {
     tryReviseImages();
   }
 
-  static onImagesRevise() {
+  static isImagesRevised() {
     return onImagesRevise;
   }
 }
