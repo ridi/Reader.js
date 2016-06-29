@@ -65,12 +65,14 @@ export default class TTSPiece {
       if (el.style.display === 'none' || el.offsetWidth === 0) {
         // 눈에 보이지 않는 것은 읽지 않는다
         valid = false;
-      } else if (el.nodeName === 'A' &&
-        (el.textContent || '').match(_EPub.getFootnoteRegex()) !== null) {
-        // 주석 링크는 읽지 않는다
-        valid = false;
       } else {
-        do { // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
+        do {
+          // 주석 링크는 읽지 않는다
+          if (el.nodeName === 'A' && this._text.match(_EPub.getFootnoteRegex()) !== null) {
+            valid = false;
+            break;
+          }
+          // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
           if (!(valid = (['RUBY', 'RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
             break;
           }
