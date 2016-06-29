@@ -238,7 +238,7 @@ export default class _Sel {
       if (/\s$/.test(range.toString())) {
         range.setEnd(range.endContainer, endOffset -= 1);
         continue;
-      } else if (range.getBoundingClientRect().right < upperBound) {
+      } else if (range.getBoundingClientRect().right <= upperBound) {
         break;
       }
       range.setEnd(range.endContainer, endOffset -= 1);
