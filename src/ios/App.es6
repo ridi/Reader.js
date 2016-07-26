@@ -21,6 +21,10 @@ export default class App extends _App {
   static toast(message = '') {
     location.href = `ridi+epub://navigation/toast?${encodeURIComponent(message)}`;
   }
+
+  static log(message = '') {
+    location.href = `ridi+epub://navigation/log?${encodeURIComponent(message)}`;
+  }
 }
 
-App.staticOverride(App, _App, ['toast']);
+App.staticOverride(App, _App, ['toast', 'log']);
