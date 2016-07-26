@@ -49,17 +49,6 @@ export default class App extends _App {
     EPub.scrollTo(prevPage * this.pageUnit);
   }
 
-  getColumnGap() {
-    return Util.getStylePropertyIntValue(document.documentElement, '-webkit-column-gap');
-  }
-
-  getCurPage() {
-    if (this.scrollMode) {
-      return window.pageYOffset / this.pageHeightUnit;
-    }
-    return window.pageXOffset / this.pageWidthUnit;
-  }
-
   _setScrollListener() {
     window.addEventListener('scroll', () => {
       if (Util.checkCurseInChrome()) {

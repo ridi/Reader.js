@@ -1,4 +1,5 @@
 import _Object from './_Object';
+import _Util from './_Util';
 
 export default class _App extends _Object {
   get doublePageMode() { return this._doublePageMode; }
@@ -26,5 +27,16 @@ export default class _App extends _Object {
     // * iOS
     //   ex) 6, 7, 8, ...
     this._systemMajorVersion = systemMajorVersion;
+  }
+
+  getColumnGap() {
+    return _Util.getStylePropertyIntValue(document.documentElement, '-webkit-column-gap');
+  }
+
+  getCurPage() {
+    if (this.scrollMode) {
+      return window.pageYOffset / this.pageHeightUnit;
+    }
+    return window.pageXOffset / this.pageWidthUnit;
   }
 }
