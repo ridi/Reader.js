@@ -16,6 +16,23 @@ export default class EPub extends _EPub {
     viewport.content = value;
   }
 
+  static scrollTo(offset = 0) {
+    // offset이 maxOffset을 넘길 수 없도록 보정한다. 이게 필요한 이유는 아래와 같다.
+    // - 보기 설정 미리보기를 보여주는 중에 마지막 페이지보다 뒤로 이동해 빈 페이지가 보이는 것을 방지
+    let adjustOffset = offset;
+    if (app.scrollMode) {
+      const height = app.pageHeightUnit;
+      const maxOffset = this.getTotalHeight() - height;
+      adjustOffset = Math.min(adjustOffset, maxOffset);
+    } else {
+      const width = app.pageWidthUnit;
+      const maxPage = Math.max(Math.ceil(this.getTotalWidth() / width) - 1, 0);
+      adjustOffset = Math.min(adjustOffset, maxPage * width);
+    }
+
+    super.scrollTo(adjustOffset);
+  }
+
   static getPageOffsetFromRect(rect, el) {
     if (rect === null) {
       return null;
