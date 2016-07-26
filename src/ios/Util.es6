@@ -37,6 +37,11 @@ export default class Util extends _Util {
   }
 }
 
+console.log = ((log) => (message) => {
+  log.call(console, message);
+  location.href = `ridi+epub://invocation/log?${encodeURIComponent(message)}`;
+})(console.log);
+
 Util.staticOverride(Util, _Util, [
   '_rectToRelative',
   '_rectsToRelative',
