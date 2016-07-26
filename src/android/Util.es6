@@ -89,9 +89,14 @@ function getBoundingClientRect() {
     return null;
   }
 
-  const bounds = new MutableClientRect(rects[0]);
+  // 마지막 rect를 쓰는 이유는 현재 보고있는 페이지의 다음 페이지의 첫 글자를 선택했을 때
+  // 너비가 1 이하인(Chrome 버전에 따라 0 또는 1) 정체불명의 rect 값을 걸러내기 위함이다.
+  const bounds = new MutableClientRect(rects[rects.length - 1]);
   for (let i = 0; i < rects.length; i++) {
     const rect = rects[i];
+    if (rect.width <= 1) {
+      continue;
+    }
     bounds.top = Math.min(bounds.top, rect.top || 0);
     bounds.bottom = Math.max(bounds.bottom, rect.bottom || 0);
     bounds.left = Math.min(bounds.left, rect.left || 0);
@@ -103,9 +108,7 @@ function getBoundingClientRect() {
   return bounds;
 }
 
-// iOS5.x, Android 4.x 버전에서 getBoundingClientRect가 null을 리턴하는 현상이 있어 직접 구현했다.
-Range.prototype.getBoundingClientRect =
-  Range.prototype.getBoundingClientRect || getBoundingClientRect;
+Range.prototype.getBoundingClientRect = getBoundingClientRect;
 
 Util.staticOverride(Util, _Util, [
   '_rectToRelativeForChromeInternal',
