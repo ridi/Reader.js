@@ -13,8 +13,8 @@ export default class Sel extends _Sel {
     return testRect.left > pageWidth;
   }
 
-  extendSelectionIntoNextPage() {
-    if (super.extendSelectionIntoNextPage()) {
+  expandSelectionIntoNextPage() {
+    if (super.expandSelectionIntoNextPage()) {
       const coord = this.getSelectedRectsCoord();
       if (coord.length) {
         android.onSelectionChangeIntoNextPage(coord);
@@ -40,8 +40,8 @@ export default class Sel extends _Sel {
     }
   }
 
-  extendUpperSelection(x, y) {
-    if (super.extendUpperSelection(x, y)) {
+  expandUpperSelection(x, y) {
+    if (super.expandUpperSelection(x, y)) {
       const coord = this.getSelectedRectsCoord();
       if (coord.length) {
         android.onSelectionChanged(coord, this.getSelectedText());
@@ -49,8 +49,8 @@ export default class Sel extends _Sel {
     }
   }
 
-  extendLowerSelection(x, y) {
-    if (super.extendLowerSelection(x, y)) {
+  expandLowerSelection(x, y) {
+    if (super.expandLowerSelection(x, y)) {
       const coord = this.getSelectedRectsCoord();
       if (coord.length) {
         android.onSelectionChanged(coord, this.getSelectedText());

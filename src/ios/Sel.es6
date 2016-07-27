@@ -1,8 +1,8 @@
 import _Sel from '../common/_Sel';
 
 export default class Sel extends _Sel {
-  extendSelectionIntoNextPage() {
-    if (super.extendSelectionIntoNextPage()) {
+  expandSelectionIntoNextPage() {
+    if (super.expandSelectionIntoNextPage()) {
       return this.getSelectedRectsCoord();
     }
     return '';
@@ -22,15 +22,15 @@ export default class Sel extends _Sel {
     return '';
   }
 
-  extendUpperSelection(x, y) {
-    if (super.extendUpperSelection(x, y)) {
+  expandUpperSelection(x, y) {
+    if (super.expandUpperSelection(x, y)) {
       return this.getSelectedRectsCoord();
     }
     return '';
   }
 
-  extendLowerSelection(x, y) {
-    if (super.extendLowerSelection(x, y)) {
+  expandLowerSelection(x, y) {
+    if (super.expandLowerSelection(x, y)) {
       return this.getSelectedRectsCoord();
     }
     return '';

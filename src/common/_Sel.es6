@@ -17,14 +17,14 @@ export default class _Sel {
     this._continueOffset = null;
   }
 
-  _caretRangeFromPoint(x, y, expand = 'word', allowCollapsed = false) {
+  _caretRangeFromPoint(x, y, unit = 'word', allowCollapsed = false) {
     const point = _Util.adjustPoint(x, y);
     const range = document.caretRangeFromPoint(point.x, point.y);
     if (range === null) {
       return null;
     }
 
-    range.expand(expand);
+    range.expand(unit);
     if (!allowCollapsed && range.collapsed) {
       return null;
     }
@@ -71,8 +71,8 @@ export default class _Sel {
     return false;
   }
 
-  startSelectionMode(x, y, expand) {
-    const range = this._caretRangeFromPoint(x, y, expand);
+  startSelectionMode(x, y, unit) {
+    const range = this._caretRangeFromPoint(x, y, unit);
     if (range === null) {
       return false;
     }
@@ -90,8 +90,8 @@ export default class _Sel {
     return true;
   }
 
-  changeInitialSelection(x, y, expand) {
-    const range = this._caretRangeFromPoint(x, y, expand);
+  changeInitialSelection(x, y, unit) {
+    const range = this._caretRangeFromPoint(x, y, unit);
     if (range === null) {
       return false;
     }
@@ -106,8 +106,8 @@ export default class _Sel {
     return true;
   }
 
-  extendUpperSelection(x, y, expand = 'character') {
-    const exRange = this._caretRangeFromPoint(x, y, expand, true);
+  expandUpperSelection(x, y, unit = 'character') {
+    const exRange = this._caretRangeFromPoint(x, y, unit, true);
     if (exRange === null) {
       return false;
     }
@@ -150,8 +150,8 @@ export default class _Sel {
     return true;
   }
 
-  extendLowerSelection(x, y, expand = 'character') {
-    const exRange = this._caretRangeFromPoint(x, y, expand, true);
+  expandLowerSelection(x, y, unit = 'character') {
+    const exRange = this._caretRangeFromPoint(x, y, unit, true);
     if (exRange === null) {
       return false;
     }
@@ -305,7 +305,7 @@ export default class _Sel {
     return this._getNextTextNode(range);
   }
 
-  extendSelectionIntoNextPage() {
+  expandSelectionIntoNextPage() {
     if (!this.nextPageContinuable) {
       return false;
     }
