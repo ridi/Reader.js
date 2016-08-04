@@ -18,9 +18,6 @@ export default class Sel extends _Sel {
       const coord = this.getSelectedRectsCoord();
       if (coord.length) {
         android.onSelectionChangeIntoNextPage(coord);
-        setTimeout(() => {
-          this.requestSelectionInfo();
-        }, 300);
       }
     }
   }
