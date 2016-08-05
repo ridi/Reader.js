@@ -202,7 +202,7 @@ export default class _Sel {
 
   _checkNextPageContinuable(range) {
     if (!app.scrollMode) {
-      const pageUnit = app.pageWidthUnit * (app.doublePageMode ? 2 : 1);
+      const pageUnit = app.pageWidthUnit;
       const dummyRange = range.cloneRange();
       let node = dummyRange.endContainer;
       let endOffset = dummyRange.endOffset;
