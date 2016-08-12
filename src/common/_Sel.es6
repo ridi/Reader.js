@@ -200,9 +200,13 @@ export default class _Sel {
     return true;
   }
 
+  getUpperBound() {
+    return app.pageWidthUnit;
+  }
+
   _checkNextPageContinuable(range) {
     if (!app.scrollMode) {
-      const pageUnit = app.pageWidthUnit;
+      const upperBound = this.getUpperBound();
       const dummyRange = range.cloneRange();
       let node = dummyRange.endContainer;
       let endOffset = dummyRange.endOffset;
@@ -213,10 +217,10 @@ export default class _Sel {
           dummyRange.setEnd(node, ++endOffset);
           if (/\s/.test(dummyRange.toString())) {
             continue;
-          } else if (dummyRange.getAdjustedBoundingClientRect().left < pageUnit) {
+          } else if (dummyRange.getAdjustedBoundingClientRect().left < upperBound) {
             return (this._nextPageContinuable = false);
           } else {
-            this._expandRangeBySentenceInPage(dummyRange, pageUnit * 2);
+            this._expandRangeBySentenceInPage(dummyRange, upperBound * 2);
             this._continueContainer = dummyRange.endContainer;
             this._continueOffset = dummyRange.endOffset;
             return (this._nextPageContinuable = true);

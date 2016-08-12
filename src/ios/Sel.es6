@@ -1,6 +1,10 @@
 import _Sel from '../common/_Sel';
 
 export default class Sel extends _Sel {
+  getUpperBound() {
+    return app.pageWidthUnit * (app.doublePageMode ? 2 : 1);
+  }
+
   expandSelectionIntoNextPage() {
     if (super.expandSelectionIntoNextPage()) {
       return this.getSelectedRectsCoord();
