@@ -9,10 +9,9 @@ import TTSUtterance from '../common/tts/TTSUtterance';
 import TTSUtil from '../common/tts/TTSUtil';
 
 export default function (width, height, systemMajorVersion, selMaxLength,
-                         doublePageMode, scrollMode, pageOffset) {
+                         doublePageMode, scrollMode, contentsSrc, pageOffset) {
   window.CURSE = 3; // Chrome 47, 49~ 대응
-  window.app = new App(width, height, systemMajorVersion,
-    doublePageMode, scrollMode, pageOffset);
+  window.app = new App(width, height, systemMajorVersion, doublePageMode, scrollMode, contentsSrc, pageOffset);
   window.sel = new Sel(selMaxLength);
   window.epub = EPub;
   window.handler = Handler;

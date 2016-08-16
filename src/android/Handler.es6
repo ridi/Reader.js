@@ -16,8 +16,20 @@ export default class Handler extends _Handler {
 
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
-        const canUseFootnote = href.match(/^file:\/\//gm) !== null &&
+        let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
           (text.trim().match(_EPub.getFootnoteRegex()) !== null || footnoteType >= 3.0);
+
+        if (canUseFootnote) {
+          const src = href.replace(location.href, '');
+          if (src[0] === '#' || src.match(app.contentsSrc) !== null) {
+            const anchor = src.substring(src.lastIndexOf('#') + 1);
+            if (app.scrollMode) {
+              canUseFootnote = _EPub.getScrollYOffsetFromAnchor(anchor) > window.pageYOffset;
+            } else {
+              canUseFootnote = _EPub.getPageOffsetFromAnchor(anchor) > app.getCurPage();
+            }
+          }
+        }
 
         android.onLinkPressed(href, rects, canUseFootnote, footnoteType >= 3.0 ? text : null);
         return;

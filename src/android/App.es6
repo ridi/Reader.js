@@ -7,8 +7,9 @@ export default class App extends _App {
   get pageWeightForChrome() { return this._pageWeightForChrome; }
   get pageOverflowForChrome() { return this._pageOverflowForChrome; }
   get prevPage() { return this._prevPage; }
+  get contentsSrc() { return this._contentsSrc; }
 
-  constructor(width, height, systemMajorVersion, doublePageMode, scrollMode, pageOffset = 0) {
+  constructor(width, height, systemMajorVersion, doublePageMode, scrollMode, contentsSrc, pageOffset = 0) {
     super(width, height, systemMajorVersion, doublePageMode, scrollMode);
     const chrome = ((navigator.userAgent || '').match(/chrome\/[\d]+/gi) || [''])[0];
     const version = parseInt((chrome.match(/[\d]+/g) || [''])[0], 10);
@@ -22,6 +23,7 @@ export default class App extends _App {
       }
     }
     this.calcPageForDoublePageMode = false;
+    this._contentsSrc = contentsSrc;
   }
 
   applyColumnProperty(width, gap) {
