@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   var platform = grunt.option('platform');
   if (platform === undefined || (platform != 'android' && platform != 'ios')) {
-    throw 'Usage: grunt [default|test|epub-debug|show-config] --platform=[android|ios] --dist=path';
+    throw 'Usage: grunt [default|epub-debug|show-config] --platform=[android|ios] --dist=path';
   }
 
   var buildPath = 'build';
@@ -140,11 +140,7 @@ module.exports = function(grunt) {
           }
         ]
       }
-    },
-
-    qunit: [
-      'test/**/test-*.html'
-    ]
+    }
   });
 
   grunt.loadNpmTasks('grunt-babel');
@@ -158,7 +154,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('gruntify-eslint');
 
   grunt.registerTask('default', ['clean', 'lint', 'bundle', 'uglify']);
-  grunt.registerTask('test', ['clean', 'lint', 'bundle', 'qunit']);
   grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']); // iOS only
   grunt.registerTask('show-config', function() { // debug
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));

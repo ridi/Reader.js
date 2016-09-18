@@ -1,5 +1,5 @@
 {
-  "name": "Ridibooks",
+  "name": "Ridibooks-Reader.js",
   "devDependencies": {
     "babel-preset-es2015": "^6.5.0",
     "eslint": "^2.4.0",
