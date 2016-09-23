@@ -3,7 +3,7 @@ import _App from './_App';
 import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel {
-  get nextPageContinuable() { return this._nextPageContinuable; }
+  get nextPageContinuable() { return this._checkNextPageContinuable(this.getSelectedRange()); }
 
   constructor(maxLength = 0) {
     this._maxLength = maxLength;
@@ -80,8 +80,6 @@ export default class _Sel {
     // 처음 선택시에는 붙어있는 특수문자까지 모두 포함시킨다
     this._expandRangeByWord(range);
 
-    this._checkNextPageContinuable(range);
-
     this._startContainer = range.startContainer;
     this._startOffset = range.startOffset;
     this._endContainer = range.endContainer;
@@ -95,8 +93,6 @@ export default class _Sel {
     if (range === null) {
       return false;
     }
-
-    this._checkNextPageContinuable(range);
 
     this._startContainer = range.startContainer;
     this._startOffset = range.startOffset;
@@ -191,8 +187,6 @@ export default class _Sel {
     if (!this.validLength(range)) {
       return false;
     }
-
-    this._checkNextPageContinuable(exRange);
 
     this._endContainer = exRange.endContainer;
     this._endOffset = exRange.endOffset;
@@ -310,7 +304,7 @@ export default class _Sel {
   }
 
   expandSelectionIntoNextPage() {
-    if (!this.nextPageContinuable) {
+    if (!this._nextPageContinuable) {
       return false;
     }
 
