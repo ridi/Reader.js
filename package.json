@@ -1,5 +1,6 @@
 {
-  "name": "Ridibooks-Reader.js",
+  "name": "ridibooks-reader",
+  "version": "0.1.0",
   "description": "Javascript library for Ridibooks viewer for iOS/Android written in ECMAScript 6",
   "author": "Ridibooks Viewer Team <viewer.team@ridi.com>",
   "repository": {
@@ -25,4 +26,3 @@
   },
   "license": "Apache-2.0"
 }
-
