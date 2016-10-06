@@ -6,6 +6,7 @@ import MutableClientRect from '../MutableClientRect';
 
 export default class TTSChunk {
   get id() { return this._id; }
+  set id(newId) { this._id = newId; }
   get range() { return this._range; }
   set range(newRange) {
     if (newRange instanceof TTSRange) {
