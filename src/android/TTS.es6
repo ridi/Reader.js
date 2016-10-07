@@ -3,39 +3,36 @@ import EPub from './EPub';
 import Util from './Util';
 
 export default class TTS extends _TTS {
-  constructor() {
-    super();
-    this._flushed = true;
-  }
-
   didPlaySpeech(chunkId) {
-    if (this._flushed) {
+    if (this.chunks.isEmpty) {
       return;
     }
 
     app.moveToChunkId(chunkId);
 
-    const rects = this.chunks[chunkId].getClientRects(true);
+    const rects = this.chunks.getChunkById(chunkId).getClientRects(true);
     android.onRectOfChunkId(chunkId, Util.rectsToAbsoluteCoord(rects));
   }
 
   didFinishSpeech(chunkId) {
-    if (this._flushed) {
+    if (this.chunks.isEmpty) {
       return;
     }
 
     const nodes = EPub.getTextAndImageNodes() || [];
     if (!super.didFinishSpeech(chunkId) &&
-      nodes.length === this.maxNodeIndex && this.chunks.length - 1 === chunkId) {
+      nodes.length - 1 === this.processedNodeMaxIndex && this.chunks.last.id === chunkId) {
       android.onUtteranceNotFound();
     }
   }
 
-  didFinishMakeChunks(index) {
-    this._flushed = false;
-    if (this.chunks.length - index > 0) {
-      for (let i = index; i < this.chunks.length; i++) {
-        const chunk = this.chunks[i];
+  didFinishMakeChunks(prevLastChunk) {
+    const baseChunkId = (prevLastChunk ? prevLastChunk.id : this.chunks.initialId);
+    const lastChunk = this.chunks.last;
+    let lastChunkId = -1;
+    if (lastChunk && ((lastChunkId = lastChunk.id) - baseChunkId > 0)) {
+      for (let id = baseChunkId; id <= lastChunkId; id++) {
+        const chunk = this.chunks.getChunkById(id);
         android.onUtteranceFound(
           chunk.id,
           chunk.getNodeIndex(),
@@ -53,11 +50,7 @@ export default class TTS extends _TTS {
       return null;
     }
 
-    if (this.chunks.length - 1 <= chunkId) {
-      return null;
-    }
-
-    const chunk = this.chunks[chunkId];
+    const chunk = this.chunks.getChunkById(chunkId);
     if (!chunk) {
       return null;
     }
@@ -72,11 +65,7 @@ export default class TTS extends _TTS {
       return null;
     }
 
-    if (this.chunks.length - 1 <= chunkId) {
-      return null;
-    }
-
-    const chunk = this.chunks[chunkId];
+    const chunk = this.chunks.getChunkById(chunkId);
     if (!chunk) {
       return null;
     }

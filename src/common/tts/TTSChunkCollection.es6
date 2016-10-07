@@ -3,9 +3,10 @@ export default class TTSChunkCollection {
   get isEmpty() { return this.length === 0; }
   get first() { return this._chunks[0]; }
   get last() { return this._chunks[this.length - 1]; }
-  get oneSideReserveCapacity() { return 50; }
+  get oneSideReserveCapacity() { return 250; }
+  get initialId() { return 0; }
 
-  constructor(capacity) {
+  constructor() {
     // previous chunks + next chunks + current chunk
     this._capacity = 2 * this.oneSideReserveCapacity + 1;
     this._chunks = [];
@@ -20,13 +21,13 @@ export default class TTSChunkCollection {
   }
 
   _indexByChunkId(chunkId) {
-    return chunkId - this.first.id;
+    return this.first ? (chunkId - this.first.id) : -1;
   }
 
   pushFirst(chunk) {
     const newChunk = chunk;
-    newChunk.id = (this.first ? (this.first.id - 1) : 0);
-    if (this.length >= this.capacity) {
+    newChunk.id = (this.first ? (this.first.id - 1) : this.initialId);
+    if (this.length >= this._capacity) {
       this.last.id = NaN;
       this._chunks.pop();
     }
@@ -35,8 +36,8 @@ export default class TTSChunkCollection {
 
   pushLast(chunk) {
     const newChunk = chunk;
-    newChunk.id = (this.last ? (this.last.id + 1) : 0);
-    if (this.length >= this.capacity) {
+    newChunk.id = (this.last ? (this.last.id + 1) : this.initialId);
+    if (this.length >= this._capacity) {
       this.first.id = NaN;
       this._chunks.shift();
     }

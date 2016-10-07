@@ -17,7 +17,7 @@ export default class TTSChunk {
   }
 
   constructor(pieces, range = null) {
-    this._id = tts.chunks.length;
+    this._id = NaN;
     this._pieces = pieces;
     this.range = range;
   }

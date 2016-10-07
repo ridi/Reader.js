@@ -154,7 +154,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('gruntify-eslint');
 
   grunt.registerTask('default', ['clean', 'lint', 'bundle', 'uglify']);
-  grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']); // iOS only
+  grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']);
   grunt.registerTask('show-config', function() { // debug
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
