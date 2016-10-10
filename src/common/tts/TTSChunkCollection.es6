@@ -27,20 +27,12 @@ export default class TTSChunkCollection {
   pushFirst(chunk) {
     const newChunk = chunk;
     newChunk.id = (this.first ? (this.first.id - 1) : this.initialId);
-    if (this.length >= this._capacity) {
-      this.last.id = NaN;
-      this._chunks.pop();
-    }
     this._chunks.unshift(newChunk);
   }
 
   pushLast(chunk) {
     const newChunk = chunk;
     newChunk.id = (this.last ? (this.last.id + 1) : this.initialId);
-    if (this.length >= this._capacity) {
-      this.first.id = NaN;
-      this._chunks.shift();
-    }
     this._chunks.push(newChunk);
   }
 
