@@ -24,9 +24,9 @@ export default class Handler extends _Handler {
           if (src[0] === '#' || src.match(app.contentsSrc) !== null) {
             const anchor = src.substring(src.lastIndexOf('#') + 1);
             if (app.scrollMode) {
-              canUseFootnote = _EPub.getScrollYOffsetFromAnchor(anchor) > window.pageYOffset;
+              canUseFootnote = _EPub.getScrollYOffsetFromAnchor(anchor) >= window.pageYOffset;
             } else {
-              canUseFootnote = _EPub.getPageOffsetFromAnchor(anchor) > app.getCurPage();
+              canUseFootnote = _EPub.getPageOffsetFromAnchor(anchor) >= app.getCurPage();
             }
           }
         }
