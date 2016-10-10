@@ -128,9 +128,10 @@ export default class _TTS {
       }
     }
 
-    return this.makeChunksByNodeLocation(nodeIndex, wordIndex);
+    this.makeChunksByNodeLocation(nodeIndex, wordIndex);
   }
 
+  // nodeIndex / wordIndex : inclusive
   makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
