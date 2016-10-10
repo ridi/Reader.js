@@ -146,8 +146,11 @@ export default class _TTS {
     let maxIndex = Math.min(_nodeIndex + reserveChunksCount, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
-    const pieceBuffer = [];
-    const flushPieces = () => { this._addChunk(pieceBuffer); };
+    let pieceBuffer = [];
+    const flushPieces = () => {
+      this._addChunk(pieceBuffer);
+      pieceBuffer = [];
+    };
 
     for (; _nodeIndex <= maxIndex + 1; _nodeIndex++, _wordIndex = -1) {
       if (_nodeIndex >= nodes.length) {
