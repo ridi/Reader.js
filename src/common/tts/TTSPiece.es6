@@ -3,15 +3,18 @@ import _EPub from '../_EPub';
 
 export default class TTSPiece {
   get nodeIndex() { return this._nodeIndex; }
-  get wordIndex() { return this._wordIndex; }
+  get startWordIndex() { return this._startWordIndex; }
+  get endWordIndex() { return this._endWordIndex; }
   get node() { return this._node; }
   get text() { return this._text; }
   get length() { return this._length; }
   get paddingLeft() { return this._paddingLeft; }
+  get paddingRight() { return this._paddingRight; }
 
-  constructor(nodeIndex, wordIndex) {
-    if (typeof nodeIndex !== 'number' || typeof wordIndex !== 'number') {
-      throw 'TTSPiece: nodeIndex or wordIndex is invalid.';
+  constructor(nodeIndex, startWordIndex = -1, endWordIndex = -1) {
+    if (typeof nodeIndex !== 'number' || typeof startWordIndex !== 'number'
+      || typeof endWordIndex !== 'number') {
+      throw 'TTSPiece: nodeIndex or startWordIndex or endWordIndex is invalid.';
     }
 
     const nodes = _EPub.getTextAndImageNodes();
@@ -28,28 +31,39 @@ export default class TTSPiece {
 
     const nodeValue = this._node.nodeValue;
     this._paddingLeft = 0;
+    this._paddingRight = 0;
     this._text = '';
+    this._startWordIndex = startWordIndex;
+    this._endWordIndex = endWordIndex;
+
     if (typeof nodeValue === 'string') {
-      if (wordIndex > 0) {
-        const words = nodeValue.split(TTSUtil.getSplitWordRegex());
-        if (wordIndex < words.length) {
-          words.forEach((word, i, list) => {
-            if (wordIndex <= i) {
-              this._text += `${word}${((i < list.length - 1) ? ' ' : '')}`;
-            } else {
-              this._paddingLeft += (word.length + 1);
-            }
-          });
-        } else {
-          throw `TTSPiece: wordIndex is out of bounds(${wordIndex}/${words.length - 1}).`;
-        }
-      } else {
+      if (startWordIndex < 0 && endWordIndex < 0) {
         this._text = nodeValue;
+      } else {
+        const words = nodeValue.split(TTSUtil.getSplitWordRegex());
+
+        if (startWordIndex >= words.length || endWordIndex >= words.length) {
+          throw 'TTSPiece: wordIndex is out of bounds - '
+          + `startWordIndex: (${startWordIndex}/${words.length - 1}), `
+          + `endWordIndex: (${endWordIndex}/${words.length - 1}).`;
+        }
+        // endWordIndex < 0인 경우는 default value를 사용한 것으로 간주한다.
+        this._endWordIndex = (endWordIndex < 0 ? (words.length - 1) : endWordIndex);
+
+        words.forEach((word, i, list) => {
+          if (i >= startWordIndex && i <= this._endWordIndex) {
+            this._text += `${word}${(i === list.length - 1 || i === this._endWordIndex) ? '' : ' '}`;
+          } else if (i < startWordIndex) {
+            // + 1 : for word delimiters
+            this._paddingLeft += (word.length + 1);
+          } else {
+            this._paddingRight += (word.length + 1);
+          }
+        });
       }
     } else if (this._node.nodeName === 'IMG') {
       this._text = this._node.alt || '';
     }
-    this._wordIndex = wordIndex;
     this._length = this._text.length;
   }
 

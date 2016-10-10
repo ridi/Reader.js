@@ -189,7 +189,8 @@ export default class TTSChunk {
             + `, endOffset: ${endOffset}`
             + `, offset: ${offset}`
             + `, nodeIndex: ${piece.nodeIndex}`
-            + `, wordIndex: ${piece.wordIndex}}`);
+            + `, startWordIndex: ${piece.startWordIndex}`
+            + `, endWordIndex: ${piece.endWordIndex}}`);
           }
 
           // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
