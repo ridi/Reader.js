@@ -169,7 +169,12 @@ export default class _TTS {
       // maxIndex + 1까지 살펴보는 것은 이전까지 만들어둔 piece들이 완성된 문장인지 판단하기 위함이다.
       const aboveMaxIndex = (_nodeIndex > maxIndex);
 
-      if (piece.isInvalid() || piece.isOnlyWhitespace()) {
+      if (piece.isInvalid()) {
+        // invalid (아랫 첨자 등) 의 경우 문장의 끝이 아닐 수 있다.
+        if (!aboveMaxIndex) {
+          incrementMaxIndex();
+        }
+      } else if (piece.isOnlyWhitespace()) {
         flushPieces();
         if (!aboveMaxIndex) {
           incrementMaxIndex();
@@ -188,7 +193,7 @@ export default class _TTS {
           // 현재 piece의 말단 부분이 문장의 끝 부분을 포함하고 있으므로
           // 이제까지 쌓인 piece들이 완성된 문장이 되었다는 판단을 할 수 있다.
           flushPieces();
-        } else if (aboveMaxIndex) {
+        } else if (_nodeIndex >= maxIndex) {
           // 문장의 나머지 부분이 더 존재하는 경우이므로 계속 진행한다.
           incrementMaxIndex();
           // 현재 node부터 다시 처리해야하므로.
