@@ -146,8 +146,15 @@ export default class _TTS {
     let maxIndex = Math.min(_nodeIndex + reserveChunksCount, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
+    const pieceBuffer = [];
+    const flushPieces = () => { this._addChunk(pieceBuffer); };
 
-    for (; _nodeIndex <= maxIndex; _nodeIndex++, _wordIndex = 0) {
+    for (; _nodeIndex <= maxIndex + 1; _nodeIndex++, _wordIndex = -1) {
+      if (_nodeIndex >= nodes.length) {
+        flushPieces();
+        break;
+      }
+
       let piece;
       try {
         piece = new TTSPiece(_nodeIndex, _wordIndex);
@@ -156,60 +163,36 @@ export default class _TTS {
         break;
       }
 
-      const pieces = [piece];
+      // maxIndex + 1까지 살펴보는 것은 이전까지 만들어둔 piece들이 완성된 문장인지 판단하기 위함이다.
+      const aboveMaxIndex = (_nodeIndex > maxIndex);
+
       if (piece.isInvalid() || piece.isOnlyWhitespace()) {
-        incrementMaxIndex();
+        flushPieces();
+        if (!aboveMaxIndex) {
+          incrementMaxIndex();
+        }
+      } else if (!aboveMaxIndex && piece.isNextSiblingBr()) {
+        pieceBuffer.push(piece);
+        // 다음 element가 br이라면 현재 chunk의 끝 부분은 문장이 끝나는 부분이라고 판단할 수 있다.
+        // 문장이 완성되었으므로 flush.
+        flushPieces();
       } else {
-        if (piece.isNextSiblingToBr() || (piece.length > 1 && piece.isSentence())) {
-          this._addChunk(pieces);
-        } else {
-          // 현재 piece에서 문장이 끝나지 않을 경우 문장이 완성될 때 까지는 piece를 계속 추가한다.
-          // (_nodeIndex가 maxIndex에 도달하였더라도.)
-          if (_nodeIndex === maxIndex) {
-            incrementMaxIndex();
-          }
+        if (!aboveMaxIndex) {
+          pieceBuffer.push(piece);
+        }
 
-          for (++_nodeIndex; _nodeIndex <= maxIndex; ++_nodeIndex) {
-            let nextPiece;
-            try {
-              nextPiece = new TTSPiece(_nodeIndex, 0);
-            } catch (e) {
-              console.log(e);
-              break;
-            }
-
-            if (nextPiece.isInvalid()) {
-              incrementMaxIndex();
-            } else if (nextPiece.isOnlyWhitespace()) {
-              this._addChunk(pieces);
-              _nodeIndex--;
-              break;
-            } else if (nextPiece.isNextSiblingToBr()) {
-              pieces.push(nextPiece);
-              this._addChunk(pieces);
-              break;
-            } else {
-              pieces.push(nextPiece);
-              if (nextPiece.length > 1 && nextPiece.isSentence()) {
-                this._addChunk(pieces);
-                break;
-              }
-            }
-
-            if (_nodeIndex === maxIndex) {
-              incrementMaxIndex();
-            }
-            if (_nodeIndex === nodes.length - 1) {
-              this._addChunk(pieces);
-            }
-          } // end for
-
-          if (maxIndex + 1 < _nodeIndex) {
-            maxIndex = _nodeIndex;
-          }
+        if (piece.length > 1 && piece.isSentence()) {
+          // 현재 piece의 말단 부분이 문장의 끝 부분을 포함하고 있으므로
+          // 이제까지 쌓인 piece들이 완성된 문장이 되었다는 판단을 할 수 있다.
+          flushPieces();
+        } else if (aboveMaxIndex) {
+          // 문장의 나머지 부분이 더 존재하는 경우이므로 계속 진행한다.
+          incrementMaxIndex();
+          // 현재 node부터 다시 처리해야하므로.
+          _nodeIndex--;
         }
       }
-    } // end for
+    }
     this.processedNodeMaxIndex = maxIndex;
 
     this.didFinishMakeChunks(prevLastChunk);

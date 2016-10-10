@@ -98,9 +98,14 @@ export default class TTSPiece {
 
   // TopNodeLocation을 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
   // TopNodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
-  isNextSiblingToBr() {
+  isNextSiblingBr() {
     const nNode = this._node.nextSibling;
     return nNode !== null && nNode.nodeName === 'BR';
+  }
+
+  isPreviousSiblingBr() {
+    const pNode = this._node.previousSibling;
+    return pNode !== null && pNode.nodeName === 'BR';
   }
 
   isOnlyWhitespace() {
