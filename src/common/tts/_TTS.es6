@@ -238,6 +238,10 @@ export default class _TTS {
   }
 
   _addChunk(pieces) {
+    if (pieces.length === 0) {
+      return;
+    }
+
     // 문자열을 문장 단위(기준: .|。|?|!)로 나눈다
     const RIDI = 'RidiDelimiter';
     const split = (text) => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`);
