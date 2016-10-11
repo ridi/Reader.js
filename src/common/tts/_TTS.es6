@@ -143,8 +143,7 @@ export default class _TTS {
     let _wordIndex = Math.max(wordIndex, 0);
     // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에 용량의 1/5만 만듦
     const reserveChunksCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
-    // 아래의 reserveChunksCount 뒤에 붙은 -1은 기존 Unit test와의 호환성을 위해 추가된 값이다.
-    let maxIndex = Math.min(_nodeIndex + reserveChunksCount - 1, nodes.length - 1);
+    let maxIndex = Math.min(_nodeIndex + reserveChunksCount, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
     let pieceBuffer = [];
