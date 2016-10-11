@@ -189,7 +189,7 @@ export default class _TTS {
           pieceBuffer.push(piece);
         }
 
-        if (piece.length > 1 && piece.isSentence()) {
+        if (!aboveMaxIndex && piece.length > 1 && piece.isSentence()) {
           // 현재 piece의 말단 부분이 문장의 끝 부분을 포함하고 있으므로
           // 이제까지 쌓인 piece들이 완성된 문장이 되었다는 판단을 할 수 있다.
           flushPieces();
