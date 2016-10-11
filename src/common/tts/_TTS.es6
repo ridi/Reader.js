@@ -142,8 +142,9 @@ export default class _TTS {
     let _nodeIndex = Math.max(nodeIndex, 0);
     let _wordIndex = Math.max(wordIndex, 0);
     // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에 용량의 1/5만 만듦
-    const reserveChunksCount = (this.chunks.oneSideReserveCapacity / 5).toFixed();
-    let maxIndex = Math.min(_nodeIndex + reserveChunksCount, nodes.length - 1);
+    const reserveChunksCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
+    // 아래의 reserveChunksCount 뒤에 붙은 -1은 기존 Unit test와의 호환성을 위해 추가된 값이다.
+    let maxIndex = Math.min(_nodeIndex + reserveChunksCount - 1, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
     let pieceBuffer = [];
@@ -196,8 +197,12 @@ export default class _TTS {
         } else if (_nodeIndex >= maxIndex) {
           // 문장의 나머지 부분이 더 존재하는 경우이므로 계속 진행한다.
           incrementMaxIndex();
-          // 현재 node부터 다시 처리해야하므로.
-          _nodeIndex--;
+
+          if (aboveMaxIndex) {
+            // 위에서 현재 노드를 계속 무시했는데, maxIndex가 증가되었으므로
+            // 현재 node부터 다시 처리해야한다.
+            _nodeIndex--;
+          }
         }
       }
     }
