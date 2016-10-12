@@ -3,12 +3,14 @@ export default class TTSChunkCollection {
   get isEmpty() { return this.length === 0; }
   get first() { return this._chunks[0]; }
   get last() { return this._chunks[this.length - 1]; }
-  get oneSideReserveCapacity() { return 250; }
   get initialId() { return 0; }
+  get oneSideReserveCapacity() { return this._oneSideReserveCapacity; }
 
   constructor() {
+    this._oneSideReserveCapacity = 250;
+    // TODO : 용량을 실제로 제한하고 있지는 않다.
     // previous chunks + next chunks + current chunk
-    this._capacity = 2 * this.oneSideReserveCapacity + 1;
+    this._capacity = 2 * this._oneSideReserveCapacity + 1;
     this._chunks = [];
   }
 
