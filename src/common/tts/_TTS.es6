@@ -212,6 +212,99 @@ export default class _TTS {
     return this.chunks.length;
   }
 
+  // nodeIndex / wordIndex : inclusive
+  makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1) {
+    const nodes = _EPub.getTextAndImageNodes();
+    if (nodes === null) {
+      throw 'tts: nodes is empty. make call epub.getTextAndImageNodes().';
+    }
+
+    const wordsInNode = (node) => (node ? node.nodeValue.split(TTSUtil.getSplitWordRegex()) : 0);
+    const maxNodeIndex = nodes.length - 1;
+    let _nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
+    const maxWordIndex = wordsInNode(nodes[_nodeIndex]).length - 1;
+    let _wordIndex = (wordIndex >= 0 ? Math.min(wordIndex, maxWordIndex) : maxWordIndex);
+    let startWordIndex = 0;
+    if (_wordIndex === maxWordIndex) {
+      // TTSPiece 생성 시 word 분리 또 하지 않도록
+      _wordIndex = -1;
+      startWordIndex = -1;
+    }
+
+    // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에 용량의 1/5만 만듦
+    const reserveChunksCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
+    let minIndex = Math.max(_nodeIndex - reserveChunksCount, 0);
+
+    const decrementMinIndex = () => { minIndex = Math.max(minIndex - 1, 0); };
+    let pieceBuffer = [];
+    const flushPieces = () => {
+      this._addChunk(pieceBuffer, true);
+      pieceBuffer = [];
+    };
+
+    for (; _nodeIndex >= minIndex - 1; _nodeIndex--, startWordIndex = -1, _wordIndex = -1) {
+      if (_nodeIndex < 0) {
+        flushPieces();
+        break;
+      }
+
+      let piece;
+      try {
+        piece = new TTSPiece(_nodeIndex, startWordIndex, _wordIndex);
+      } catch (e) {
+        console.error(e);
+        break;
+      }
+
+      // minIndex - 1까지 살펴보는 것은 이전까지 만들어둔 piece들이 완성된 문장인지 판단하기 위험이다.
+      const belowMinIndex = (_nodeIndex < minIndex);
+
+      if (piece.isInvalid()) {
+        // invalid (아랫 첨자 등) 의 경우 문장을 분리하는 기준이 될 수 없다.
+        if (!belowMinIndex) {
+          decrementMinIndex();
+        }
+      } else if (piece.isOnlyWhitespace()) {
+        flushPieces();
+        if (!belowMinIndex) {
+          decrementMinIndex();
+        }
+      } else if (!belowMinIndex && piece.isSiblingBrRecursive(false)) {
+        pieceBuffer.unshift(piece);
+        // 이전 element가 br이라면 이 piece의 시작 부분은 현재 문장의 처음 부분을 담고 있다.
+        // 문장이 완성되었으므로 flush.
+        flushPieces();
+      } else {
+        const isCurrentPieceSentence = (piece.length > 1 && piece.isSentence());
+
+        if (isCurrentPieceSentence) {
+          // 현재 piece의 말단 부분이 새로운 문장의 끝 부분을 포함하고 있으므로
+          // 이전까지 쌓아두었던 piece들 앞에 더 이상 다른 내용이 붙지 않을 것임을 알 수 있다.
+          // 즉, 쌓여있는 piece들이 완성된 문장이 되었다는 판단을 할 수 있다.
+          flushPieces();
+        }
+
+        if (belowMinIndex) {
+          // 현재 piece가 문장이라면 minIndex까지의 piece들 만으로 문장이 완성되므로 더 할 일이 없다.
+          if (!isCurrentPieceSentence) {
+            // 아직 이전 문장의 끝 부분을 발견하지 못했으므로 계속 진행한다.
+            decrementMinIndex();
+            // 위에서 현재 node를 계속 무시했는데, minIndex가 감소되었으므로
+            // 현재 node부터 다시 처리해야한다.
+            _nodeIndex++;
+          }
+        } else {
+          pieceBuffer.unshift(piece);
+
+          if (_nodeIndex === minIndex) {
+            // 아직 이전 문장의 끝 부분을 발견하지 못했으므로 계속 진행한다.
+            decrementMinIndex();
+          }
+        }
+      }
+    }
+  }
+
   didPlaySpeech(chunkId) {
 
   }
@@ -246,7 +339,7 @@ export default class _TTS {
 
   }
 
-  _addChunk(pieces) {
+  _addChunk(pieces, addAtFirst = false) {
     if (pieces.length === 0) {
       return;
     }
@@ -280,10 +373,17 @@ export default class _TTS {
     // Test Code
     const debug = (caseNum) => {
       if (this.debug) {
-        const chunk = this.chunks.last;
-        console.log(`chunkId: ${chunk.id}, Case: ${caseNum}, Text: ${chunk.getText()}`);
+        const chunk = addAtFirst ? this.chunks.first : this.chunks.last;
+        if (chunk) {
+          console.log(`chunkId: ${chunk.id}, Case: ${caseNum}, Text: ${chunk.getText()}`);
+        } else {
+          console.log('this.chunks is empty.');
+        }
       }
     };
+
+    const buffer = [];
+    const pushToChunks = addAtFirst ? buffer.push.bind(buffer) : this.chunks.pushLast.bind(this.chunks);
 
     const chunk = new TTSChunk(pieces);
     const tokens = split(chunk.getText());
@@ -294,6 +394,7 @@ export default class _TTS {
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
         let openBracket;
+        // 참고: 괄호가 여러 node에 걸쳐있는 경우 찾을 수 없다.
         let closeBracket;
         let otherBracket;
         subText += token;
@@ -333,7 +434,7 @@ export default class _TTS {
               continue;
             }
             if (endLoop) {
-              this.chunks.pushLast(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+              pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
               subText = '';
               startOffset = offset;
               i = j;
@@ -347,7 +448,7 @@ export default class _TTS {
             continue;
           }
           if (subText.length) {
-            this.chunks.pushLast(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+            pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
             subText = '';
             debug(2);
           }
@@ -356,13 +457,19 @@ export default class _TTS {
       } // end for i
       if (subText.length) {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
-        this.chunks.pushLast(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+        pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
         debug(3);
       }
     } else {
-      // piece가 하나 뿐이라 바로 추가한다
-      this.chunks.pushLast(chunk);
+      // 문장(token)이 하나 뿐이라 바로 추가한다
+      pushToChunks(chunk);
       debug(4);
+    }
+
+    if (addAtFirst) {
+      while (buffer.length > 0) {
+        this.chunks.pushFirst(buffer.pop());
+      }
     }
   }
 
