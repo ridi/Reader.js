@@ -179,7 +179,7 @@ export default class _TTS {
         if (!aboveMaxIndex) {
           incrementMaxIndex();
         }
-      } else if (!aboveMaxIndex && piece.isNextSiblingBr()) {
+      } else if (!aboveMaxIndex && piece.isSiblingBrRecursive(true)) {
         pieceBuffer.push(piece);
         // 다음 element가 br이라면 현재 piece의 끝 부분은 문장이 끝나는 부분이라고 판단할 수 있다.
         // 문장이 완성되었으므로 flush.

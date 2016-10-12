@@ -98,14 +98,29 @@ export default class TTSPiece {
 
   // TopNodeLocation을 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
   // TopNodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
-  isNextSiblingBr() {
-    const nNode = this._node.nextSibling;
-    return nNode !== null && nNode.nodeName === 'BR';
-  }
+  // <span><strong>TEXT</strong></span><br> 이런 경우에 대비하여 parentNode의 sibling까지 탐색하고 있다.
+  isSiblingBrRecursive(checkNextSibling = true) {
+    let node = this._node;
+    while (node) {
+      let sibling = node[checkNextSibling ? 'nextSibling' : 'previousSibling'];
+      // 위의 예시에서 <p><br></p> 이렇게 br이 다른 element 안에 있을 수도 있다.
+      while (sibling) {
+        if (sibling.nodeName === 'BR') {
+          return true;
+        }
 
-  isPreviousSiblingBr() {
-    const pNode = this._node.previousSibling;
-    return pNode !== null && pNode.nodeName === 'BR';
+        const childNodes = sibling.childNodes;
+        if (childNodes.length > 0) {
+          sibling = childNodes[checkNextSibling ? 0 : (childNodes.length - 1)];
+        } else {
+          return false;
+        }
+      }
+
+      node = node.parentNode;
+    }
+
+    return false;
   }
 
   isOnlyWhitespace() {
