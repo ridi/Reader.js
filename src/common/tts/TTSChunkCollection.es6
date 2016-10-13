@@ -38,6 +38,22 @@ export default class TTSChunkCollection {
     this._chunks.push(newChunk);
   }
 
+  popFirst() {
+    const chunk = this._chunks.shift();
+    if (chunk) {
+      chunk.id = NaN;
+    }
+    return chunk;
+  }
+
+  popLast() {
+    const chunk = this._chunks.pop();
+    if (chunk) {
+      chunk.id = NaN;
+    }
+    return chunk;
+  }
+
   getChunkById(chunkId) {
     return this._chunks[this._indexByChunkId(chunkId)];
   }
