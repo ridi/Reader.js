@@ -92,7 +92,7 @@ export default class TTSChunk {
     }
 
     offset = 0;
-    const words = piece.text.split(TTSUtil.getSplitWordRegex);
+    const words = piece.text.split(TTSUtil.getSplitWordRegex());
     for (let j = 0; j < words.length; j++) {
       offset += (words[j].length + 1);
       if (offset >= diff) {
