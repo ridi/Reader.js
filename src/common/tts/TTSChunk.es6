@@ -68,34 +68,65 @@ export default class TTSChunk {
     });
   }
 
-  getNodeIndex() {
+  getStartNodeIndex() {
     return this.getPiece(this.range.startOffset).nodeIndex;
   }
 
-  getWordIndex() {
-    const nodeIndex = this.getNodeIndex();
+  getEndNodeIndex() {
+    return this.getPiece(this.range.endOffset).nodeIndex;
+  }
+
+  getStartWordIndex() {
+    const nodeIndex = this.getStartNodeIndex();
     let piece = null;
-    let offset = 0;
+    let offsetBeforeWord = 0;
 
     for (let i = 0; i < this._pieces.length; i++) {
       piece = this._pieces[i];
       if (piece.nodeIndex === nodeIndex) {
         break;
       } else {
-        offset += piece.length;
+        offsetBeforeWord += piece.length;
       }
     }
 
-    const diff = this.range.startOffset - offset + piece.paddingLeft;
-    if (diff <= 0) {
+    const offsetBeforeWordInNode = this.range.startOffset + piece.paddingLeft - offsetBeforeWord;
+    if (offsetBeforeWordInNode <= 0) {
       return 0;
     }
 
-    offset = 0;
     const words = piece.text.split(TTSUtil.getSplitWordRegex());
+    let currentWordStartOffset = 0;
     for (let j = 0; j < words.length; j++) {
-      offset += (words[j].length + 1);
-      if (offset >= diff) {
+      if (currentWordStartOffset >= offsetBeforeWordInNode) {
+        return j;
+      }
+      currentWordStartOffset += (words[j].length + 1);
+    }
+    return words.length - 1;
+  }
+
+  getEndWordIndex() {
+    const nodeIndex = this.getEndNodeIndex();
+    let piece = null;
+    let offsetBeforeWord = 0;
+
+    for (let i = 0; i < this._pieces.length; i++) {
+      piece = this._pieces[i];
+      if (piece.nodeIndex === nodeIndex) {
+        break;
+      } else {
+        offsetBeforeWord += piece.length;
+      }
+    }
+
+    const offsetAfterWordInNode = this.range.endOffset - piece.paddingRight - offsetBeforeWord;
+
+    const words = piece.text.split(TTSUtil.getSplitWordRegex());
+    let currentWordEndOffset = 0;
+    for (let j = 0; j < words.length; j++) {
+      currentWordEndOffset += (words[j].length + 1);
+      if (currentWordEndOffset >= offsetAfterWordInNode) {
         return j;
       }
     }

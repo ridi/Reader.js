@@ -35,8 +35,8 @@ export default class TTS extends _TTS {
         const chunk = this.chunks.getChunkById(id);
         android.onUtteranceFound(
           chunk.id,
-          chunk.getNodeIndex(),
-          chunk.getWordIndex(),
+          chunk.getStartNodeIndex(),
+          chunk.getStartWordIndex(),
           chunk.getUtterance().text
         );
       }
