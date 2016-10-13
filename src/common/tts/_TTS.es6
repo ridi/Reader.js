@@ -371,19 +371,21 @@ export default class _TTS {
                   nextText.match(TTSUtil.getSentenceRegex('^')) !== null;
 
     // Test Code
-    const debug = (caseNum) => {
-      if (this.debug) {
-        const chunk = addAtFirst ? this.chunks.first : this.chunks.last;
-        if (chunk) {
-          console.log(`chunkId: ${chunk.id}, Case: ${caseNum}, Text: ${chunk.getText()}`);
-        } else {
-          console.log('this.chunks is empty.');
-        }
+    const debug = (caseNum, chunk) => {
+      if (this.debug && chunk) {
+        console.log(`chunkId: ${chunk.id}, Case: ${caseNum}, Text: ${chunk.getText()}`);
       }
     };
 
     const buffer = [];
-    const pushToChunks = addAtFirst ? buffer.push.bind(buffer) : this.chunks.pushLast.bind(this.chunks);
+    const pushToChunks = (chunk) => {
+      if (addAtFirst) {
+        buffer.push(chunk);
+      } else {
+        this.chunks.pushLast(chunk);
+      }
+      return chunk;
+    };
 
     const chunk = new TTSChunk(pieces);
     const tokens = split(chunk.getText());
@@ -434,11 +436,10 @@ export default class _TTS {
               continue;
             }
             if (endLoop) {
-              pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+              debug(1, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
               subText = '';
               startOffset = offset;
               i = j;
-              debug(1);
               break;
             }
           }// end for j
@@ -448,22 +449,19 @@ export default class _TTS {
             continue;
           }
           if (subText.length) {
-            pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
+            debug(2, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
             subText = '';
-            debug(2);
           }
           startOffset = offset;
         }
       } // end for i
       if (subText.length) {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
-        pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length)));
-        debug(3);
+        debug(3, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
       }
     } else {
       // 문장(token)이 하나 뿐이라 바로 추가한다
-      pushToChunks(chunk);
-      debug(4);
+      debug(4, pushToChunks(chunk));
     }
 
     if (addAtFirst) {
