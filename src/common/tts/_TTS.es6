@@ -142,8 +142,8 @@ export default class _TTS {
     let _nodeIndex = Math.max(nodeIndex, 0);
     let _wordIndex = Math.max(wordIndex, 0);
     // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에 용량의 1/5만 만듦
-    const reserveChunksCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
-    let maxIndex = Math.min(_nodeIndex + reserveChunksCount, nodes.length - 1);
+    const reserveNodesCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
+    let maxIndex = Math.min(_nodeIndex + reserveNodesCount, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
     let pieceBuffer = [];
