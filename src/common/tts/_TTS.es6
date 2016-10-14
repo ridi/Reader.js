@@ -223,17 +223,74 @@ export default class _TTS {
     const maxNodeIndex = nodes.length - 1;
     let _nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
     const maxWordIndex = wordsInNode(nodes[_nodeIndex]).length - 1;
-    let _wordIndex = (wordIndex >= 0 ? Math.min(wordIndex, maxWordIndex) : maxWordIndex);
     let startWordIndex = 0;
-    if (_wordIndex === maxWordIndex) {
-      // TTSPiece 생성 시 word 분리 또 하지 않도록
-      _wordIndex = -1;
-      startWordIndex = -1;
+    let endWordIndex = (wordIndex >= 0 ? Math.min(wordIndex, maxWordIndex) : maxWordIndex);
+
+    // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에
+    // 예비 chunk를 TTSChunkCollection 용량의 1/5만 만듦
+    let reserveNodesCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
+
+    // 이전에 만들어둔 chunk가 존재할 수 있다.
+    // 이때 기존의 first chunk가 문장의 처음을 포함하지 않을 수 있으며, (순방향으로 chunk 생성한 경우)
+    // last chunk도 문장의 끝을 포함하지 않을 수 있어 재사용이 곤란하다. (역방향으로 생성한 경우)
+    let prevFirstChunk = this.chunks.first;
+    let prevLastChunk = this.chunks.last;
+    if (prevFirstChunk) {
+      // 참고로, startOffset이 0이더라도 문장의 처음 부분이 아닐 수 있다.
+      this.chunks.popFirst();
+    }
+    if (prevLastChunk) {
+      this.chunks.popLast();
     }
 
-    // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에 용량의 1/5만 만듦
-    const reserveChunksCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
-    let minIndex = Math.max(_nodeIndex - reserveChunksCount, 0);
+    prevFirstChunk = this.chunks.first;
+    const prevStartNodeIndex = (prevFirstChunk ? prevFirstChunk.getStartNodeIndex() : -1);
+    const prevStartWordIndex = (prevFirstChunk ? prevFirstChunk.getStartWordIndex() : -1);
+    prevLastChunk = this.chunks.last;
+    let prevEndNodeIndex = (prevLastChunk ? prevLastChunk.getEndNodeIndex() : -1);
+    let prevEndWordIndex = (prevLastChunk ? prevLastChunk.getEndWordIndex() : -1);
+
+    const reversedOriginalChunks = [];
+
+    let minIndex;
+    if ((_nodeIndex < prevEndNodeIndex) ||
+        (_nodeIndex === prevEndNodeIndex && endWordIndex <= prevEndWordIndex)) {
+      // (새로 만들 chunk) |----(chunk 미존재)----| (기존 chunk)인 경우 또는
+      // (새로 만들 chunk)-----|
+      // |----------(기존 chunk)인 경우.
+
+      // Chunk 관리 단순화를 위해, (새로 만들 chunk) | (기존 chunk) 이렇게
+      // chunk가 존재하지 않거나 겹치는 구간이 없도록 범위를 조정한다.
+      const prevNodeIndex = _nodeIndex;
+      _nodeIndex = prevStartNodeIndex;
+
+      if (prevStartWordIndex <= 0) {
+        const prevNode = nodes[--_nodeIndex];
+        endWordIndex = wordsInNode(prevNode).length - 1;
+      } else {
+        endWordIndex = prevStartWordIndex - 1;
+      }
+
+      // 기존의 _nodeIndex와 조정된 _nodeIndex 사이에 간격이 너무 크면
+      // 정작 _nodeIndex에 있는 chunk를 얻지 못할 수 있으므로, 만들 chunk 수를 늘린다.
+      // 반대로 이미 충분한 chunk가 있는 경우, 만들 chunk 수를 줄인다.
+      reserveNodesCount += (_nodeIndex - prevNodeIndex);
+
+      prevEndNodeIndex = -1;
+      prevEndWordIndex = -1;
+      minIndex = _nodeIndex - reserveNodesCount;
+    } else {
+      // (기존 chunk) |----(chunk 미존재)----| (새로 만들 chunk)인 경우 또는
+      // (기존 chunk)---------|
+      // |----(새로 만들 chunk)인 경우.
+      // 생성한 chunk를 ----> [(기존 chunk) --- (신규 chunk)] pushFirst로 넣을 수 없으므로
+      // 잠시 기존 chunk를 대피시킨다.
+      while (!this.chunks.isEmpty) {
+        reversedOriginalChunks.push(this.chunks.popLast());
+      }
+      // chunk 사이가 비지 않아야 하므로
+      minIndex = Math.min(prevEndNodeIndex - 1, _nodeIndex - reserveNodesCount);
+    }
 
     const decrementMinIndex = () => { minIndex = Math.max(minIndex - 1, 0); };
     let pieceBuffer = [];
@@ -242,15 +299,33 @@ export default class _TTS {
       pieceBuffer = [];
     };
 
-    for (; _nodeIndex >= minIndex - 1; _nodeIndex--, startWordIndex = -1, _wordIndex = -1) {
-      if (_nodeIndex < 0) {
-        flushPieces();
-        break;
+    const initNodeIndex = _nodeIndex;
+    const initEndWordIndex = endWordIndex;
+    for (; _nodeIndex >= minIndex - 1; _nodeIndex--, startWordIndex = -1, endWordIndex = -1) {
+      if (_nodeIndex <= prevEndNodeIndex) {
+        if (prevEndWordIndex < wordsInNode(nodes[_nodeIndex]).length - 1) {
+          startWordIndex = prevEndWordIndex + 1;
+        } else {
+          flushPieces();
+          while (reversedOriginalChunks.length > 0) {
+            this.chunks.pushFirst(reversedOriginalChunks.shift());
+          }
+          const destinationIndex = Math.max(initNodeIndex - reserveNodesCount, 0);
+          if (destinationIndex < prevStartNodeIndex && _nodeIndex >= 0) {
+            // |------(기존 chunk)------------|
+            // |(새로 만들 chunk-------------)|
+            // 아직 chunk를 더 만들 필요가 있다. 기존 lastChunk가 제거되므로 보존해준다.
+            const lastChunk = this.chunks.last;
+            this.makeChunksByNodeLocationReverse(prevStartNodeIndex - 1);
+            this.chunks.pushLast(lastChunk);
+          }
+          break;
+        }
       }
 
       let piece;
       try {
-        piece = new TTSPiece(_nodeIndex, startWordIndex, _wordIndex);
+        piece = new TTSPiece(_nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
         console.error(e);
         break;
