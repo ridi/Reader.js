@@ -8,7 +8,11 @@ export default class TTSPiece {
   get node() { return this._node; }
   get text() { return this._text; }
   get length() { return this._length; }
+  // node.nodeValue (text 아님) 의 좌측 끝에서 startWordIndex에 해당하는 단어의
+  // 첫 글자 까지의 offset
   get paddingLeft() { return this._paddingLeft; }
+  // node.nodeValue (text 아님) 의 우측 끝에서 endWordIndex에 해당하는 단어의
+  // 마지막 글자 까지의 offset
   get paddingRight() { return this._paddingRight; }
 
   constructor(nodeIndex, startWordIndex = -1, endWordIndex = -1) {
@@ -33,8 +37,8 @@ export default class TTSPiece {
     this._paddingLeft = 0;
     this._paddingRight = 0;
     this._text = '';
-    this._startWordIndex = startWordIndex;
-    this._endWordIndex = endWordIndex;
+    this._startWordIndex = -1;
+    this._endWordIndex = -1;
 
     if (typeof nodeValue === 'string') {
       if (startWordIndex < 0 && endWordIndex < 0) {
@@ -46,14 +50,18 @@ export default class TTSPiece {
           throw 'TTSPiece: wordIndex is out of bounds - '
           + `startWordIndex: (${startWordIndex}/${words.length - 1}), `
           + `endWordIndex: (${endWordIndex}/${words.length - 1}).`;
+        } else if (startWordIndex < 0) {
+          this._startWordIndex = 0;
+        } else {
+          this._startWordIndex = startWordIndex;
         }
         // endWordIndex < 0인 경우는 default value를 사용한 것으로 간주한다.
         this._endWordIndex = (endWordIndex < 0 ? (words.length - 1) : endWordIndex);
 
         words.forEach((word, i, list) => {
-          if (i >= startWordIndex && i <= this._endWordIndex) {
+          if (i >= this._startWordIndex && i <= this._endWordIndex) {
             this._text += `${word}${(i === list.length - 1 || i === this._endWordIndex) ? '' : ' '}`;
-          } else if (i < startWordIndex) {
+          } else if (i < this._startWordIndex) {
             // + 1 : for word delimiters
             this._paddingLeft += (word.length + 1);
           } else {
