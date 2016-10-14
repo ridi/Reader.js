@@ -68,12 +68,20 @@ export default class TTSChunk {
     });
   }
 
+  getStartWordPiece() {
+    return this.getPiece(this.range.startOffset);
+  }
+
+  getEndWordPiece() {
+    return this.getPiece(this.range.endOffset);
+  }
+
   getStartNodeIndex() {
-    return this.getPiece(this.range.startOffset).nodeIndex;
+    return this.getStartWordPiece().nodeIndex;
   }
 
   getEndNodeIndex() {
-    return this.getPiece(this.range.endOffset).nodeIndex;
+    return this.getEndWordPiece().nodeIndex;
   }
 
   getStartWordIndex() {
