@@ -219,7 +219,7 @@ export default class _TTS {
       throw 'tts: nodes is empty. make call epub.getTextAndImageNodes().';
     }
 
-    const wordsInNode = (node) => (node ? node.nodeValue.split(TTSUtil.getSplitWordRegex()) : 0);
+    const wordsInNode = (node) => (node ? node.nodeValue.split(TTSUtil.getSplitWordRegex()) : []);
     const maxNodeIndex = nodes.length - 1;
     let _nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
     const maxWordIndex = wordsInNode(nodes[_nodeIndex]).length - 1;
