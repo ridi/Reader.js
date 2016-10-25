@@ -86,7 +86,6 @@
 
 import TTSPiece from './TTSPiece';
 import TTSChunk from './TTSChunk';
-import TTSChunkCollection from './TTSChunkCollection';
 import TTSRange from './TTSRange';
 import TTSUtil from './TTSUtil';
 import _EPub from '../_EPub';
@@ -96,11 +95,15 @@ export default class _TTS {
 
   constructor() {
     this.debug = false;
+    // reserveNodesCountMagic을 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
+    this.reserveNodesCountMagic = 30;
+    this.makeChunksInterval = 600;
+    this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
-    this._chunks = new TTSChunkCollection();
+    this._chunks = [];
   }
 
-  makeChunksBySerializedRange(serializedRange) {
+  _serializedRangeToNodeLocation(serializedRange) {
     const range = rangy.deserializeRange(serializedRange, document.body);
     if (range === null) {
       throw 'TTS: range is invalid.';
@@ -128,27 +131,97 @@ export default class _TTS {
       }
     }
 
-    this.makeChunksByNodeLocation(nodeIndex, wordIndex);
+    return { nodeIndex, wordIndex };
   }
 
-  // nodeIndex / wordIndex : inclusive
-  makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
+  playChunksBySerializedRange(serializedRange) {
+    const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
+    this.playChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
+  }
+
+  playChunksByNodeLocation(nodeIndex, wordIndex) {
+    this.makeChunksByNodeLocation(nodeIndex, wordIndex, true);
+    if (this.chunks.length > 0) {
+      /**
+       * NOTE : reserveNodesCount = 0으로 만들어 주어도 현재 시작 지점이
+       * chpater 제목이거나 (끊어 읽기는 하지만 문장이 아니므로 생성이 계속 진행됨)
+       * 한 node에 여러 문장이 들어있는 상태라면
+       * 임시 Chunk가 여러 개 생성되므로 첫 문장만 남기고 제거한다.
+       */
+      this._chunks = [this.chunks[0]];
+      this.didFinishMakePartialChunks(true, false);
+    } else {
+      this.didFinishMakeChunks();
+    }
+  }
+
+  makeAdjacentChunksBySerializedRange(serializedRange) {
+    const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
+    this.makeAdjacentChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
+  }
+
+  makeAdjacentChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
+    this.makeChunksByNodeLocation(nodeIndex, wordIndex);
+    // 첫 번째 chunk는 불완전한 문장일 수 있어 제거. (문장의 시작이 어딘지 모르므로.)
+    this.chunks.shift();
+    const firstChunk = this.chunks[0];
+    let endNodeIndex = -1;
+    let endWordIndex = -1;
+    if (firstChunk) {
+      endNodeIndex = firstChunk.getStartNodeIndex();
+      endWordIndex = firstChunk.getStartWordIndex() - 1;
+      if (endWordIndex < 0) {
+        endNodeIndex--;
+      }
+    }
+    this.makeChunksByNodeLocationReverse(endNodeIndex, endWordIndex);
+    this.didFinishMakePartialChunks(false, false);
+
+    this.playChunksByNodeLocation(nodeIndex, wordIndex);
+
+    const nodes = _EPub.getTextAndImageNodes();
+    const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < nodes.length);
+    const hasMoreBeforeChunks = () => (this.processedNodeMinIndex - 1 >= 0);
+    const generateMoreChunks = () => {
+      if (hasMoreAfterChunks()) {
+        this.makeChunksByNodeLocation(this.processedNodeMaxIndex + 1);
+        this.didFinishMakePartialChunks(false, false);
+      }
+
+      if (hasMoreBeforeChunks()) {
+        this.makeChunksByNodeLocationReverse(this.processedNodeMinIndex - 1);
+        this.didFinishMakePartialChunks(false, true);
+      }
+
+      if (hasMoreAfterChunks() || hasMoreBeforeChunks()) {
+        setTimeout(generateMoreChunks, this.makeChunksInterval);
+      } else {
+        this.didFinishMakeChunks();
+      }
+    };
+    setTimeout(generateMoreChunks, this.makeChunksInterval);
+  }
+
+  /**
+   * nodeIndex / wordIndex : inclusive
+   * isMakingTemporalChunk : Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
+   */
+  makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
       throw 'tts: nodes is empty. make call epub.getTextAndImageNodes().';
     }
 
-    const prevLastChunk = this.chunks.last;
     let _nodeIndex = Math.max(nodeIndex, 0);
     let _wordIndex = Math.max(wordIndex, 0);
-    // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에 용량의 1/5만 만듦
-    const reserveNodesCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
+
+    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
     let maxIndex = Math.min(_nodeIndex + reserveNodesCount, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
     let pieceBuffer = [];
     const flushPieces = () => {
-      this._addChunk(pieceBuffer);
+      this._addChunk(pieceBuffer, false);
       pieceBuffer = [];
     };
 
@@ -205,15 +278,13 @@ export default class _TTS {
         }
       }
     }
-    this.processedNodeMaxIndex = maxIndex;
-
-    this.didFinishMakeChunks(prevLastChunk);
-
+    if (!isMakingTemporalChunk) {
+      this.processedNodeMaxIndex = maxIndex;
+    }
     return this.chunks.length;
   }
 
-  // nodeIndex / wordIndex : inclusive
-  makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1) {
+  makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
       throw 'tts: nodes is empty. make call epub.getTextAndImageNodes().';
@@ -226,71 +297,8 @@ export default class _TTS {
     let startWordIndex = 0;
     let endWordIndex = (wordIndex >= 0 ? Math.min(wordIndex, maxWordIndex) : maxWordIndex);
 
-    // _addChunk에서 문장 단위로 chunk를 분리하면 chunk가 더 늘어날 것이기 때문에
-    // 예비 chunk를 TTSChunkCollection 용량의 1/5만 만듦
-    let reserveNodesCount = Number.parseInt((this.chunks.oneSideReserveCapacity / 5).toFixed(), 10);
-
-    // 이전에 만들어둔 chunk가 존재할 수 있다.
-    // 이때 기존의 first chunk가 문장의 처음을 포함하지 않을 수 있으며, (순방향으로 chunk 생성한 경우)
-    // last chunk도 문장의 끝을 포함하지 않을 수 있어 재사용이 곤란하다. (역방향으로 생성한 경우)
-    let prevFirstChunk = this.chunks.first;
-    let prevLastChunk = this.chunks.last;
-    if (prevFirstChunk) {
-      // 참고로, startOffset이 0이더라도 문장의 처음 부분이 아닐 수 있다.
-      this.chunks.popFirst();
-    }
-    if (prevLastChunk) {
-      this.chunks.popLast();
-    }
-
-    prevFirstChunk = this.chunks.first;
-    const prevStartNodeIndex = (prevFirstChunk ? prevFirstChunk.getStartNodeIndex() : -1);
-    const prevStartWordIndex = (prevFirstChunk ? prevFirstChunk.getStartWordIndex() : -1);
-    prevLastChunk = this.chunks.last;
-    let prevEndNodeIndex = (prevLastChunk ? prevLastChunk.getEndNodeIndex() : -1);
-    let prevEndWordIndex = (prevLastChunk ? prevLastChunk.getEndWordIndex() : -1);
-
-    const reversedOriginalChunks = [];
-
-    let minIndex;
-    if ((_nodeIndex < prevEndNodeIndex) ||
-        (_nodeIndex === prevEndNodeIndex && endWordIndex <= prevEndWordIndex)) {
-      // (새로 만들 chunk) |----(chunk 미존재)----| (기존 chunk)인 경우 또는
-      // (새로 만들 chunk)-----|
-      // |----------(기존 chunk)인 경우.
-
-      // Chunk 관리 단순화를 위해, (새로 만들 chunk) | (기존 chunk) 이렇게
-      // chunk가 존재하지 않거나 겹치는 구간이 없도록 범위를 조정한다.
-      const prevNodeIndex = _nodeIndex;
-      _nodeIndex = prevStartNodeIndex;
-
-      if (prevStartWordIndex <= 0) {
-        const prevNode = nodes[--_nodeIndex];
-        endWordIndex = wordsInNode(prevNode).length - 1;
-      } else {
-        endWordIndex = prevStartWordIndex - 1;
-      }
-
-      // 기존의 _nodeIndex와 조정된 _nodeIndex 사이에 간격이 너무 크면
-      // 정작 _nodeIndex에 있는 chunk를 얻지 못할 수 있으므로, 만들 chunk 수를 늘린다.
-      // 반대로 이미 충분한 chunk가 있는 경우, 만들 chunk 수를 줄인다.
-      reserveNodesCount += (_nodeIndex - prevNodeIndex);
-
-      prevEndNodeIndex = -1;
-      prevEndWordIndex = -1;
-      minIndex = _nodeIndex - reserveNodesCount;
-    } else {
-      // (기존 chunk) |----(chunk 미존재)----| (새로 만들 chunk)인 경우 또는
-      // (기존 chunk)---------|
-      // |----(새로 만들 chunk)인 경우.
-      // 생성한 chunk를 ----> [(기존 chunk) --- (신규 chunk)] pushFirst로 넣을 수 없으므로
-      // 잠시 기존 chunk를 대피시킨다.
-      while (!this.chunks.isEmpty) {
-        reversedOriginalChunks.push(this.chunks.popLast());
-      }
-      // chunk 사이가 비지 않아야 하므로
-      minIndex = Math.min(prevEndNodeIndex - 1, _nodeIndex - reserveNodesCount);
-    }
+    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
+    let minIndex = Math.max(0, _nodeIndex - reserveNodesCount);
 
     const decrementMinIndex = () => { minIndex = Math.max(minIndex - 1, 0); };
     let pieceBuffer = [];
@@ -299,28 +307,10 @@ export default class _TTS {
       pieceBuffer = [];
     };
 
-    const initNodeIndex = _nodeIndex;
-    const initEndWordIndex = endWordIndex;
     for (; _nodeIndex >= minIndex - 1; _nodeIndex--, startWordIndex = -1, endWordIndex = -1) {
-      if (_nodeIndex <= prevEndNodeIndex) {
-        if (prevEndWordIndex < wordsInNode(nodes[_nodeIndex]).length - 1) {
-          startWordIndex = prevEndWordIndex + 1;
-        } else {
-          flushPieces();
-          while (reversedOriginalChunks.length > 0) {
-            this.chunks.pushFirst(reversedOriginalChunks.shift());
-          }
-          const destinationIndex = Math.max(initNodeIndex - reserveNodesCount, 0);
-          if (destinationIndex < prevStartNodeIndex && _nodeIndex >= 0) {
-            // |------(기존 chunk)------------|
-            // |(새로 만들 chunk-------------)|
-            // 아직 chunk를 더 만들 필요가 있다. 기존 lastChunk가 제거되므로 보존해준다.
-            const lastChunk = this.chunks.last;
-            this.makeChunksByNodeLocationReverse(prevStartNodeIndex - 1);
-            this.chunks.pushLast(lastChunk);
-          }
-          break;
-        }
+      if (_nodeIndex < 0) {
+        flushPieces();
+        break;
       }
 
       let piece;
@@ -378,43 +368,21 @@ export default class _TTS {
         }
       }
     }
-  }
-
-  didPlaySpeech(chunkId) {
-
-  }
-
-  didFinishSpeech(chunkId) {
-    const nodes = _EPub.getTextAndImageNodes() || [];
-    if (nodes.length - 1 > this.processedNodeMaxIndex) {
-      const curChunk = this.chunks.getChunkById(chunkId);
-      const lastChunk = this.chunks.last;
-      if (curChunk !== null && lastChunk !== null) {
-        const curPiece = curChunk.getPiece(curChunk.range.endOffset);
-        const lastPiece = lastChunk.getPiece(lastChunk.range.endOffset);
-        // 아래의 30을 더 작은 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
-        if (Math.max(lastPiece.nodeIndex - 30, 0) < curPiece.nodeIndex) {
-          this.makeChunksByNodeLocation(lastPiece.nodeIndex + 1, 0);
-        }
-      }
-      return true;
+    if (!isMakingTemporalChunk) {
+      this.processedNodeMinIndex = minIndex;
     }
-    return false;
+    return this.chunks.length;
   }
 
-  didFinishMakeChunks(prevLastChunk) {
-
-  }
-
-  getPageOffsetFromChunkId(chunkId) {
+  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
 
   }
 
-  getScrollYOffsetFromChunkId(chunkId) {
+  didFinishMakeChunks() {
 
   }
 
-  _addChunk(pieces, addAtFirst = false) {
+  _addChunk(pieces, addAtFirst) {
     if (pieces.length === 0) {
       return;
     }
@@ -445,10 +413,10 @@ export default class _TTS {
       (nextText) => nextText !== undefined &&
                   nextText.match(TTSUtil.getSentenceRegex('^')) !== null;
 
-    // Test Code
+    // Debug Info
     const debug = (caseNum, chunk) => {
       if (this.debug && chunk) {
-        console.log(`chunkId: ${chunk.id}, Case: ${caseNum}, Text: ${chunk.getText()}`);
+        console.log(`Case: ${caseNum}, Text: ${chunk.getText()}`);
       }
     };
 
@@ -457,7 +425,7 @@ export default class _TTS {
       if (addAtFirst) {
         buffer.push(chunk);
       } else {
-        this.chunks.pushLast(chunk);
+        this.chunks.push(chunk);
       }
       return chunk;
     };
@@ -541,13 +509,14 @@ export default class _TTS {
 
     if (addAtFirst) {
       while (buffer.length > 0) {
-        this.chunks.pushFirst(buffer.pop());
+        this.chunks.unshift(buffer.pop());
       }
     }
   }
 
   flush() {
+    this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
-    this._chunks.clear();
+    this._chunks = [];
   }
 }

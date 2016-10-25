@@ -2,11 +2,8 @@ import TTSRange from './TTSRange';
 import TTSUtterance from './TTSUtterance';
 import TTSUtil from './TTSUtil';
 import _Util from '../_Util';
-import MutableClientRect from '../MutableClientRect';
 
 export default class TTSChunk {
-  get id() { return this._id; }
-  set id(newId) { this._id = newId; }
   get range() { return this._range; }
   set range(newRange) {
     if (newRange instanceof TTSRange) {
@@ -17,7 +14,6 @@ export default class TTSChunk {
   }
 
   constructor(pieces, range = null) {
-    this._id = NaN;
     this._pieces = pieces;
     this.range = range;
   }
@@ -244,8 +240,7 @@ export default class TTSChunk {
           } catch (e) {
             console.log(
               `TSChunk:getClientRects() Error!! ${e.toString()}\n`
-            + ` => {chunkId: ${this.id}`
-            + `, startOffset: ${startOffset}`
+            + ` => {startOffset: ${startOffset}`
             + `, endOffset: ${endOffset}`
             + `, offset: ${offset}`
             + `, nodeIndex: ${piece.nodeIndex}`
@@ -280,21 +275,6 @@ export default class TTSChunk {
       }
     }// end for
     return rects;
-  }
-
-  getBoundingClientRect() {
-    const rects = this.getClientRects(false);
-    const bounds = new MutableClientRect(rects[0]);
-    for (let i = 0; i < rects.length; i++) {
-      const rect = rects[i];
-      bounds.top = Math.min(bounds.top, rect.top || 0);
-      bounds.bottom = Math.max(bounds.bottom, rect.bottom || 0);
-      bounds.left = Math.min(bounds.left, rect.left || 0);
-      bounds.right = Math.max(bounds.right, rect.right || 0);
-    }
-    bounds.width = Math.max(bounds.right - bounds.left, 0);
-    bounds.height = Math.max(bounds.bottom - bounds.top, 0);
-    return bounds;
   }
 
   copy(range) {
