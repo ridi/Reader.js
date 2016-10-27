@@ -17,6 +17,6 @@ export default class TTS extends _TTS {
   }
 
   didFinishMakeChunks() {
-    android.onUtteranceNotFound();
+    android.onFinishMakeChunks();
   }
 }

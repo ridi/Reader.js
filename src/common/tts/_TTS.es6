@@ -182,7 +182,20 @@ export default class _TTS {
     const nodes = _EPub.getTextAndImageNodes();
     const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < nodes.length);
     const hasMoreBeforeChunks = () => (this.processedNodeMinIndex - 1 >= 0);
-    const generateMoreChunks = () => {
+    let generateMoreChunks = () => {};
+    const scheduleTask = () => {
+      if (hasMoreAfterChunks() || hasMoreBeforeChunks()) {
+        if (this.makeChunksInterval > 0) {
+          setTimeout(generateMoreChunks, this.makeChunksInterval);
+        } else {
+          // Only for test
+          generateMoreChunks();
+        }
+      } else {
+        this.didFinishMakeChunks();
+      }
+    };
+    generateMoreChunks = () => {
       if (hasMoreAfterChunks()) {
         this.makeChunksByNodeLocation(this.processedNodeMaxIndex + 1);
         this.didFinishMakePartialChunks(false, false);
@@ -193,13 +206,10 @@ export default class _TTS {
         this.didFinishMakePartialChunks(false, true);
       }
 
-      if (hasMoreAfterChunks() || hasMoreBeforeChunks()) {
-        setTimeout(generateMoreChunks, this.makeChunksInterval);
-      } else {
-        this.didFinishMakeChunks();
-      }
+      scheduleTask();
     };
-    setTimeout(generateMoreChunks, this.makeChunksInterval);
+
+    scheduleTask();
   }
 
   /**
@@ -375,11 +385,11 @@ export default class _TTS {
   }
 
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
-
+    // makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
   }
 
   didFinishMakeChunks() {
-
+    // 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
   }
 
   _addChunk(pieces, addAtFirst) {
