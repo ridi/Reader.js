@@ -317,6 +317,7 @@ export default class _TTS {
       pieceBuffer = [];
     };
 
+    const initMinIndex = minIndex;
     for (; _nodeIndex >= minIndex - 1; _nodeIndex--, startWordIndex = -1, endWordIndex = -1) {
       if (_nodeIndex < 0) {
         flushPieces();
@@ -357,6 +358,12 @@ export default class _TTS {
           // 이전까지 쌓아두었던 piece들 앞에 더 이상 다른 내용이 붙지 않을 것임을 알 수 있다.
           // 즉, 쌓여있는 piece들이 완성된 문장이 되었다는 판단을 할 수 있다.
           flushPieces();
+
+          // 충분한 수의 chunk가 만들어진 경우 멈춘다.
+          if (_nodeIndex < initMinIndex) {
+            minIndex = _nodeIndex + 1;
+            break;
+          }
         }
 
         if (belowMinIndex) {
