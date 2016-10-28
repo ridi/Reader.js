@@ -96,8 +96,8 @@ export default class _TTS {
   constructor() {
     this.debug = false;
     // reserveNodesCountMagic을 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
-    this.reserveNodesCountMagic = 30;
-    this.makeChunksInterval = 600;
+    this.reserveNodesCountMagic = 40;
+    this.makeChunksInterval = 100;
     this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
     this._chunks = [];
