@@ -100,6 +100,7 @@ export default class _TTS {
     this.makeChunksInterval = 100;
     this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
+    this._generateMoreChunksTimeoutId = 0;
     this._chunks = [];
   }
 
@@ -185,17 +186,22 @@ export default class _TTS {
     let generateMoreChunks = () => {};
     const scheduleTask = () => {
       if (hasMoreAfterChunks() || hasMoreBeforeChunks()) {
+        const timeoutId = this._generateMoreChunksTimeoutId;
         if (this.makeChunksInterval > 0) {
-          setTimeout(generateMoreChunks, this.makeChunksInterval);
+          setTimeout(() => generateMoreChunks(timeoutId), this.makeChunksInterval);
         } else {
           // Only for test
-          generateMoreChunks();
+          generateMoreChunks(timeoutId);
         }
       } else {
         this.didFinishMakeChunks();
       }
     };
-    generateMoreChunks = () => {
+    generateMoreChunks = (timeoutId) => {
+      if (timeoutId !== this._generateMoreChunksTimeoutId) {
+        return;
+      }
+
       if (hasMoreAfterChunks()) {
         this.makeChunksByNodeLocation(this.processedNodeMaxIndex + 1);
         this.didFinishMakePartialChunks(false, false);
@@ -535,5 +541,6 @@ export default class _TTS {
     this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
     this._chunks = [];
+    this._generateMoreChunksTimeoutId++;
   }
 }
