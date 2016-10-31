@@ -101,6 +101,7 @@ export default class _TTS {
     this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
     this._generateMoreChunksTimeoutId = 0;
+    this._didFinishMakeChunksEnabled = false;
     this._chunks = [];
   }
 
@@ -162,6 +163,11 @@ export default class _TTS {
   }
 
   makeAdjacentChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
+    /**
+     * Android에서 spine 넘어갈 때 didFinishMakeChunks 중복 호출을 통제하기 위해
+     * flush 후 처음으로 chunk를 생성하기 전까지는 호출을 막아둔다.
+     */
+    this._didFinishMakeChunksEnabled = true;
     this.makeChunksByNodeLocation(nodeIndex, wordIndex);
     // 첫 번째 chunk는 불완전한 문장일 수 있어 제거. (문장의 시작이 어딘지 모르므로.)
     this.chunks.shift();
@@ -542,5 +548,6 @@ export default class _TTS {
     this.processedNodeMaxIndex = -1;
     this._chunks = [];
     this._generateMoreChunksTimeoutId++;
+    this._didFinishMakeChunksEnabled = false;
   }
 }
