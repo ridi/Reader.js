@@ -403,12 +403,14 @@ export default class _TTS {
     return this.chunks.length;
   }
 
+  // makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
-    // makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
+    throw 'Must override this method';
   }
 
+  // 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
   didFinishMakeChunks() {
-    // 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
+    throw 'Must override this method';
   }
 
   _addChunk(pieces, addAtFirst) {
