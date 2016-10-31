@@ -157,6 +157,16 @@ export default class _TTS {
     }
   }
 
+  playLastSentenceInSpine() {
+    this.makeChunksByNodeLocationReverse(-1, -1, true);
+    if (this.chunks.length > 0) {
+      this._chunks = [this.chunks[this.chunks.length - 1]];
+      this.didFinishMakePartialChunks(true, false);
+    } else {
+      this.didFinishMakeChunks();
+    }
+  }
+
   makeAdjacentChunksBySerializedRange(serializedRange) {
     const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
     this.makeAdjacentChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
