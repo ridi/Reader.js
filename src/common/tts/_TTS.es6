@@ -141,7 +141,7 @@ export default class _TTS {
     this.playChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
   }
 
-  playChunksByNodeLocation(nodeIndex, wordIndex) {
+  playChunksByNodeLocation(nodeIndex, wordIndex, startPlay = true) {
     this.makeChunksByNodeLocation(nodeIndex, wordIndex, true);
     if (this.chunks.length > 0) {
       /**
@@ -151,17 +151,19 @@ export default class _TTS {
        * 임시 Chunk가 여러 개 생성되므로 첫 문장만 남기고 제거한다.
        */
       this._chunks = [this.chunks[0]];
-      this.didFinishMakePartialChunks(true, false);
+      this.didFinishMakePartialChunks(true, false, startPlay);
     } else {
       this.didFinishMakeChunks();
     }
   }
 
-  playLastSentenceInSpine() {
+  makeLastSentenceChunksInSpine(startPlay = true) {
     this.makeChunksByNodeLocationReverse(-1, -1, true);
     if (this.chunks.length > 0) {
-      this._chunks = [this.chunks[this.chunks.length - 1]];
-      this.didFinishMakePartialChunks(true, false);
+      const lastSentenceChunk = this.chunks[this.chunks.length - 1];
+      this._chunks = [];
+      this.makeAdjacentChunksByNodeLocation(
+        lastSentenceChunk.getStartNodeIndex(), lastSentenceChunk.getStartWordIndex(), startPlay);
     } else {
       this.didFinishMakeChunks();
     }
@@ -172,7 +174,7 @@ export default class _TTS {
     this.makeAdjacentChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
   }
 
-  makeAdjacentChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
+  makeAdjacentChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, startPlay = true) {
     /**
      * Android에서 spine 넘어갈 때 didFinishMakeChunks 중복 호출을 통제하기 위해
      * flush 후 처음으로 chunk를 생성하기 전까지는 호출을 막아둔다.
@@ -194,7 +196,7 @@ export default class _TTS {
     this.makeChunksByNodeLocationReverse(endNodeIndex, endWordIndex);
     this.didFinishMakePartialChunks(false, false);
 
-    this.playChunksByNodeLocation(nodeIndex, wordIndex);
+    this.playChunksByNodeLocation(nodeIndex, wordIndex, startPlay);
 
     const nodes = _EPub.getTextAndImageNodes();
     const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < nodes.length);
@@ -382,7 +384,7 @@ export default class _TTS {
           flushPieces();
 
           // 충분한 수의 chunk가 만들어진 경우 멈춘다.
-          if (_nodeIndex < initMinIndex) {
+          if (_nodeIndex < initMinIndex && this.chunks.length > 0) {
             minIndex = _nodeIndex + 1;
             break;
           }
@@ -414,7 +416,7 @@ export default class _TTS {
   }
 
   // makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
-  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
+  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst, startPlay = true) {
     throw 'Must override this method';
   }
 
