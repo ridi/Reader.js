@@ -83,33 +83,6 @@ export default class Util extends _Util {
   }
 }
 
-function getBoundingClientRect() {
-  const rects = this.getClientRects();
-  if (rects === null) {
-    return null;
-  }
-
-  // 마지막 rect를 쓰는 이유는 현재 보고있는 페이지의 다음 페이지의 첫 글자를 선택했을 때
-  // 너비가 1 이하인(Chrome 버전에 따라 0 또는 1) 정체불명의 rect 값을 걸러내기 위함이다.
-  const bounds = new MutableClientRect(rects[rects.length - 1]);
-  for (let i = 0; i < rects.length; i++) {
-    const rect = rects[i];
-    if (rect.width <= 1) {
-      continue;
-    }
-    bounds.top = Math.min(bounds.top, rect.top || 0);
-    bounds.bottom = Math.max(bounds.bottom, rect.bottom || 0);
-    bounds.left = Math.min(bounds.left, rect.left || 0);
-    bounds.right = Math.max(bounds.right, rect.right || 0);
-  }
-  bounds.width = Math.max(bounds.right - bounds.left, 0);
-  bounds.height = Math.max(bounds.bottom - bounds.top, 0);
-
-  return bounds;
-}
-
-Range.prototype.getBoundingClientRect = getBoundingClientRect;
-
 Util.staticOverride(Util, _Util, [
   '_rectToRelativeForChromeInternal',
   '_rectToRelativeForChrome',
