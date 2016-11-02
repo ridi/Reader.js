@@ -165,6 +165,7 @@ export default class _TTS {
       this.makeAdjacentChunksByNodeLocation(
         lastSentenceChunk.getStartNodeIndex(), lastSentenceChunk.getStartWordIndex(), startPlay);
     } else {
+      this._didFinishMakeChunksEnabled = true;
       this.didFinishMakeChunks();
     }
   }
