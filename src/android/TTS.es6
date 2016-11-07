@@ -3,85 +3,24 @@ import EPub from './EPub';
 import Util from './Util';
 
 export default class TTS extends _TTS {
-  constructor() {
-    super();
-    this._flushed = true;
-  }
-
-  didPlaySpeech(chunkId) {
-    if (this._flushed) {
-      return;
-    }
-
-    app.moveToChunkId(chunkId);
-
-    const rects = this.chunks[chunkId].getClientRects(true);
-    android.onRectOfChunkId(chunkId, Util.rectsToAbsoluteCoord(rects));
-  }
-
-  didFinishSpeech(chunkId) {
-    if (this._flushed) {
-      return;
-    }
-
-    const nodes = EPub.getTextAndImageNodes() || [];
-    if (!super.didFinishSpeech(chunkId) &&
-      nodes.length === this.maxNodeIndex && this.chunks.length - 1 === chunkId) {
-      android.onUtteranceNotFound();
+  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst, startPlay = true) {
+    while (this.chunks.length > 0) {
+      // this.chunks에는 항상 chunk들이 본문에서의 순서대로 들어있다.
+      const chunk = (addAtFirst ? this.chunks.pop() : this.chunks.shift());
+      android.onUtteranceFound(chunk.getStartNodeIndex(),
+                               chunk.getStartWordIndex(),
+                               chunk.getUtterance().text,
+                               Util.rectsToAbsoluteCoord(chunk.getClientRects(true)),
+                               isMakingTemporalChunk,
+                               addAtFirst,
+                               startPlay);
     }
   }
 
-  didFinishMakeChunks(index) {
-    this._flushed = false;
-    if (this.chunks.length - index > 0) {
-      for (let i = index; i < this.chunks.length; i++) {
-        const chunk = this.chunks[i];
-        android.onUtteranceFound(
-          chunk.id,
-          chunk.getNodeIndex(),
-          chunk.getWordIndex(),
-          chunk.getUtterance().text
-        );
-      }
-    } else {
-      android.onUtteranceNotFound();
+  didFinishMakeChunks() {
+    if (this._didFinishMakeChunksEnabled) {
+      android.onFinishMakeChunks();
+      this._didFinishMakeChunksEnabled = false;
     }
-  }
-
-  getPageOffsetFromChunkId(chunkId) {
-    if (app.scrollMode) {
-      return null;
-    }
-
-    if (this.chunks.length - 1 <= chunkId) {
-      return null;
-    }
-
-    const chunk = this.chunks[chunkId];
-    if (!chunk) {
-      return null;
-    }
-
-    const rect = chunk.getBoundingClientRect();
-    const origin = window.pageXOffset + rect.left;
-    return Math.floor(origin / app.pageWidthUnit) || null;
-  }
-
-  getScrollYOffsetFromChunkId(chunkId) {
-    if (app.scrollMode === false) {
-      return null;
-    }
-
-    if (this.chunks.length - 1 <= chunkId) {
-      return null;
-    }
-
-    const chunk = this.chunks[chunkId];
-    if (!chunk) {
-      return null;
-    }
-
-    const rect = chunk.getBoundingClientRect();
-    return window.pageYOffset + rect.top;
   }
 }

@@ -124,10 +124,6 @@ export default class App extends _App {
     this._movoTo(EPub, 'TopNodeLocation', nodeIndex, wordIndex);
   }
 
-  moveToChunkId(chunkId) {
-    this._movoTo(tts, 'ChunkId', chunkId);
-  }
-
   static toast(message = '') {
     android.onShowToast(message, message.length > 20 ? 1 : 0);
   }

@@ -2,10 +2,8 @@ import TTSRange from './TTSRange';
 import TTSUtterance from './TTSUtterance';
 import TTSUtil from './TTSUtil';
 import _Util from '../_Util';
-import MutableClientRect from '../MutableClientRect';
 
 export default class TTSChunk {
-  get id() { return this._id; }
   get range() { return this._range; }
   set range(newRange) {
     if (newRange instanceof TTSRange) {
@@ -16,7 +14,6 @@ export default class TTSChunk {
   }
 
   constructor(pieces, range = null) {
-    this._id = tts.chunks.length;
     this._pieces = pieces;
     this.range = range;
   }
@@ -67,34 +64,94 @@ export default class TTSChunk {
     });
   }
 
-  getNodeIndex() {
-    return this.getPiece(this.range.startOffset).nodeIndex;
+  getStartWordPiece() {
+    return this.getPiece(this.range.startOffset);
   }
 
-  getWordIndex() {
-    const nodeIndex = this.getNodeIndex();
-    let piece = null;
-    let offset = 0;
+  getEndWordPiece() {
+    return this.getPiece(this.range.endOffset);
+  }
+
+  getStartNodeIndex() {
+    return this.getStartWordPiece().nodeIndex;
+  }
+
+  getEndNodeIndex() {
+    return this.getEndWordPiece().nodeIndex;
+  }
+
+  getStartWordIndex() {
+    // start word piece === this._pieces[0]인 경우
+    // |---------------||---- text of this._pieces[0] ----------------------
+    // |--paddingLeft--||----this.startOffset-----||----Start Word-----||---
+    // |-----------node.nodeValue of Start Word Piece-----------------------
+    const piece = this.getStartWordPiece();
+    let offsetBeforeNode = 0;
 
     for (let i = 0; i < this._pieces.length; i++) {
-      piece = this._pieces[i];
-      if (piece.nodeIndex === nodeIndex) {
+      const currentPiece = this._pieces[i];
+      if (currentPiece.nodeIndex >= piece.nodeIndex) {
         break;
       } else {
-        offset += piece.length;
+        // piece.length는 piece.text.length와 같다.
+        offsetBeforeNode += currentPiece.length;
+        if (i === 0) {
+          offsetBeforeNode += currentPiece.paddingLeft;
+        }
       }
     }
 
-    const diff = this.range.startOffset - offset + piece.paddingLeft;
-    if (diff <= 0) {
+    const offsetBeforeWordInNode = this.range.startOffset + this._pieces[0].paddingLeft - offsetBeforeNode;
+    if (offsetBeforeWordInNode <= 0) {
       return 0;
     }
 
-    offset = 0;
-    const words = piece.text.split(TTSUtil.getSplitWordRegex);
+    const words = piece.node.nodeValue.split(TTSUtil.getSplitWordRegex());
+    let currentWordStartOffset = 0;
     for (let j = 0; j < words.length; j++) {
-      offset += (words[j].length + 1);
-      if (offset >= diff) {
+      if (currentWordStartOffset >= offsetBeforeWordInNode) {
+        return j;
+      }
+      currentWordStartOffset += (words[j].length + 1);
+    }
+    return words.length - 1;
+  }
+
+  getEndWordIndex() {
+    const piece = this.getEndWordPiece();
+    const firstPaddingLeft = this._pieces[0].paddingLeft;
+    let offsetBeforeNode = 0;
+
+    for (let i = 0; i < this._pieces.length; i++) {
+      const currentPiece = this._pieces[i];
+      if (currentPiece.nodeIndex >= piece.nodeIndex) {
+        break;
+      } else {
+        // piece.length는 piece.text.length와 같다.
+        offsetBeforeNode += currentPiece.length;
+        if (i === 0) {
+          offsetBeforeNode += firstPaddingLeft;
+        }
+      }
+    }
+
+    // SP = this._pieces[0], EP = Last Word Piece
+    // |---------------|text (Other Pieces)|----text (EP)-------|paddingRight(EP)|
+    // |-----------------------------------|--------node.nodeValue (EP)----------|
+    // |paddingLeft(SP)|--------------endOffset-------------|--------------------|
+    // |-----------------------------------------|-End Word-|--------------------|
+    //
+    // SP = EP일 때
+    // |-----------node.nodeValue -----------------------------------------------|
+    // |--paddingLeft--|---------endOffset / text-----------|---paddingRight-----|
+    // |-----------------------------------------|-End Word-|--------------------|
+    const offsetAfterEndWordInNode = this.range.endOffset + firstPaddingLeft - offsetBeforeNode;
+
+    const words = piece.node.nodeValue.split(TTSUtil.getSplitWordRegex());
+    let currentWordEndOffset = 0;
+    for (let j = 0; j < words.length; j++) {
+      currentWordEndOffset += (words[j].length + 1);
+      if (currentWordEndOffset >= offsetAfterEndWordInNode) {
         return j;
       }
     }
@@ -183,12 +240,12 @@ export default class TTSChunk {
           } catch (e) {
             console.log(
               `TSChunk:getClientRects() Error!! ${e.toString()}\n`
-            + ` => {chunkId: ${this.id}`
-            + `, startOffset: ${startOffset}`
+            + ` => {startOffset: ${startOffset}`
             + `, endOffset: ${endOffset}`
             + `, offset: ${offset}`
             + `, nodeIndex: ${piece.nodeIndex}`
-            + `, wordIndex: ${piece.wordIndex}}`);
+            + `, startWordIndex: ${piece.startWordIndex}`
+            + `, endWordIndex: ${piece.endWordIndex}}`);
           }
 
           // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
@@ -218,21 +275,6 @@ export default class TTSChunk {
       }
     }// end for
     return rects;
-  }
-
-  getBoundingClientRect() {
-    const rects = this.getClientRects(false);
-    const bounds = new MutableClientRect(rects[0]);
-    for (let i = 0; i < rects.length; i++) {
-      const rect = rects[i];
-      bounds.top = Math.min(bounds.top, rect.top || 0);
-      bounds.bottom = Math.max(bounds.bottom, rect.bottom || 0);
-      bounds.left = Math.min(bounds.left, rect.left || 0);
-      bounds.right = Math.max(bounds.right, rect.right || 0);
-    }
-    bounds.width = Math.max(bounds.right - bounds.left, 0);
-    bounds.height = Math.max(bounds.bottom - bounds.top, 0);
-    return bounds;
   }
 
   copy(range) {
