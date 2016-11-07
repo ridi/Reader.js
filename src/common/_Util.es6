@@ -189,6 +189,30 @@ export default class _Util extends _Object {
   }
 }
 
+Range.prototype.originGetClientRects = Range.prototype.getClientRects;
+
+function getClientRects() {
+  const rects = this.originGetClientRects();
+  if (rects === null) {
+    return [];
+  }
+
+  const newRects = [];
+  for (let i = 0; i < rects.length; i++) {
+    const rect = rects[i];
+    if (rect.width <= 1) {
+      // Webkit, Chrome 버전에 따라 다음 페이지의 첫 글자를 선택했을 때
+      // 마지막 rect의 너비가 1 이하인 값이 들어오게 되는데 이게 오작동을
+      // 발생시키는 요인이 되기 때문에 버린다.
+      continue;
+    }
+    newRects.push(rect);
+  }
+  return newRects;
+}
+
+Range.prototype.getClientRects = getClientRects;
+
 function getAdjustedBoundingClientRect() {
   const rect = this.getBoundingClientRect() || new MutableClientRect();
   return _Util.adjustRect(rect);
