@@ -8,10 +8,10 @@ export default class TTSPiece {
   get node() { return this._node; }
   get text() { return this._text; }
   get length() { return this._length; }
-  // node.nodeValue (text 아님) 의 좌측 끝에서 startWordIndex에 해당하는 단어의
+  // node.nodeValue (piece.text 아님) 의 좌측 끝에서 startWordIndex에 해당하는 단어의
   // 첫 글자 까지의 offset
   get paddingLeft() { return this._paddingLeft; }
-  // node.nodeValue (text 아님) 의 우측 끝에서 endWordIndex에 해당하는 단어의
+  // node.nodeValue (piece.text 아님) 의 우측 끝에서 endWordIndex에 해당하는 단어의
   // 마지막 글자 까지의 offset
   get paddingRight() { return this._paddingRight; }
 
