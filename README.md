@@ -1,4 +1,5 @@
 # Reader.js
+[![Build Status](https://travis-ci.org/ridibooks/Reader.js.svg?branch=master)](https://travis-ci.org/ridibooks/Reader.js)
 Javascript library for Ridibooks viewer for iOS/Android written in ECMAScript 6
 
 # Installation
