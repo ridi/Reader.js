@@ -159,8 +159,18 @@ export default class _TTS {
 
   makeLastSentenceChunksInSpine(startPlay = true) {
     this.makeChunksByNodeLocationReverse(-1, -1, true);
-    if (this.chunks.length > 0) {
-      const lastSentenceChunk = this.chunks[this.chunks.length - 1];
+    const emptyChunkRegex = TTSUtil.getWhitespaceAndNewLineRegex('^', '$', null);
+    let lastSentenceChunk = null;
+    for (let i = this.chunks.length - 1; i >= 0; i--) {
+      lastSentenceChunk = this.chunks[i];
+      if (lastSentenceChunk.getUtterance().text.match(emptyChunkRegex)) {
+        lastSentenceChunk = null;
+      } else {
+        break;
+      }
+    }
+
+    if (lastSentenceChunk) {
       this._chunks = [];
       this.makeAdjacentChunksByNodeLocation(
         lastSentenceChunk.getStartNodeIndex(), lastSentenceChunk.getStartWordIndex(), startPlay);
