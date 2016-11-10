@@ -1,8 +1,15 @@
 language: node_js
 node_js: node
-before_script:
-  - npm install -g grunt-cli
+
+before_script: npm install -g grunt-cli
+
 script:
   - grunt --platform=ios
   - grunt --platform=android
 
+notifications:
+  email: false
+  slack:
+    rooms:
+      secure: UHfM/vFH+HepAm3HB3s5LCNA7IeJccY0B4RtLkwkjXFTenmLMZNkXP/ZULRDR5kgBVs/dMp3cRzwoV5yVJPNo/BUedXppfNYNQUPhl/nIg7wrZ2yOaljNhNTC6qOQ8fP92xrAI9psjCFDUGM6uBsye8Q92p+NKmBVbTDwcU1m7XZxiBkF+SunQuDlb2HkcRtJ8/2yWUrL+gS+OSZtsY1v6AFewLLR2pQk21XHba/8JsCotYp8D3hD2yk7sKQF1Iwl7lr5dH9jSqXyJDW+wkNYUWjSq+x5/2ndfwNhs5INtP+isfl6aZ8fB6psPOZ7/8y99/5bRPB35dU0fCwpcVtaVMZXnKREv7wTddhg5GeWJuCwaDl4roS8VQJJIOLmA3Jk9yyk0NrmATD4iVjuYYXJrKH+wT8oP/BSCeifzFdz6veH9apIVDLFqONbLj5kPSYh6rCaZtHMtF27+KxAFuLIwjk6poG2xAPdegUNMbT+hHOe3y7Ko073QpplXy/2iSg0cjHm6POgSewtKpwRq1fo2Yonx8vqzyo9XErCbtUzX/LAg6HI6uXMzFOeYsptD6c0jg8vkN4e30Dy/WQ02GmLouFHxXptfmvRV0OYM9hP4RNTjq1gmUCyW8gw5mKBfJF+9Psv6YBLcweyJZ0YO1FQtWyYJRiCwVS3k7N9rGRMdE=
+    on_success: change
