@@ -7,6 +7,8 @@ script:
   - grunt --platform=ios
   - grunt --platform=android
 
+after_success: curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Travis-API-Version: 3" -H "Authorization: token $TRAVIS_PRIVATE_API_TOKEN" -d '{"request": {"branch": "master"}}' https://api.travis-ci.com/repo/ridi-viewer%2FTTS-JS-Unit-Test/requests
+
 notifications:
   email: false
   slack:
