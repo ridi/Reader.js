@@ -353,7 +353,7 @@ export default class _EPub extends _Object {
       return notFound;
     }
 
-    if (rect.left < 0) {
+    if (rect.left < 0 || (pageOffset + 1) * pageUnit < rect.left + rect.width) {
       if (rect.width < pageUnit) {
         pageOffset++;
       } else {
