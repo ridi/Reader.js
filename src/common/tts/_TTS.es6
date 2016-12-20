@@ -143,6 +143,9 @@ export default class _TTS {
 
   playChunksByNodeLocation(nodeIndex, wordIndex) {
     this.makeChunksByNodeLocation(nodeIndex, wordIndex, true);
+    if (this.chunks.length === 0) {
+      this.makeChunksByNodeLocationReverse(nodeIndex, wordIndex, true);
+    }
     if (this.chunks.length > 0) {
       /**
        * NOTE : reserveNodesCount = 0으로 만들어 주어도 현재 시작 지점이

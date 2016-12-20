@@ -18,6 +18,15 @@ export default class TTSChunk {
     this.range = range;
   }
 
+  toJSONForNative() {
+    return {
+      nodeIndex: this.getStartNodeIndex(),
+      wordIndex: this.getStartWordIndex(),
+      text: this.getUtterance().text,
+      rects: _Util.rectsToAbsoluteCoord(this.getClientRects(true))
+    };
+  }
+
   _getFullText() {
     let fullText = '';
     this._pieces.forEach((piece) => {
