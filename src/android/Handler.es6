@@ -4,9 +4,8 @@ import Util from './Util';
 
 export default class Handler extends _Handler {
   static isInViewportWidth(x) {
-    const startViewportWidth = window.pageXOffset;
-    const endViewportWidth = startViewportWidth + document.documentElement.clientWidth;
-    return x >= startViewportWidth && x <= endViewportWidth;
+    const point = Util.adjustPoint(0, 0);
+    return x >= point.x && x <= point.x + document.documentElement.clientWidth;
   }
 
   static processSingleTapEvent(x, y, nativePoints) {
