@@ -3,6 +3,12 @@ import _EPub from '../common/_EPub';
 import Util from './Util';
 
 export default class Handler extends _Handler {
+  static isInViewportWidth(x) {
+    const startViewportWidth = window.pageXOffset;
+    const endViewportWidth = startViewportWidth + document.documentElement.clientWidth;
+    return x >= startViewportWidth && x <= endViewportWidth;
+  }
+
   static processSingleTapEvent(x, y, nativePoints) {
     const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
     if (link !== null) {
@@ -52,3 +58,5 @@ export default class Handler extends _Handler {
     }
   }
 }
+
+Handler.staticOverride(Handler, _Handler, ['isInViewportWidth']);

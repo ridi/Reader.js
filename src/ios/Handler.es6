@@ -3,6 +3,12 @@ import _EPub from '../common/_EPub';
 import Util from './Util';
 
 export default class Handler extends _Handler {
+  static isInViewportWidth(x) {
+    const startViewportWidth = 0;
+    const endViewportWidth = startViewportWidth + document.body.clientWidth;
+    return x >= startViewportWidth && x <= endViewportWidth;
+  }
+
   static processSingleTapEvent(x, y, rawX, rawY, canvasWidth, canvasHeight, isVerticalPagingOn) {
     const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
     if (link !== null) {
@@ -55,3 +61,5 @@ export default class Handler extends _Handler {
     location.href = 'ridi+epub://navigation/toggleFullscreen';
   }
 }
+
+Handler.staticOverride(Handler, _Handler, ['isInViewportWidth']);
