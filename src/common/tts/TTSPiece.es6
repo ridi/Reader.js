@@ -96,7 +96,7 @@ export default class TTSPiece {
             break;
           }
           // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
-          if (!(valid = (['RUBY', 'RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
+          if (!(valid = (['RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
             break;
           }
         } while ((el = el.parentNode));
