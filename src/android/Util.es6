@@ -14,19 +14,11 @@ export default class Util extends _Util {
     if (app.scrollMode) {
       return point;
     } else if (this.checkCurseInChrome()) {
-      const gap = app.getColumnGap();
-      const curPage = app.getCurPage();
-      const pageUnit = app.pageWidthUnit;
-      const pageWeight = app.pageWeightForChrome;
-      if (curPage < CURSE || app.pageOverflowForChrome) {
-        point.x += (pageUnit * pageWeight);
-      } else {
-        point.x += ((pageUnit - gap) * pageWeight);
-        if (pageWeight > 0 && pageWeight < CURSE) {
-          point.x -= (gap * (CURSE - pageWeight));
-        }
+      point.x += (app.pageWidthUnit * app.pageWeightForChrome);
+      if (app.pageOverflowForChrome) {
+        point.x -= app.getColumnGap() * CURSE;
       }
-    } else if (version <= 41 && version >= 40) {
+    } else if (version === 41 || version === 40) {
       point.x += window.pageXOffset;
     }
     return point;
@@ -40,39 +32,33 @@ export default class Util extends _Util {
     return this._rectsToRelativeForChrome(rects);
   }
 
-  static _rectToRelativeForChromeInternal(rect, gap, curPage) {
+  static _rectToRelativeForChromeInternal(rect, gap) {
     const adjustRect = new MutableClientRect(rect);
-    const pageUnit = app.pageWidthUnit;
-    const pageWeight = app.pageWeightForChrome;
-    if (curPage < CURSE || app.pageOverflowForChrome) {
+    if (!this.scrollMode) {
+      const pageUnit = app.pageWidthUnit;
+      const pageWeight = app.pageWeightForChrome;
       adjustRect.left -= (pageUnit * pageWeight);
       adjustRect.right -= (pageUnit * pageWeight);
-      return adjustRect;
-    }
-    adjustRect.left -= ((pageUnit - gap) * pageWeight);
-    adjustRect.right -= ((pageUnit - gap) * pageWeight);
-    if (pageWeight > 0 && pageWeight < CURSE) {
-      adjustRect.left += (gap * (CURSE - pageWeight));
-      adjustRect.right += (gap * (CURSE - pageWeight));
+      if (app.pageOverflowForChrome) {
+        adjustRect.left += gap * CURSE;
+        adjustRect.right += gap * CURSE;
+      }
     }
     return adjustRect;
   }
 
   static _rectToRelativeForChrome(rect) {
-    if (this.checkCurseInChrome() && !app.scrollMode) {
-      return this._rectToRelativeForChromeInternal(rect, app.getColumnGap(), app.getCurPage());
+    if (this.checkCurseInChrome()) {
+      return this._rectToRelativeForChromeInternal(rect, app.getColumnGap());
     }
     return new MutableClientRect(rect);
   }
 
   static _rectsToRelativeForChrome(rects) {
-    if (this.checkCurseInChrome() && !app.scrollMode) {
+    if (this.checkCurseInChrome()) {
       const gap = app.getColumnGap();
-      const curPage = app.getCurPage();
       const newRects = [];
-      for (let i = 0; i < rects.length; i++) {
-        newRects.push(this._rectToRelativeForChromeInternal(rects[i], gap, curPage));
-      }
+      rects.forEach(rect => newRects.push(this._rectToRelativeForChromeInternal(rect, gap)));
       return newRects;
     }
     return rects;

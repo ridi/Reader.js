@@ -16,8 +16,9 @@ export default class App extends _App {
     if (!isNaN(version)) {
       this._chromeMajorVersion = version;
       if (Util.checkCurseInChrome(version) && !this.scrollMode) {
-        this._pageWeightForChrome = Math.min(pageOffset, CURSE);
-        this._pageOverflowForChrome = false;
+        const pageWeight = Math.min(pageOffset, CURSE);
+        this._pageWeightForChrome = pageWeight;
+        this._pageOverflowForChrome = pageWeight === CURSE;
         this._prevPage = pageOffset;
         this._setScrollListener();
       }
@@ -54,34 +55,24 @@ export default class App extends _App {
   _setScrollListener() {
     window.addEventListener('scroll', () => {
       if (Util.checkCurseInChrome()) {
-        // * Chrome 47, 49 대응
-        // 현재 페이지를 기준으로 rect를 구할 때 left의 기준이 변경됨에 따라 아래와 같이 대응함 (rectToRelativeForChrome)
-        // 1) 다음 페이지 이동만 할 때
-        //   1-1) 현재 페이지가 1~3 페이지일 때는 left에 pageUnit * pageWeight만큼 뻬야 한다
-        //   1-2) 4 페이지 이상일 때는 pageGap을 제외한 pageUnit에 3(pageWeight의 최대치)을 곱한만큼 뻬야 한다
-        // 2) 다음 페이지 이동만 하다가 이전 페이지로 이동할 때
-        //   2-1) 이전 페이지 이동을 하기 전 페이지를 기준으로 3회 미만 이동할 때
-        //      2-1-1) pageGap에 이동한 페이지 수(3 - pageWeight)를 곱한만큼 더해야 한다
-        //   2-2) 3회 이상 이동할 때 (pageOverflowForChrome = true)
-        //      2-2-1) pageUnit * pageWeight만큼 뻬야 한다
-        //   2-3) pageOverflowForChrome가 true가 되면 pageWeight가 3이 되기 전까지 2-2를 사용한다
-        // 현재 페이지에 대한 터치 포인트 기준도 변경됨에 따라 아래와 같이 대응함 (offsetToAbsoluteForChrome)
-        // 1) left에 대한 대응에서 '빼기'를 '더하기'로 '더하기'를 '빼기'로 바꾼게 터치에 대한 대응
+        // * Chrome 47, 49+ 대응
+        // viewport의 범위와 curPage의 clientLeft 기준이 변경됨에 따라 아래와 같이 대응함
+        // (Util._rectToRelativeForChromeInternal, Util.adjustPoint 참고)
+        // - 페이지 이동에 따라 0~3의 가중치(pageWeight)를 부여
+        // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함
+        // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌
         const curPage = this.getCurPage();
         const prevPage = this.prevPage;
         let pageWeight = this.pageWeightForChrome;
-        if (curPage > prevPage) {
+        if (curPage > prevPage) { // next
           pageWeight = Math.min(pageWeight + (curPage - prevPage), CURSE);
-          if (this.pageOverflowForChrome) {
-            this._pageOverflowForChrome = pageWeight < CURSE;
+          if (!this._pageOverflowForChrome) {
+            this._pageOverflowForChrome = pageWeight === CURSE;
           }
-        } else if (curPage < prevPage) {
+        } else if (curPage < prevPage) { // prev
           pageWeight = Math.max(pageWeight - (prevPage - curPage), 0);
-          if (this.pageOverflowForChrome) {
-            this._pageOverflowForChrome = pageWeight < CURSE;
-          } else {
-            // 3 페이지 이상 이전 페이지 이동했을 때
-            this._pageOverflowForChrome = pageWeight === 0;
+          if (pageWeight === 0) {
+            this._pageOverflowForChrome = false;
           }
         }
         this._prevPage = curPage;
