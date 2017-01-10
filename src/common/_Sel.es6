@@ -209,9 +209,10 @@ export default class _Sel {
         while (length > endOffset) {
           dummyRange.setStart(node, endOffset);
           dummyRange.setEnd(node, ++endOffset);
+          const rect = dummyRange.getAdjustedBoundingClientRect();
           if (/\s/.test(dummyRange.toString())) {
             continue;
-          } else if (dummyRange.getAdjustedBoundingClientRect().left < upperBound) {
+          } else if (Math.floor(rect.left + rect.width) < upperBound) {
             return (this._nextPageContinuable = false);
           } else {
             this._expandRangeBySentenceInPage(dummyRange, upperBound * 2);
