@@ -34,7 +34,7 @@ export default class Util extends _Util {
 
   static _rectToRelativeForChromeInternal(rect, gap) {
     const adjustRect = new MutableClientRect(rect);
-    if (!this.scrollMode) {
+    if (!app.scrollMode) {
       const pageUnit = app.pageWidthUnit;
       const pageWeight = app.pageWeightForChrome;
       adjustRect.left -= (pageUnit * pageWeight);
