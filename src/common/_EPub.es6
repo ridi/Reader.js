@@ -163,7 +163,7 @@ export default class _EPub extends _Object {
             return NodeFilter.FILTER_ACCEPT;
           }
           return NodeFilter.FILTER_SKIP;
-        }
+        },
       },
       false
     );
@@ -191,7 +191,7 @@ export default class _EPub extends _Object {
       if (startOffset <= rect[origin] && rect[origin] <= endOffset && rect.width > 0) {
         return {
           rect: new MutableClientRect(rect),
-          index: j
+          index: j,
         };
       }
     }
@@ -355,7 +355,7 @@ export default class _EPub extends _Object {
 
     if (rect.left < 0 || (pageOffset + 1) * pageUnit < rect.left + rect.width) {
       if (rect.width < pageUnit) {
-        pageOffset++;
+        pageOffset += 1;
       } else {
         pageOffset += Math.floor(rect.width / pageUnit);
       }
@@ -390,7 +390,7 @@ export default class _EPub extends _Object {
       sHeight: _Util.getMatchedCSSValue(imgEl, 'height'),
       // 엘리먼트 속성으로 명시된 크기
       aWidth: (attrs.width || zeroAttr).value,
-      aHeight: (attrs.height || zeroAttr).value
+      aHeight: (attrs.height || zeroAttr).value,
     };
   }
 
@@ -447,7 +447,7 @@ export default class _EPub extends _Object {
         width: cssWidth,
         height: cssHeight,
         position: '',
-        size
+        size,
       };
     }
 
@@ -537,7 +537,7 @@ export default class _EPub extends _Object {
       width: cssWidth,
       height: cssHeight,
       position: '',
-      size
+      size,
     };
   }
 }

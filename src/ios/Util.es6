@@ -46,5 +46,5 @@ Util.staticOverride(Util, _Util, [
   '_rectToRelative',
   '_rectsToRelative',
   'adjustRect',
-  'adjustRects'
+  'adjustRects',
 ]);

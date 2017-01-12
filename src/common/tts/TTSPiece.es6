@@ -19,16 +19,16 @@ export default class TTSPiece {
   constructor(nodeIndex, startWordIndex = -1, endWordIndex = -1) {
     if (typeof nodeIndex !== 'number' || typeof startWordIndex !== 'number'
       || typeof endWordIndex !== 'number') {
-      throw 'TTSPiece: nodeIndex or startWordIndex or endWordIndex is invalid.';
+      throw new Error('TTSPiece: nodeIndex or startWordIndex or endWordIndex is invalid.');
     }
 
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
-      throw 'TTSPiece: nodes is empty. make call epub.setTextAndImageNodes().';
+      throw new Error('TTSPiece: nodes is empty. make call epub.setTextAndImageNodes().');
     } else if (nodes.length - 1 < nodeIndex) {
-      throw `TTSPiece: nodeIndex is out of bounds(${nodeIndex}/${nodes.length - 1}).`;
+      throw new Error(`TTSPiece: nodeIndex is out of bounds(${nodeIndex}/${nodes.length - 1}).`);
     } else if (nodes[nodeIndex] === null) {
-      throw 'TTSPiece: node not found on nodes.';
+      throw new Error('TTSPiece: node not found on nodes.');
     } else {
       this._node = nodes[nodeIndex];
       this._nodeIndex = nodeIndex;
@@ -48,9 +48,9 @@ export default class TTSPiece {
         const words = nodeValue.split(TTSUtil.getSplitWordRegex());
 
         if (startWordIndex >= words.length || endWordIndex >= words.length) {
-          throw 'TTSPiece: wordIndex is out of bounds - '
+          throw new Error('TTSPiece: wordIndex is out of bounds - '
           + `startWordIndex: (${startWordIndex}/${words.length - 1}), `
-          + `endWordIndex: (${endWordIndex}/${words.length - 1}).`;
+          + `endWordIndex: (${endWordIndex}/${words.length - 1}).`);
         } else if (startWordIndex < 0) {
           this._startWordIndex = 0;
         } else {

@@ -1,5 +1,4 @@
 import _TTS from '../common/tts/_TTS';
-import Util from './Util';
 
 export default class TTS extends _TTS {
   get makeChunksFinished() { return this._makeChunksFinished; }
@@ -26,7 +25,7 @@ export default class TTS extends _TTS {
     return JSON.stringify(temporalChunk);
   }
 
-  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst, startPlay = true) {
+  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     if (!isMakingTemporalChunk) {
       this._chunkSetsForPolling.push({ addAtFirst, chunks: this.chunks.map((chunk) => chunk.toJSONForNative()) });
     } else if (this.chunks.length > 0) {

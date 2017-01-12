@@ -67,7 +67,7 @@ export default class _Sel {
     }
   }
 
-  isOutOfBounds(range) {
+  isOutOfBounds(/* range */) {
     return false;
   }
 
@@ -208,10 +208,10 @@ export default class _Sel {
         const length = node.textContent.length;
         while (length > endOffset) {
           dummyRange.setStart(node, endOffset);
-          dummyRange.setEnd(node, ++endOffset);
+          dummyRange.setEnd(node, endOffset + 1);
           const rect = dummyRange.getAdjustedBoundingClientRect();
           if (/\s/.test(dummyRange.toString())) {
-            continue;
+            endOffset += 1;
           } else if (Math.floor(rect.left + rect.width) < upperBound) {
             return (this._nextPageContinuable = false);
           } else {

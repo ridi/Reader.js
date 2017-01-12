@@ -82,7 +82,7 @@ export default class TTSUtterance {
                   nextCode = text.charCodeAt(k);
                   nextCh = text.charAt(k);
                   if (TTSUtil.isSpaceCharCode(nextCode) || nextCh === ':' || nextCh === ',') {
-                    ignoreCount++;
+                    ignoreCount += 1;
                   } else if (TTSUtil.isLatinCharCode(nextCode)) {
                     j = k;
                     break;
@@ -100,7 +100,7 @@ export default class TTSUtterance {
               if (j + 1 < length) {
                 nextCode = text.charCodeAt(j + 1);
                 if (TTSUtil.isLatinCharCode(nextCode)) {
-                  j++;
+                  j += 1;
                   continue;
                 }
               }
@@ -135,7 +135,7 @@ export default class TTSUtterance {
       '아', '에', '아', '에', '어',
       '에', '어', '에', '오', '아',
       '에', '에', '오', '우', '어',
-      '에', '이', '우', '으', '으', '이'
+      '에', '이', '우', '으', '으', '이',
     ];
     const textLength = this.length;
     let text = this.text;
@@ -219,7 +219,7 @@ export default class TTSUtterance {
       Latin: 0,
       HangulNotation: 1,
       HangulOrdinal: 2,
-      Time: 3
+      Time: 3,
     };
     let text = this.text;
 
@@ -230,7 +230,7 @@ export default class TTSUtterance {
     const map = {
       '⅐': '칠 분의 일', '⅑': '구 분의 일', '⅒': '십 분의 일', '⅓': '삼 분의 일', '⅔': '삼 분의 이',
       '⅕': '오 분의 일', '⅖': '오 분의 이', '⅗': '오 분의 삼', '⅘': '오 분의 사', '⅙': '육 분의 일',
-      '⅚': '육 분의 오', '⅛': '팔 분의 일', '⅜': '팔 분의 삼', '⅝': '팔 분의 오', '⅞': '팔 분의 칠'
+      '⅚': '육 분의 오', '⅛': '팔 분의 일', '⅜': '팔 분의 삼', '⅝': '팔 분의 오', '⅞': '팔 분의 칠',
     };
     text = text.replace(/⅐|⅑|⅒|⅓|⅔|⅕|⅖|⅗|⅘|⅙|⅚|⅛|⅜|⅝|⅞/gm, (matched) => map[matched]);
 
@@ -255,7 +255,7 @@ export default class TTSUtterance {
       for (i = startOffset - 1; i >= 0; i--) {
         code = text.charCodeAt(i);
         if (TTSUtil.isSpaceCharCode(code)) {
-          spaceCount++;
+          spaceCount += 1;
         } else if (TTSUtil.isColonCharCode(code)) {
           type = Type.Time;
           break;

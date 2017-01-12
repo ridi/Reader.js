@@ -108,17 +108,17 @@ export default class _TTS {
   _serializedRangeToNodeLocation(serializedRange) {
     const range = rangy.deserializeRange(serializedRange, document.body);
     if (range === null) {
-      throw 'TTS: range is invalid.';
+      throw new Error('TTS: range is invalid.');
     }
 
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
-      throw 'TTS: nodes is empty. make call epub.getTextAndImageNodes().';
+      throw new Error('TTS: nodes is empty. make call epub.getTextAndImageNodes().');
     }
 
     let nodeIndex = -1;
     let wordIndex = 0;
-    for (let i = 0, offset = 0; i < nodes.length; i++, offset = 0) {
+    for (let i = 0, offset = 0; i < nodes.length; i += 1, offset = 0) {
       if (nodes[i] === range.startContainer) {
         nodeIndex = i;
         const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
@@ -204,7 +204,7 @@ export default class _TTS {
       endNodeIndex = firstChunk.getStartNodeIndex();
       endWordIndex = firstChunk.getStartWordIndex() - 1;
       if (endWordIndex < 0) {
-        endNodeIndex--;
+        endNodeIndex -= 1;
       }
     }
     this.makeChunksByNodeLocationReverse(endNodeIndex, endWordIndex);
@@ -257,7 +257,7 @@ export default class _TTS {
   makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
-      throw 'tts: nodes is empty. make call epub.getTextAndImageNodes().';
+      throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
     }
 
     let _nodeIndex = Math.max(nodeIndex, 0);
@@ -273,7 +273,7 @@ export default class _TTS {
       pieceBuffer = [];
     };
 
-    for (; _nodeIndex <= maxIndex + 1; _nodeIndex++, _wordIndex = -1) {
+    for (; _nodeIndex <= maxIndex + 1; _nodeIndex += 1, _wordIndex = -1) {
       if (_nodeIndex >= nodes.length) {
         flushPieces();
         break;
@@ -321,7 +321,7 @@ export default class _TTS {
           if (aboveMaxIndex) {
             // 위에서 현재 노드를 계속 무시했는데, maxIndex가 증가되었으므로
             // 현재 node부터 다시 처리해야한다.
-            _nodeIndex--;
+            _nodeIndex -= 1;
           }
         }
       }
@@ -335,7 +335,7 @@ export default class _TTS {
   makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
     const nodes = _EPub.getTextAndImageNodes();
     if (nodes === null) {
-      throw 'tts: nodes is empty. make call epub.getTextAndImageNodes().';
+      throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
     }
 
     const wordsInNode = (node) => (node ? (node.nodeValue || '').split(TTSUtil.getSplitWordRegex()) : []);
@@ -356,7 +356,7 @@ export default class _TTS {
     };
 
     const initMinIndex = minIndex;
-    for (; _nodeIndex >= minIndex - 1; _nodeIndex--, startWordIndex = -1, endWordIndex = -1) {
+    for (; _nodeIndex >= minIndex - 1; _nodeIndex -= 1, startWordIndex = -1, endWordIndex = -1) {
       if (_nodeIndex < 0) {
         flushPieces();
         break;
@@ -411,7 +411,7 @@ export default class _TTS {
             decrementMinIndex();
             // 위에서 현재 node를 계속 무시했는데, minIndex가 감소되었으므로
             // 현재 node부터 다시 처리해야한다.
-            _nodeIndex++;
+            _nodeIndex += 1;
           }
         } else {
           pieceBuffer.unshift(piece);
@@ -430,13 +430,13 @@ export default class _TTS {
   }
 
   // makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
-  didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
-    throw 'Must override this method';
+  didFinishMakePartialChunks(/* isMakingTemporalChunk, addAtFirst */) {
+    throw new Error('Must override this method');
   }
 
   // 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
   didFinishMakeChunks() {
-    throw 'Must override this method';
+    throw new Error('Must override this method');
   }
 
   _addChunk(pieces, addAtFirst) {
@@ -456,11 +456,11 @@ export default class _TTS {
       let hit = 0;
       let index = text.search(/[.](\s{0,})$/gm);
       if (index > 0 && TTSUtil.isDigitOrLatin(text[index - 1])) {
-        hit++;
+        hit += 1;
       }
       index = nextText.search(/[^\s]/gm);
       if (index >= 0 && TTSUtil.isDigitOrLatin(nextText[index])) {
-        hit++;
+        hit += 1;
       }
       return hit === 2;
     };
@@ -575,7 +575,7 @@ export default class _TTS {
     this.processedNodeMinIndex = -1;
     this.processedNodeMaxIndex = -1;
     this._chunks = [];
-    this._generateMoreChunksTimeoutId++;
+    this._generateMoreChunksTimeoutId += 1;
     this._didFinishMakeChunksEnabled = false;
   }
 }

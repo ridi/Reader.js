@@ -23,7 +23,7 @@ export default class TTSChunk {
       nodeIndex: this.getStartNodeIndex(),
       wordIndex: this.getStartWordIndex(),
       text: this.getUtterance().text,
-      rects: _Util.rectsToAbsoluteCoord(this.getClientRects(true))
+      rects: _Util.rectsToAbsoluteCoord(this.getClientRects(true)),
     };
   }
 
@@ -177,7 +177,7 @@ export default class TTSChunk {
     let offset = 0;
     let length = 0;
 
-    for (let i = 0; i < pieces.length; i++, offset += length) {
+    for (let i = 0; i < pieces.length; i += 1, offset += length) {
       const piece = pieces[i];
       const node = piece.node;
       let string = null;
@@ -241,7 +241,7 @@ export default class TTSChunk {
         if (endOffset === 0) {
           endOffset = length;
         }
-        while (true) {
+        for (;;) {
           try {
             range.setStart(node, startOffset);
             range.setEnd(node, endOffset);
@@ -265,12 +265,12 @@ export default class TTSChunk {
             if (length < startOffset + 1) {
               break;
             }
-            startOffset++;
+            startOffset += 1;
           } else if (string.match(TTSUtil.getWhitespaceAndNewLineRegex(null, '$', 'g')) !== null) {
             if (endOffset - 1 < 0) {
               break;
             }
-            endOffset--;
+            endOffset -= 1;
           } else {
             break;
           }

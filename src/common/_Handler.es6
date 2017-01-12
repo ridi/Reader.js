@@ -2,7 +2,7 @@ import _Object from './_Object';
 import _EPub from './_EPub';
 
 export default class _Handler extends _Object {
-  static isInViewportWidth(x) {
+  static isInViewportWidth(/* x */) {
     return true;
   }
 
