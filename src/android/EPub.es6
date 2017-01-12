@@ -37,7 +37,7 @@ export default class EPub extends _EPub {
     if (time < 1) {
       return change / 2 * time * time + start;
     }
-    time--;
+    time -= 1;
     return -change / 2 * (time * (time - 2) - 1) + start;
   }
 
@@ -175,7 +175,7 @@ export default class EPub extends _EPub {
           el,
           width: result.width,
           height: result.height,
-          position: result.position
+          position: result.position,
         });
       }
     }

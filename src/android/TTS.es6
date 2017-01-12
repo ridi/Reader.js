@@ -1,5 +1,4 @@
 import _TTS from '../common/tts/_TTS';
-import EPub from './EPub';
 import Util from './Util';
 
 export default class TTS extends _TTS {

@@ -76,5 +76,5 @@ Util.staticOverride(Util, _Util, [
   'checkCurseInChrome',
   'adjustPoint',
   'adjustRect',
-  'adjustRects'
+  'adjustRects',
 ]);
