@@ -16,7 +16,10 @@ export default class Util extends _Util {
     } else if (this.checkCurseInChrome()) {
       point.x += (app.pageWidthUnit * app.pageWeightForChrome);
       if (app.pageOverflowForChrome) {
-        point.x -= app.getColumnGap() * CURSE;
+        point.x -= app.columnGap * CURSE;
+        if (app.htmlClientWidth - app.bodyClientWidth === 1) {
+          point.x += CURSE;
+        }
       }
     } else if (version === 41 || version === 40) {
       point.x += window.pageXOffset;
@@ -32,9 +35,10 @@ export default class Util extends _Util {
     return this._rectsToRelativeForChrome(rects);
   }
 
-  static _rectToRelativeForChromeInternal(rect, gap) {
+  static _rectToRelativeForChromeInternal(rect) {
     const adjustRect = new MutableClientRect(rect);
     if (!app.scrollMode) {
+      const gap = app.columnGap;
       const pageUnit = app.pageWidthUnit;
       const pageWeight = app.pageWeightForChrome;
       adjustRect.left -= (pageUnit * pageWeight);
@@ -42,6 +46,10 @@ export default class Util extends _Util {
       if (app.pageOverflowForChrome) {
         adjustRect.left += gap * CURSE;
         adjustRect.right += gap * CURSE;
+        if (app.htmlClientWidth - app.bodyClientWidth === 1) {
+          adjustRect.left -= CURSE;
+          adjustRect.right -= CURSE;
+        }
       }
     }
     return adjustRect;
@@ -49,16 +57,15 @@ export default class Util extends _Util {
 
   static _rectToRelativeForChrome(rect) {
     if (this.checkCurseInChrome()) {
-      return this._rectToRelativeForChromeInternal(rect, app.getColumnGap());
+      return this._rectToRelativeForChromeInternal(rect);
     }
     return new MutableClientRect(rect);
   }
 
   static _rectsToRelativeForChrome(rects) {
     if (this.checkCurseInChrome()) {
-      const gap = app.getColumnGap();
       const newRects = [];
-      rects.forEach(rect => newRects.push(this._rectToRelativeForChromeInternal(rect, gap)));
+      rects.forEach(rect => newRects.push(this._rectToRelativeForChromeInternal(rect)));
       return newRects;
     }
     return rects;

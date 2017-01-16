@@ -8,6 +8,9 @@ export default class App extends _App {
   get pageOverflowForChrome() { return this._pageOverflowForChrome; }
   get prevPage() { return this._prevPage; }
   get contentsSrc() { return this._contentsSrc; }
+  get htmlClientWidth() { return this._htmlClientWidth; }
+  get bodyClientWidth() { return this._bodyClientWidth; }
+  get columnGap() { return this._columnGap; }
 
   constructor(width, height, systemMajorVersion, doublePageMode, scrollMode, contentsSrc, pageOffset = 0) {
     super(width, height, systemMajorVersion, doublePageMode, scrollMode);
@@ -25,6 +28,7 @@ export default class App extends _App {
     }
     this.calcPageForDoublePageMode = false;
     this._contentsSrc = contentsSrc;
+    this._updateClientWidthAndGap();
   }
 
   applyColumnProperty(width, gap) {
@@ -37,6 +41,7 @@ export default class App extends _App {
     document.body.setAttribute('style', style);
     setTimeout(() => {
       document.body.setAttribute('style', originStyle);
+      this._updateClientWidthAndGap();
     }, 0);
   }
 
@@ -50,6 +55,14 @@ export default class App extends _App {
     const styleElement = styleElements[styleElements.length - 1];
     styleElement.innerHTML = style;
     EPub.scrollTo(prevPage * this.pageUnit);
+
+    this._updateClientWidthAndGap();
+  }
+
+  _updateClientWidthAndGap() {
+    this._htmlClientWidth = document.documentElement.clientWidth;
+    this._bodyClientWidth = document.body.clientWidth;
+    this._columnGap = this.pageWidthUnit - this._bodyClientWidth;
   }
 
   _setScrollListener() {
