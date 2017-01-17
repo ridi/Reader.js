@@ -62,7 +62,7 @@ export default class App extends _App {
   _updateClientWidthAndGap() {
     this._htmlClientWidth = document.documentElement.clientWidth;
     this._bodyClientWidth = document.body.clientWidth;
-    this._columnGap = this.pageWidthUnit - this._bodyClientWidth;
+    this._columnGap = Util.getStylePropertyIntValue(document.documentElement, '-webkit-column-gap');
   }
 
   _setScrollListener() {
