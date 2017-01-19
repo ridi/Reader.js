@@ -283,7 +283,8 @@ export default class _TTS {
       try {
         piece = new TTSPiece(_nodeIndex, _wordIndex);
       } catch (e) {
-        console.log(e);
+        /* eslint-disable no-console */
+        console.error(e);
         break;
       }
 
@@ -366,6 +367,7 @@ export default class _TTS {
       try {
         piece = new TTSPiece(_nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
+        /* eslint-disable no-console */
         console.error(e);
         break;
       }
@@ -473,6 +475,7 @@ export default class _TTS {
     // Debug Info
     const debug = (caseNum, chunk) => {
       if (this.debug && chunk) {
+        /* eslint-disable no-console */
         console.log(`Case: ${caseNum}, Text: ${chunk.getText()}`);
       }
     };
