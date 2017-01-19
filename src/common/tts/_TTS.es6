@@ -490,74 +490,57 @@ export default class _TTS {
       return chunk;
     };
 
+    // 참고: 괄호가 여러 node에 걸쳐있는 경우 처리되지 않는다.
+    const preprocessBrackets = (tokens) => {
+      const resultTokens = [];
+      const brackets = [];
+      tokens.forEach((token) => {
+        const didBracketsExist = (brackets.length > 0);
+        const newBrackets = TTSUtil.getBrackets(token);
+        newBrackets.forEach((newBracket) => {
+          const lastBracket = brackets.pop();
+          if (lastBracket) {
+            if (!TTSUtil.isOnePairBracket(lastBracket, newBracket)) {
+              brackets.push(lastBracket);
+              brackets.push(newBracket);
+            }
+          } else {
+            brackets.push(newBracket);
+          }
+        });
+        resultTokens.push((didBracketsExist ? resultTokens.pop() : '') + token);
+      });
+
+      if (this.debug && brackets.length > 0) {
+        /* eslint-disable no-console */
+        console.error('Brackets does not match.');
+        console.error(tokens);
+        console.error(brackets);
+        console.error(resultTokens);
+      }
+      return resultTokens;
+    };
+
     const chunk = new TTSChunk(pieces);
-    const tokens = split(chunk.getText());
+    const tokens = preprocessBrackets(split(chunk.getText()));
     if (tokens.length > 1) {
       let offset = 0;
       let startOffset = 0;
       let subText = '';
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
-        let openBracket;
-        // 참고: 괄호가 여러 node에 걸쳐있는 경우 찾을 수 없다.
-        let closeBracket;
-        let otherBracket;
         subText += token;
         offset += token.length;
-        if ((openBracket = TTSUtil.getFirstOpenBracket(token)) !== null) {
-          // 괄호의 짝을 맞추지 않고 문장을 나누게 되면 괄호를 읽을 수도 있기 때문에
-          // 여는 괄호를 만나면 닫는 괄호를 찾는 과정을 진행한다
-          let endLoop = false;
-          for (let j = i; j < tokens.length; j++) {
-            const nextToken = tokens[j];
-            if (i < j) {
-              subText += nextToken;
-              offset += nextToken.length;
-            }
-            // TDD - 괄호가 섞였을 때는 어쩔건가 // 예) [{~~~]}
-            if ((closeBracket = TTSUtil.getLastCloseBracket(nextToken)) !== null &&
-              TTSUtil.isOnePairBracket(openBracket, closeBracket)) {
-              if (i === j &&
-                nextToken.lastIndexOf(closeBracket) < nextToken.lastIndexOf(openBracket)) {
-                // 한 쌍의 괄호는 만들어졌으나 서로 마주 보고 있지 않다
-                continue;
-              } else if (i < j &&
-                (otherBracket = TTSUtil.getFirstOpenBracket(nextToken)) !== null) {
-                // 닫는 괄호가 있는 곳에서 새로운 여는 괄호를 만나버렸다 // 예) (~~) ~~ '('~~)
-                openBracket = otherBracket;
-                if ((otherBracket = TTSUtil.getLastCloseBracket(nextToken)) !== null
-                  && TTSUtil.isOnePairBracket(openBracket, otherBracket)) {
-                  endLoop = true;
-                }
-                continue;
-              }
-              endLoop = true;
-            }
-            if (isPointOrName(subText, tokens[j + 1]) || isNotEndOfSentence(tokens[j + 1])) {
-              // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 현재 토큰을 더해주고 과정을 끝낸다
-              endLoop = true;
-              continue;
-            }
-            if (endLoop) {
-              debug(1, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
-              subText = '';
-              startOffset = offset;
-              i = j;
-              break;
-            }
-          }// end for j
-        } else {
-          if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
-            // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
-            continue;
-          }
-          if (subText.length) {
-            debug(2, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
-            subText = '';
-          }
-          startOffset = offset;
+        if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+          // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
+          continue;
         }
-      } // end for i
+        if (subText.length) {
+          debug(2, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
+          subText = '';
+        }
+        startOffset = offset;
+      }
       if (subText.length) {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
         debug(3, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));

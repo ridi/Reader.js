@@ -46,19 +46,13 @@ export default class TTSUtil {
     return this.isLatinCharCode(code) || this.isDigitCharCode(code);
   }
 
-  static getFirstOpenBracket(text = '') {
-    try {
-      return text.match(/[\({\[]/gm)[0];
-    } catch (e) {
-      return null;
-    }
-  }
+  // *** Bracket ***
 
-  static getLastCloseBracket(text = '') {
+  static getBrackets(text = '') {
     try {
-      return text.match(/[\)}\]]/gm).pop();
+      return text.match(/[\({\[\)}\]]/gm) || [];
     } catch (e) {
-      return null;
+      return [];
     }
   }
 
