@@ -46,24 +46,63 @@ export default class TTSUtil {
     return this.isLatinCharCode(code) || this.isDigitCharCode(code);
   }
 
-  static getFirstOpenBracket(text = '') {
-    try {
-      return text.match(/[\({\[]/gm)[0];
-    } catch (e) {
-      return null;
+  // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
+  static isPeriodPointOrName(textWithPeriod, textAfterPeriod) {
+    if (textWithPeriod === undefined || textAfterPeriod === undefined) {
+      return false;
     }
+    let hit = 0;
+    let index = textWithPeriod.search(/[.](\s{0,})$/gm);
+    if (index > 0 && this.isDigitOrLatin(textWithPeriod[index - 1])) {
+      hit += 1;
+    }
+    index = textAfterPeriod.search(/[^\s]/gm);
+    if (index >= 0 && this.isDigitOrLatin(textAfterPeriod[index])) {
+      hit += 1;
+    }
+    return hit === 2;
   }
 
-  static getLastCloseBracket(text = '') {
+  // *** Bracket ***
+
+  static getBrackets(text = '') {
     try {
-      return text.match(/[\)}\]]/gm).pop();
+      return text.match(/[\({\[\)}\]]/gm) || [];
     } catch (e) {
-      return null;
+      return [];
     }
   }
 
   static isOnePairBracket(open = '', close = '') {
     return (open + close).match(/\(\)|\{\}|\[\]/gm) !== null;
+  }
+
+  static mergeSentencesWithinBrackets(sentences = []) {
+    const resultSentences = [];
+    const brackets = [];
+    sentences.forEach((sentence) => {
+      const didBracketsExist = (brackets.length > 0);
+      const newBrackets = this.getBrackets(sentence);
+      newBrackets.forEach((newBracket) => {
+        const lastBracket = brackets.pop();
+        if (lastBracket) {
+          if (!this.isOnePairBracket(lastBracket, newBracket)) {
+            brackets.push(lastBracket);
+            brackets.push(newBracket);
+          }
+        } else {
+          brackets.push(newBracket);
+        }
+      });
+      resultSentences.push((didBracketsExist ? resultSentences.pop() : '') + sentence);
+    });
+
+    if (brackets.length > 0) {
+      /* eslint-disable no-console */
+      console.error('Brackets does not match.');
+      console.error({ sentences, brackets, resultSentences });
+    }
+    return resultSentences;
   }
 
   // *** CharCode ***

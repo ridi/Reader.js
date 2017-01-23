@@ -37,6 +37,7 @@ export default class Util extends _Util {
   }
 }
 
+/* eslint-disable no-console */
 console.log = ((log) => (message) => {
   log.call(console, message);
   location.href = `ridi+epub://invocation/log?${encodeURIComponent(message)}`;
