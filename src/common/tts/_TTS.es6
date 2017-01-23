@@ -89,6 +89,7 @@ import TTSChunk from './TTSChunk';
 import TTSRange from './TTSRange';
 import TTSUtil from './TTSUtil';
 import _EPub from '../_EPub';
+import _Util from '../_Util';
 
 export default class _TTS {
   get chunks() { return this._chunks; }
@@ -283,8 +284,7 @@ export default class _TTS {
       try {
         piece = new TTSPiece(_nodeIndex, _wordIndex);
       } catch (e) {
-        /* eslint-disable no-console */
-        console.error(e);
+        _Util.error(e);
         break;
       }
 
@@ -367,8 +367,7 @@ export default class _TTS {
       try {
         piece = new TTSPiece(_nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
-        /* eslint-disable no-console */
-        console.error(e);
+        _Util.error(e);
         break;
       }
 
@@ -458,8 +457,7 @@ export default class _TTS {
     // Debug Info
     const debug = (caseNum, chunk) => {
       if (this.debug && chunk) {
-        /* eslint-disable no-console */
-        console.log(`Case: ${caseNum}, Text: ${chunk.getText()}`);
+        _Util.log(`Case: ${caseNum}, Text: ${chunk.getText()}`);
       }
     };
 

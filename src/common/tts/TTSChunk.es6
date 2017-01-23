@@ -247,8 +247,7 @@ export default class TTSChunk {
             range.setEnd(node, endOffset);
             range.expand('character');
           } catch (e) {
-            /* eslint-disable no-console */
-            console.error(
+            _Util.error(
               `TSChunk:getClientRects() Error!! ${e.toString()}\n`
             + ` => {startOffset: ${startOffset}`
             + `, endOffset: ${endOffset}`
