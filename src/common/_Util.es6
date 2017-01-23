@@ -2,21 +2,6 @@ import _Object from './_Object';
 import MutableClientRect from './MutableClientRect';
 
 export default class _Util extends _Object {
-  static log(object) {
-    /* eslint-disable no-console */
-    console.log(object);
-  }
-
-  static warn(object) {
-    /* eslint-disable no-console */
-    console.warn(object);
-  }
-
-  static error(object) {
-    /* eslint-disable no-console */
-    console.error(object);
-  }
-
   static createTextNodeIterator(node) {
     return document.createNodeIterator(
       node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true

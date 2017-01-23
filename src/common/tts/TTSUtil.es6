@@ -1,5 +1,4 @@
 import EPub from '../_EPub';
-import _Util from '../_Util';
 
 export default class TTSUtil {
   static find(list, callback) {
@@ -99,8 +98,9 @@ export default class TTSUtil {
     });
 
     if (brackets.length > 0) {
-      _Util.error('Brackets does not match.');
-      _Util.error({ sentences, brackets, resultSentences });
+      /* eslint-disable no-console */
+      console.error('Brackets does not match.');
+      console.error({ sentences, brackets, resultSentences });
     }
     return resultSentences;
   }
