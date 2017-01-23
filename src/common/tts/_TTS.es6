@@ -450,23 +450,6 @@ export default class _TTS {
     const RIDI = 'RidiDelimiter';
     const split = (text) => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`);
 
-    // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
-    const isPointOrName = (text, nextText) => {
-      if (text === undefined || nextText === undefined) {
-        return false;
-      }
-      let hit = 0;
-      let index = text.search(/[.](\s{0,})$/gm);
-      if (index > 0 && TTSUtil.isDigitOrLatin(text[index - 1])) {
-        hit += 1;
-      }
-      index = nextText.search(/[^\s]/gm);
-      if (index >= 0 && TTSUtil.isDigitOrLatin(nextText[index])) {
-        hit += 1;
-      }
-      return hit === 2;
-    };
-
     // 문장의 마지막이 아닐 경우 true
     const isNotEndOfSentence =
       (nextText) => nextText !== undefined &&
@@ -490,39 +473,8 @@ export default class _TTS {
       return chunk;
     };
 
-    // 참고: 괄호가 여러 node에 걸쳐있는 경우 처리되지 않는다.
-    const preprocessBrackets = (tokens) => {
-      const resultTokens = [];
-      const brackets = [];
-      tokens.forEach((token) => {
-        const didBracketsExist = (brackets.length > 0);
-        const newBrackets = TTSUtil.getBrackets(token);
-        newBrackets.forEach((newBracket) => {
-          const lastBracket = brackets.pop();
-          if (lastBracket) {
-            if (!TTSUtil.isOnePairBracket(lastBracket, newBracket)) {
-              brackets.push(lastBracket);
-              brackets.push(newBracket);
-            }
-          } else {
-            brackets.push(newBracket);
-          }
-        });
-        resultTokens.push((didBracketsExist ? resultTokens.pop() : '') + token);
-      });
-
-      if (this.debug && brackets.length > 0) {
-        /* eslint-disable no-console */
-        console.error('Brackets does not match.');
-        console.error(tokens);
-        console.error(brackets);
-        console.error(resultTokens);
-      }
-      return resultTokens;
-    };
-
     const chunk = new TTSChunk(pieces);
-    const tokens = preprocessBrackets(split(chunk.getText()));
+    const tokens = TTSUtil.mergeSentencesWithinBrackets(split(chunk.getText()));
     if (tokens.length > 1) {
       let offset = 0;
       let startOffset = 0;
@@ -531,7 +483,7 @@ export default class _TTS {
         const token = tokens[i];
         subText += token;
         offset += token.length;
-        if (isPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+        if (TTSUtil.isPeriodPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
           // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
           continue;
         }
