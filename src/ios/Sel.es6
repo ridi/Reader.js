@@ -5,6 +5,10 @@ export default class Sel extends _Sel {
     return app.pageWidthUnit * (app.doublePageMode ? 2 : 1);
   }
 
+  _clientLeftOfRangeForCheckingNextPageContinuable(range) {
+    return range.getAdjustedBoundingClientRect().left;
+  }
+
   expandSelectionIntoNextPage() {
     if (super.expandSelectionIntoNextPage()) {
       return this.getSelectedRectsCoord();

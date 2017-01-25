@@ -13,6 +13,11 @@ export default class Sel extends _Sel {
     return testRect.left > pageWidth;
   }
 
+  _clientLeftOfRangeForCheckingNextPageContinuable(range) {
+    const rect = range.getAdjustedBoundingClientRect();
+    return Math.floor(rect.left + rect.width);
+  }
+
   expandSelectionIntoNextPage() {
     if (super.expandSelectionIntoNextPage()) {
       const coord = this.getSelectedRectsCoord();

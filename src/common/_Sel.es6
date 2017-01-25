@@ -201,29 +201,28 @@ export default class _Sel {
   _checkNextPageContinuable(range) {
     if (!app.scrollMode) {
       const upperBound = this.getUpperBound();
-      const dummyRange = range.cloneRange();
-      let node = dummyRange.endContainer;
-      let endOffset = dummyRange.endOffset;
+      const clonedRange = range.cloneRange();
+      let node = clonedRange.endContainer;
+      let endOffset = clonedRange.endOffset;
       do {
         const length = node.textContent.length;
         while (length > endOffset) {
-          dummyRange.setStart(node, endOffset);
-          dummyRange.setEnd(node, endOffset + 1);
-          const rect = dummyRange.getAdjustedBoundingClientRect();
-          if (/\s/.test(dummyRange.toString())) {
+          clonedRange.setStart(node, endOffset);
+          clonedRange.setEnd(node, endOffset + 1);
+          if (/\s/.test(clonedRange.toString())) {
             endOffset += 1;
-          } else if (Math.floor(rect.left + rect.width) < upperBound) {
+          } else if (this._clientLeftOfRangeForCheckingNextPageContinuable(clonedRange) < upperBound) {
             return (this._nextPageContinuable = false);
           } else {
-            this._expandRangeBySentenceInPage(dummyRange, upperBound * 2);
-            this._continueContainer = dummyRange.endContainer;
-            this._continueOffset = dummyRange.endOffset;
+            this._expandRangeBySentenceInPage(clonedRange, upperBound * 2);
+            this._continueContainer = clonedRange.endContainer;
+            this._continueOffset = clonedRange.endOffset;
             return (this._nextPageContinuable = true);
           }
         }
         endOffset = 0;
         this._nextPageContinuable = false;
-      } while ((node = this._getNextTextNode(dummyRange)));
+      } while ((node = this._getNextTextNode(clonedRange)));
     }
     return this._nextPageContinuable;
   }
