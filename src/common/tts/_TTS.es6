@@ -447,8 +447,11 @@ export default class _TTS {
     }
 
     // 문자열을 문장 단위(기준: .|。|?|!)로 나눈다
+    // '"ABCDEF. "'와 같은 경우 문장 끝의 trailing space를 제거한다.
     const RIDI = 'RidiDelimiter';
-    const split = (text) => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`);
+    const split = (text) => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`)
+    .filter((splitText) => splitText.match(
+      TTSUtil.getWhitespaceAndNewLineRegex('^', '$', null)) === null);
 
     // 문장의 마지막이 아닐 경우 true
     const isNotEndOfSentence =
