@@ -450,8 +450,7 @@ export default class _TTS {
     // '"ABCDEF. "'와 같은 경우 문장 끝의 trailing space를 제거한다.
     const RIDI = 'RidiDelimiter';
     const split = (text) => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`)
-    .filter((splitText) => splitText.match(
-      TTSUtil.getWhitespaceAndNewLineRegex('^', '$', null)) === null);
+    .filter((splitText) => splitText.trim().length > 0);
 
     // 문장의 마지막이 아닐 경우 true
     const isNotEndOfSentence =
@@ -500,7 +499,7 @@ export default class _TTS {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
         debug(3, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
       }
-    } else {
+    } else if (tokens.length === 1) {
       // 문장(token)이 하나 뿐이라 바로 추가한다
       debug(4, pushToChunks(chunk));
     }
