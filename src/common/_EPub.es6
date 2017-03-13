@@ -94,9 +94,15 @@ export default class _EPub extends _Object {
         const range = document.createRange();
         range.selectNodeContents(node);
 
+        const display = el.style.display;
         const rects = range.getAdjustedClientRects();
         if (rects.length) {
           return block(rects[0], el);
+        } else if (display.length === 0 || display === 'none') {
+          el.style.display = 'block';
+          const rect = el.getAdjustedBoundingClientRect();
+          el.style.display = 'none';
+          return block(rect, el);
         }
       }
 
