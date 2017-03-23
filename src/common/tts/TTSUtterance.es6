@@ -250,6 +250,9 @@ export default class TTSUtterance {
       endOffset = pattern.lastIndex;
       const origin = text.substring(startOffset, endOffset);
       const numeric = parseInt(origin, 10);
+      if (!isFinite(numeric)) {
+        continue;
+      }
       let type = (startOffset === 0 ? Type.HangulNotation : Type.None);
       let spaceCount = 0;
       for (i = startOffset - 1; i >= 0; i--) {
