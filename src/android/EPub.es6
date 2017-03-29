@@ -41,17 +41,20 @@ export default class EPub extends _EPub {
     return -change / 2 * (time * (time - 2) - 1) + start;
   }
 
-  static scrollTo(offset = 0, animated = false, finalPageInSpine = false) {
+  static scrollTo(offset = 0, animated = false) {
     // offset이 maxOffset을 넘길 수 없도록 보정한다. 이게 필요한 이유는 아래와 같다.
     // - 스크롤 보기에서 잘못해서 paddingBottom 영역으로 이동해 다음 스파인으로 이동되는 것을 방지
     // - 보기 설정 미리보기를 보여주는 중에 마지막 페이지보다 뒤로 이동해 빈 페이지가 보이는 것을 방지
     // 네이티브에서 보정하지 않는 것은 WebView.getContentHeight 값을 신뢰할 수 없기 때문이다.
     let adjustOffset = offset;
     if (app.scrollMode) {
+      const totalHeight = this.getTotalHeight();
       const height = app.pageHeightUnit;
+      const paddingTop = Util.getStylePropertyIntValue(document.body, 'padding-top');
       const paddingBottom = Util.getStylePropertyIntValue(document.body, 'padding-bottom');
-      const maxOffset = this.getTotalHeight() - height - paddingBottom;
-      if (finalPageInSpine) {
+      const maxOffset = totalHeight - height - paddingBottom;
+      const diff = maxOffset - adjustOffset;
+      if (adjustOffset > paddingTop && diff < height && diff > 0) {
         adjustOffset = maxOffset;
       }
       adjustOffset = Math.min(adjustOffset, maxOffset);
