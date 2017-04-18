@@ -7,7 +7,7 @@ Javascript library for Ridibooks viewer for iOS/Android written in ECMAScript 6
 # Installation
 You can install it with the following command:
 ```
-git clone https://github.com/ridi-viewer/Reader.js.git
+git clone https://github.com/ridibooks/Reader.js.git
 npm install
 ```
 
