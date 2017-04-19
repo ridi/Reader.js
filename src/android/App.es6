@@ -94,7 +94,7 @@ export default class App extends _App {
     });
   }
 
-  _movoTo(...args) {
+  _moveTo(...args) {
     const target = args[0];
     const method = args[1];
     if (this.scrollMode) {
@@ -117,15 +117,15 @@ export default class App extends _App {
   }
 
   moveToAnchor(anchor) {
-    this._movoTo(EPub, 'Anchor', anchor);
+    this._moveTo(EPub, 'Anchor', anchor);
   }
 
   moveToSerializedRange(serializedRange) {
-    this._movoTo(EPub, 'SerializedRange', serializedRange);
+    this._moveTo(EPub, 'SerializedRange', serializedRange);
   }
 
   moveToTopNodeLocation(nodeIndex, wordIndex) {
-    this._movoTo(EPub, 'TopNodeLocation', nodeIndex, wordIndex);
+    this._moveTo(EPub, 'TopNodeLocation', nodeIndex, wordIndex);
   }
 
   static toast(message = '') {
