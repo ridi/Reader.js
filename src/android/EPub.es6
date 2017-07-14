@@ -17,9 +17,8 @@ export default class EPub extends _EPub {
       return -1;
     }
 
-    const version = app.chromeMajorVersion;
-    if (version < 48 && version >= 45) {
-      // Chrome 45 버전부터 epub.totalWidth() 값을 신뢰할 수 없게 되었다
+    if (app.chromeMajorVersion >= 45) {
+      // Chrome 45 버전부터 epub.totalWidth() 값을 신뢰할 수 없게 되어 다단으로 나뉘어진 body의 높이로 페이지를 계산한다.
       const bodyComputedStyle = window.getComputedStyle(document.body);
       const bodyHeight = parseFloat(bodyComputedStyle.height, 10);
       let pageCount = bodyHeight / app.pageHeightUnit;
