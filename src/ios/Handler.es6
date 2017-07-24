@@ -42,18 +42,18 @@ export default class Handler extends _Handler {
     if (!app.scrollMode) {
       if (isVerticalPagingOn) {
         if (rawY < canvasHeight / 3) {
-          location.href = 'ridi+epub://navigation/viewPrevPage';
+          location.href = 'ridi+epub://navigation/viewPageByTopOrLeftTouch';
           return;
         } else if (rawY > canvasHeight * 2 / 3) {
-          location.href = 'ridi+epub://navigation/viewNextPage';
+          location.href = 'ridi+epub://navigation/viewPageByBottomOrRightTouch';
           return;
         }
       } else {
         if (rawX < canvasWidth / 4) {
-          location.href = 'ridi+epub://navigation/viewPrevPage';
+          location.href = 'ridi+epub://navigation/viewPageByTopOrLeftTouch';
           return;
         } else if (rawX > canvasWidth * 3 / 4) {
-          location.href = 'ridi+epub://navigation/viewNextPage';
+          location.href = 'ridi+epub://navigation/viewPageByBottomOrRightTouch';
           return;
         }
       }
