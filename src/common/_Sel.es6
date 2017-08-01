@@ -212,12 +212,14 @@ export default class _Sel {
           if (/\s/.test(clonedRange.toString())) {
             endOffset += 1;
           } else if (this._clientLeftOfRangeForCheckingNextPageContinuable(clonedRange) < upperBound) {
-            return (this._nextPageContinuable = false);
+            this._nextPageContinuable = false;
+            return this._nextPageContinuable;
           } else {
             this._expandRangeBySentenceInPage(clonedRange, upperBound * 2);
             this._continueContainer = clonedRange.endContainer;
             this._continueOffset = clonedRange.endOffset;
-            return (this._nextPageContinuable = true);
+            this._nextPageContinuable = true;
+            return this._nextPageContinuable;
           }
         }
         endOffset = 0;
