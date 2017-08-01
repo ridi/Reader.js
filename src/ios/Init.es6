@@ -8,8 +8,7 @@ import TTS from './TTS';
 import TTSUtterance from '../common/tts/TTSUtterance';
 import TTSUtil from '../common/tts/TTSUtil';
 
-export default function (width, height, systemMajorVersion, selMaxLength,
-                         doublePageMode, scrollMode) {
+export default function (width, height, systemMajorVersion, selMaxLength, doublePageMode, scrollMode) {
   window.app = new App(width, height, systemMajorVersion, doublePageMode, scrollMode);
   window.sel = new Sel(selMaxLength);
   window.epub = EPub;

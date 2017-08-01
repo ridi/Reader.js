@@ -32,7 +32,9 @@ export default class TTSUtil {
   }
 
   static getSentenceRegex(prefix, suffix, flags) {
+    /* eslint-disable no-useless-escape */
     return this._createRegex(prefix, '[.。?!\"”\'’」』〞〟]', suffix, flags);
+    /* eslint-enable no-useless-escape */
   }
 
   // *** Char ***
@@ -67,7 +69,9 @@ export default class TTSUtil {
 
   static getBrackets(text = '') {
     try {
-      return text.match(/[\({\[\)}\]]/gm) || [];
+      /* eslint-disable no-useless-escape */
+      return text.match(/[\(\)\{\}\[\]]/gm) || [];
+      /* eslint-enable no-useless-escape */
     } catch (e) {
       return [];
     }
@@ -201,16 +205,26 @@ export default class TTSUtil {
 
   static chineseCodeTable() {
     return [
-      0x4E00, 0x9FFF,   // CJK Unified Ideographs
-      0xF900, 0xFAFF,   // CJK Compatibility Ideographs
-      0x3300, 0x33FF,   // CJK Compatibility
-      0x3400, 0x4DBF,   // CJK Unified Ideographs Extension A
-      0x20000, 0x2A6DF, // CJK Unified Ideographs Extension B
-      0x2A700, 0x2B73F, // CJK Unified Ideographs Extension C
-      0x2B740, 0x2B81F, // CJK Unified Ideographs Extension D
-      0x2B820, 0x2CEAF, // CJK Unified Ideographs Extension E
-      0x2CEB0, 0x2EBEF, // CJK Unified Ideographs Extension F
-      0x2F800, 0x2FA1F, // CJK Compatibility Ideographs Supplement
+      0x4E00,
+      0x9FFF, // CJK Unified Ideographs
+      0xF900,
+      0xFAFF, // CJK Compatibility Ideographs
+      0x3300,
+      0x33FF, // CJK Compatibility
+      0x3400,
+      0x4DBF, // CJK Unified Ideographs Extension A
+      0x20000,
+      0x2A6DF, // CJK Unified Ideographs Extension B
+      0x2A700,
+      0x2B73F, // CJK Unified Ideographs Extension C
+      0x2B740,
+      0x2B81F, // CJK Unified Ideographs Extension D
+      0x2B820,
+      0x2CEAF, // CJK Unified Ideographs Extension E
+      0x2CEB0,
+      0x2EBEF, // CJK Unified Ideographs Extension F
+      0x2F800,
+      0x2FA1F, // CJK Compatibility Ideographs Supplement
     ];
   }
 
@@ -220,11 +234,16 @@ export default class TTSUtil {
 
   static japaneseCodeTable() {
     return [
-      0x3000, 0x303F,   // Japanese-style punctuation
-      0x3040, 0x309F,   // Hiragana
-      0x30a0, 0x30FF,   // Katakana
-      0xFF00, 0xFFEF,   // Full-width roman characters and half-width katakana
-      0x4E00, 0x9FFF,   // CJK Unified Ideographs
+      0x3000,
+      0x303F, // Japanese-style punctuation
+      0x3040,
+      0x309F, // Hiragana
+      0x30a0,
+      0x30FF, // Katakana
+      0xFF00,
+      0xFFEF, // Full-width roman characters and half-width katakana
+      0x4E00,
+      0x9FFF, // CJK Unified Ideographs
     ];
   }
 
@@ -263,11 +282,11 @@ export default class TTSUtil {
       0x31, 0x32, 0x34, 0x37, 0x38, 0x39, 0x41, 0x42, 0x43,
       0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E,
     ];
-    return 0x3100 + codes[((((code - 0xAC00) - (code - 0xAC00) % 28)) / 28) / 21];
+    return 0x3100 + codes[((((code - 0xAC00) - ((code - 0xAC00) % 28))) / 28) / 21];
   }
 
   static getMedialCharCodeIndex(code) {
-    return ((((code - 0xAC00) - (code - 0xAC00) % 28)) / 28) % 21;
+    return ((((code - 0xAC00) - ((code - 0xAC00) % 28))) / 28) % 21;
   }
 
   static getMedialCharCode(code) {

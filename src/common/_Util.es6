@@ -4,7 +4,7 @@ import MutableClientRect from './MutableClientRect';
 export default class _Util extends _Object {
   static createTextNodeIterator(node) {
     return document.createNodeIterator(
-      node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true
+      node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true,
     );
   }
 
@@ -80,7 +80,7 @@ export default class _Util extends _Object {
     return /^\s*$/.test(range.toString());
   }
 
-  static concatArray(array, rects, adjust = (rect) => rect) {
+  static concatArray(array, rects, adjust = rect => rect) {
     for (let i = 0; i < rects.length; i++) {
       array.push(adjust(rects[i]));
     }

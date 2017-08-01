@@ -27,7 +27,7 @@ export default class TTS extends _TTS {
 
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     if (!isMakingTemporalChunk) {
-      this._chunkSetsForPolling.push({ addAtFirst, chunks: this.chunks.map((chunk) => chunk.toJSONForNative()) });
+      this._chunkSetsForPolling.push({ addAtFirst, chunks: this.chunks.map(chunk => chunk.toJSONForNative()) });
     } else if (this.chunks.length > 0) {
       this._temporalChunk = this.chunks.pop().toJSONForNative();
     }

@@ -44,18 +44,16 @@ export default class Handler extends _Handler {
         if (rawY < canvasHeight / 3) {
           location.href = 'ridi+epub://navigation/viewPrevPage';
           return;
-        } else if (rawY > canvasHeight * 2 / 3) {
+        } else if (rawY > (canvasHeight * 2) / 3) {
           location.href = 'ridi+epub://navigation/viewNextPage';
           return;
         }
-      } else {
-        if (rawX < canvasWidth / 4) {
-          location.href = 'ridi+epub://navigation/viewPrevPage';
-          return;
-        } else if (rawX > canvasWidth * 3 / 4) {
-          location.href = 'ridi+epub://navigation/viewNextPage';
-          return;
-        }
+      } else if (rawX < canvasWidth / 4) {
+        location.href = 'ridi+epub://navigation/viewPrevPage';
+        return;
+      } else if (rawX > (canvasWidth * 3) / 4) {
+        location.href = 'ridi+epub://navigation/viewNextPage';
+        return;
       }
     }
     location.href = 'ridi+epub://navigation/toggleFullscreen';

@@ -235,11 +235,11 @@ export default class _Sel {
     while (endOffset > originalOffset) {
       if (/\s$/.test(range.toString())) {
         range.setEnd(range.endContainer, endOffset -= 1);
-        continue;
       } else if (range.getAdjustedBoundingClientRect().right <= upperBound) {
         break;
+      } else {
+        range.setEnd(range.endContainer, endOffset -= 1);
       }
-      range.setEnd(range.endContainer, endOffset -= 1);
     }
   }
 
