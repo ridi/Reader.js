@@ -250,7 +250,7 @@ export default class _TTS {
     scheduleTask();
   }
 
-  /**
+  /*
    * nodeIndex / wordIndex : inclusive
    * isMakingTemporalChunk : Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
    */
@@ -339,7 +339,7 @@ export default class _TTS {
       throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
     }
 
-    const wordsInNode = (node) => (node ? (node.nodeValue || '').split(TTSUtil.getSplitWordRegex()) : []);
+    const wordsInNode = node => (node ? (node.nodeValue || '').split(TTSUtil.getSplitWordRegex()) : []);
     const maxNodeIndex = nodes.length - 1;
     let _nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
     const maxWordIndex = wordsInNode(nodes[_nodeIndex]).length - 1;
@@ -449,12 +449,12 @@ export default class _TTS {
     // 문자열을 문장 단위(기준: .|。|?|!)로 나눈다
     // '"ABCDEF. "'와 같은 경우 문장 끝의 trailing space를 제거한다.
     const RIDI = 'RidiDelimiter';
-    const split = (text) => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`)
-    .filter((splitText) => splitText.trim().length > 0);
+    const split = text => text.replace(/([.。?!])/gm, `$1[${RIDI}]`).split(`[${RIDI}]`)
+      .filter(splitText => splitText.trim().length > 0);
 
     // 문장의 마지막이 아닐 경우 true
     const isNotEndOfSentence =
-      (nextText) => nextText !== undefined &&
+      nextText => nextText !== undefined &&
                   nextText.match(TTSUtil.getSentenceRegex('^')) !== null;
 
     // Debug Info

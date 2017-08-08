@@ -212,12 +212,14 @@ export default class _Sel {
           if (/\s/.test(clonedRange.toString())) {
             endOffset += 1;
           } else if (this._clientLeftOfRangeForCheckingNextPageContinuable(clonedRange) < upperBound) {
-            return (this._nextPageContinuable = false);
+            this._nextPageContinuable = false;
+            return this._nextPageContinuable;
           } else {
             this._expandRangeBySentenceInPage(clonedRange, upperBound * 2);
             this._continueContainer = clonedRange.endContainer;
             this._continueOffset = clonedRange.endOffset;
-            return (this._nextPageContinuable = true);
+            this._nextPageContinuable = true;
+            return this._nextPageContinuable;
           }
         }
         endOffset = 0;
@@ -235,11 +237,11 @@ export default class _Sel {
     while (endOffset > originalOffset) {
       if (/\s$/.test(range.toString())) {
         range.setEnd(range.endContainer, endOffset -= 1);
-        continue;
       } else if (range.getAdjustedBoundingClientRect().right <= upperBound) {
         break;
+      } else {
+        range.setEnd(range.endContainer, endOffset -= 1);
       }
-      range.setEnd(range.endContainer, endOffset -= 1);
     }
   }
 

@@ -70,7 +70,7 @@ export default class TTSChunk {
       }
       offset += item.length;
       return false;
-    });
+    }) !== undefined ? offset : 0;
   }
 
   getStartWordPiece() {
@@ -110,7 +110,7 @@ export default class TTSChunk {
       }
     }
 
-    const offsetBeforeWordInNode = this.range.startOffset + this._pieces[0].paddingLeft - offsetBeforeNode;
+    const offsetBeforeWordInNode = (this.range.startOffset + this._pieces[0].paddingLeft) - offsetBeforeNode;
     if (offsetBeforeWordInNode <= 0) {
       return 0;
     }
@@ -154,7 +154,7 @@ export default class TTSChunk {
     // |-----------node.nodeValue -----------------------------------------------|
     // |--paddingLeft--|---------endOffset / text-----------|---paddingRight-----|
     // |-----------------------------------------|-End Word-|--------------------|
-    const offsetAfterEndWordInNode = this.range.endOffset + firstPaddingLeft - offsetBeforeNode;
+    const offsetAfterEndWordInNode = (this.range.endOffset + firstPaddingLeft) - offsetBeforeNode;
 
     const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
     let currentWordEndOffset = 0;
@@ -200,19 +200,17 @@ export default class TTSChunk {
             //   Piece     |    |
             startOffset = pieceRange.startOffset;
             endOffset = pieceRange.endOffset;
+          } else if (chunkRange.endOffset <= pieceRange.startOffset) {
+            // Case 2
+            //   Chunk |   |
+            //   Piece        |    |
+            continue;
           } else {
-            if (chunkRange.endOffset <= pieceRange.startOffset) {
-              // Case 2
-              //   Chunk |   |
-              //   Piece        |    |
-              continue;
-            } else {
-              // Case 3
-              //   Chunk |     |
-              //   Piece    |       |
-              startOffset = pieceRange.startOffset;
-              endOffset = chunkRange.endOffset;
-            }
+            // Case 3
+            //   Chunk |     |
+            //   Piece    |       |
+            startOffset = pieceRange.startOffset;
+            endOffset = chunkRange.endOffset;
           }
         } else if (chunkRange.endOffset <= pieceRange.endOffset) {
           // Case 4
@@ -221,23 +219,21 @@ export default class TTSChunk {
           //   Piece   |    |
           startOffset = chunkRange.startOffset;
           endOffset = chunkRange.endOffset;
+        } else if (pieceRange.endOffset <= chunkRange.startOffset) {
+          // Case 5
+          //   Chunk         |   |
+          //   Piece |    |
+          continue;
         } else {
-          if (pieceRange.endOffset <= chunkRange.startOffset) {
-            // Case 5
-            //   Chunk         |   |
-            //   Piece |    |
-            continue;
-          } else {
-            // Case 6
-            //   Chunk     |       |
-            //   Piece |      |
-            startOffset = chunkRange.startOffset;
-            endOffset = pieceRange.endOffset;
-          }
+          // Case 6
+          //   Chunk     |       |
+          //   Piece |      |
+          startOffset = chunkRange.startOffset;
+          endOffset = pieceRange.endOffset;
         }
 
-        startOffset = Math.max(startOffset - offset + piece.paddingLeft, 0);
-        endOffset = Math.max(endOffset - offset + piece.paddingLeft, 0);
+        startOffset = Math.max((startOffset - offset) + piece.paddingLeft, 0);
+        endOffset = Math.max((endOffset - offset) + piece.paddingLeft, 0);
         if (endOffset === 0) {
           endOffset = length;
         }

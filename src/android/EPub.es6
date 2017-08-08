@@ -34,10 +34,10 @@ export default class EPub extends _EPub {
     let time = currentTime;
     time /= duration / 2;
     if (time < 1) {
-      return change / 2 * time * time + start;
+      return (((change / 2) * time) * time) + start;
     }
     time -= 1;
-    return -change / 2 * (time * (time - 2) - 1) + start;
+    return ((-change / 2) * ((time * (time - 2)) - 1)) + start;
   }
 
   static scrollTo(offset = 0, animated = false) {
