@@ -63,7 +63,7 @@ export default class TTSUtterance {
         if (i + 1 < length) {
           // 한글 옆에 붙은애는 알고보니 축약어였다!? -> 야는 제거해선 안 된다.
           nextCode = text.charCodeAt(i + 1);
-          isAbbr = TTSUtil.isLatinCharCode(code, 'u') & TTSUtil.isLatinCharCode(nextCode, 'u');
+          isAbbr = TTSUtil.isLatinCharCode(code, 'u') && TTSUtil.isLatinCharCode(nextCode, 'u');
         }
         if (!isAbbr && TTSUtil.isHangulCharCode(prevCode)) {
           // 영어의 전 글자는 반드시 한글이어야 한다.
@@ -228,11 +228,23 @@ export default class TTSUtterance {
 
     // 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
     const map = {
-      '⅐': '칠 분의 일', '⅑': '구 분의 일', '⅒': '십 분의 일', '⅓': '삼 분의 일', '⅔': '삼 분의 이',
-      '⅕': '오 분의 일', '⅖': '오 분의 이', '⅗': '오 분의 삼', '⅘': '오 분의 사', '⅙': '육 분의 일',
-      '⅚': '육 분의 오', '⅛': '팔 분의 일', '⅜': '팔 분의 삼', '⅝': '팔 분의 오', '⅞': '팔 분의 칠',
+      '⅐': '칠 분의 일',
+      '⅑': '구 분의 일',
+      '⅒': '십 분의 일',
+      '⅓': '삼 분의 일',
+      '⅔': '삼 분의 이',
+      '⅕': '오 분의 일',
+      '⅖': '오 분의 이',
+      '⅗': '오 분의 삼',
+      '⅘': '오 분의 사',
+      '⅙': '육 분의 일',
+      '⅚': '육 분의 오',
+      '⅛': '팔 분의 일',
+      '⅜': '팔 분의 삼',
+      '⅝': '팔 분의 오',
+      '⅞': '팔 분의 칠',
     };
-    text = text.replace(/⅐|⅑|⅒|⅓|⅔|⅕|⅖|⅗|⅘|⅙|⅚|⅛|⅜|⅝|⅞/gm, (matched) => map[matched]);
+    text = text.replace(/⅐|⅑|⅒|⅓|⅔|⅕|⅖|⅗|⅘|⅙|⅚|⅛|⅜|⅝|⅞/gm, matched => map[matched]);
 
     // 년도를 의미하는 숫자 뒤에 XX가 붙어 있다면 0으로 교체한다.
     text = text.replace(/([\d]{1,2})[Xx×]{2}/gm, '$100');
@@ -358,11 +370,11 @@ export default class TTSUtterance {
   // 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
   insertPauseTag() {
     let text = this.text;
-    text = text.replace(/([\D])([·]{2,})([\D])/gm, '$1<pause=\"200ms\">$2$3');
-    text = text.replace(/([|_]{1})/gm, '<pause=\"400ms\">$1');
-    text = text.replace(/([…]{1,})/gm, '<pause=\"400ms\">$1');
-    text = text.replace(/([\D])(-|―){1,}([\D])/gm, '$1<pause=\"200ms\">$2$3');
-    text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, '$1<pause=\"200ms\">$2');
+    text = text.replace(/([\D])([·]{2,})([\D])/gm, '$1<pause=\'200ms\'>$2$3');
+    text = text.replace(/([|_]{1})/gm, '<pause=\'400ms\'>$1');
+    text = text.replace(/([…]{1,})/gm, '<pause=\'400ms\'>$1');
+    text = text.replace(/([\D])(-|―){1,}([\D])/gm, '$1<pause=\'200ms\'>$2$3');
+    text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, '$1<pause=\'200ms\'>$2');
     return new TTSUtterance(text);
   }
 }

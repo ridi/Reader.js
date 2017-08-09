@@ -52,7 +52,7 @@ export default class _EPub extends _Object {
           svgEl.appendChild(childNodes[j].cloneNode(true));
         }
 
-        return `${prefix}${svgEl.innerHTML}<\/svg>`;
+        return `${prefix}${svgEl.innerHTML}</svg>`;
       }
     }
     return 'null';
@@ -117,7 +117,7 @@ export default class _EPub extends _Object {
   }
 
   static getScrollYOffsetFromAnchor(anchor) {
-    return this._getOffsetFromAnchor(anchor, (rect) => rect.top);
+    return this._getOffsetFromAnchor(anchor, rect => rect.top);
   }
 
   static _getOffsetFromSerializedRange(serializedRange, block) {
@@ -131,13 +131,11 @@ export default class _EPub extends _Object {
   }
 
   static getPageOffsetFromSerializedRange(serializedRange) {
-    return this._getOffsetFromSerializedRange(serializedRange,
-      (rect) => this.getPageOffsetFromRect(rect));
+    return this._getOffsetFromSerializedRange(serializedRange, rect => this.getPageOffsetFromRect(rect));
   }
 
   static getScrollYOffsetFromSerializedRange(serializedRange) {
-    return this._getOffsetFromSerializedRange(serializedRange,
-      (rect) => (rect || { top: null }).top);
+    return this._getOffsetFromSerializedRange(serializedRange, rect => (rect || { top: null }).top);
   }
 
   static getFootnoteRegex() {
@@ -154,15 +152,13 @@ export default class _EPub extends _Object {
 
   static setTextAndImageNodes() {
     // 주의! topNodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
-    const filter = (node) =>
-      node.nodeType === Node.TEXT_NODE ||
-      (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
+    const filter = node =>
+      node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
 
     let calledFilter = false;
     const walk = document.createTreeWalker(
       document.body,
-      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-      {
+      NodeFilter.SHOW_TEXT || NodeFilter.SHOW_ELEMENT, {
         acceptNode(node) {
           calledFilter = true;
           if (filter(node)) {
@@ -171,7 +167,7 @@ export default class _EPub extends _Object {
           return NodeFilter.FILTER_SKIP;
         },
       },
-      false
+      false,
     );
 
     // 일부 Webkit에서 NodeFilter 기능이 동작하지 않는 경우가 있다.
@@ -417,12 +413,10 @@ export default class _EPub extends _Object {
           } else if (intVal < 100) {
             return -1;
           }
-        } else {
-          if (size2 < intVal) {
-            return 1;
-          } else if (size2 > intVal) {
-            return -1;
-          }
+        } if (size2 < intVal) {
+          return 1;
+        } else if (size2 > intVal) {
+          return -1;
         }
       }
       return 0;
@@ -528,7 +522,7 @@ export default class _EPub extends _Object {
         ['line-height', 'margin-top', 'margin-bottom', 'padding-top', 'padding-bottom']);
       const vmin = Math.min(canvasWidth, canvasHeight);
       let adjustHeight = Math.max((canvasHeight - margin) * maxHeight, vmin * maxHeight);
-      let adjustWidth = adjustHeight / size.nHeight * size.nWidth;
+      let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;
       if (adjustWidth > canvasWidth) {
         adjustHeight *= canvasWidth / adjustWidth;
         adjustWidth = canvasWidth;
