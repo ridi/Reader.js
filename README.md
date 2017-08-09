@@ -1,4 +1,6 @@
 # Reader.js
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/ridibooks/Reader.js.svg)](https://greenkeeper.io/)
 [![Build Status](https://travis-ci.org/ridibooks/Reader.js.svg?branch=master)](https://travis-ci.org/ridibooks/Reader.js)
 [![npm](https://img.shields.io/npm/v/ridibooks-reader.svg)](https://www.npmjs.com/package/ridibooks-reader)
 
