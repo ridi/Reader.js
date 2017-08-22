@@ -25,7 +25,7 @@ export default class EPub extends _EPub {
       if (app.doublePageMode) {
         pageCount /= 2;
       }
-      return Math.ceil(pageCount);
+      return Math.max(Math.ceil(pageCount), 1);
     }
     return Math.ceil(totalWidth / app.pageWidthUnit);
   }
