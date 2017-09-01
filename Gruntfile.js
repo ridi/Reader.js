@@ -92,7 +92,7 @@ module.exports = function(grunt) {
         options: {
           browserifyOptions: {
             paths: ['js'],
-            standalone: 'Ridi'
+            standalone: 'Reader'
           }
         }
       }
