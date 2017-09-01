@@ -11,9 +11,11 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    gitinfo: {},
     variants: {
-      name: 'ridi',
-      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
+      name: 'reader',
+      SHA: '<%= gitinfo.local.branch.current.SHA %>',
+      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> <%= variants.SHA %> */\n',
       strict: '\"use strict\";\n',
       platform: platform,
       basePath: 'src',
@@ -151,9 +153,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-gitinfo');
   grunt.loadNpmTasks('gruntify-eslint');
 
-  grunt.registerTask('default', ['clean', 'lint', 'bundle', 'uglify']);
+  grunt.registerTask('default', ['gitinfo', 'clean', 'lint', 'bundle', 'uglify']);
   grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']);
   grunt.registerTask('show-config', function() { // debug
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
