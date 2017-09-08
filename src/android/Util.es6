@@ -72,7 +72,7 @@ export default class Util extends _Util {
   }
 
   static checkCurseInChrome(version = app.chromeMajorVersion) {
-    return version === 47 || version >= 49;
+    return version === 47 || (version >= 49 && version < 61);
   }
 }
 
