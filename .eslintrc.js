@@ -1,5 +1,5 @@
 module.exports = {
-  'extends': 'ridibooks',
+  'extends': '@ridi',
   'rules': {
     'import/extensions': 0,
     'import/no-unresolved': 0,
