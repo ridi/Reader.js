@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
   var platform = grunt.option('platform');
-  if (platform === undefined || (platform != 'android' && platform != 'ios')) {
-    throw 'Usage: grunt [default|epub-debug|show-config] --platform=[android|ios] --dist=path';
+  if (platform === undefined || (platform !== 'android' && platform !== 'ios')) {
+    throw 'Usage: grunt [default|epub-debug|show-config] --platform=[android|ios] --dist=path {--ci}';
   }
 
   var buildPath = 'build';
@@ -14,8 +14,8 @@ module.exports = function(grunt) {
     gitinfo: {},
     variants: {
       name: 'reader',
-      SHA: '<%= gitinfo.local.branch.current.SHA %>',
-      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> <%= variants.SHA %> */\n',
+      SHA: grunt.option('ci') ? '' : '<%= gitinfo.local.branch.current.SHA %> ',
+      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> <%= variants.SHA %>*/\n',
       strict: '\"use strict\";\n',
       platform: platform,
       basePath: 'src',
