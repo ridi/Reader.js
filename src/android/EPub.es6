@@ -140,29 +140,14 @@ export default class EPub extends _EPub {
     const startOffset = 0;
     const endOffset = app.pageUnit;
 
-    if (startOffset === endOffset) {
+    const location = this.findTopNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator);
+    this.showTopNodeLocationIfNeeded();
+    if (!location) {
       android.onTopNodeLocationOfCurrentPageNotFound();
       return;
     }
 
-    const result =
-      this.findTopNodeRectAndLocationOfCurrentPage(startOffset, endOffset, posSeparator);
-    if (!result) {
-      android.onTopNodeLocationOfCurrentPageNotFound();
-      return;
-    }
-
-    this.showTopNodeLocation(result);
-
-    android.onTopNodeLocationOfCurrentPageFound(result.location);
-  }
-
-  static getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
-    let scrollYOffset = super.getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex);
-    if (scrollYOffset !== null) {
-      scrollYOffset += window.pageYOffset;
-    }
-    return scrollYOffset;
+    android.onTopNodeLocationOfCurrentPageFound(location);
   }
 
   static reviseImagesInSpine(canvasWidth, canvasHeight) {

@@ -1,8 +1,8 @@
 import _Object from './_Object';
 import _Util from './_Util';
-import MutableClientRect from './MutableClientRect';
 
 let debugTopNodeLocation = false;
+let latestTopNodeRect = null;
 let textAndImageNodes = null;
 
 export default class _EPub extends _Object {
@@ -185,25 +185,23 @@ export default class _EPub extends _Object {
     textAndImageNodes = nodes;
   }
 
-  static _findTopNodeRectOfCurrentPage(rects, startOffset, endOffset) {
+  static _findRectIndex(rects, startOffset, endOffset) {
     const origin = app.scrollMode ? 'top' : 'left';
     for (let j = 0; j < rects.length; j++) {
       // rect 값이 현재 보고있는 페이지의 최상단에 위치하고 있는지
       const rect = rects[j];
       if (startOffset <= rect[origin] && rect[origin] <= endOffset && rect.width > 0) {
-        return {
-          rect: new MutableClientRect(rect),
-          index: j,
-        };
+        return j;
       }
     }
     return null;
   }
 
-  static findTopNodeRectAndLocationOfCurrentPage(startOffset, endOffset, posSeparator) {
+  static findTopNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator) {
+    latestTopNodeRect = null;
+
     const nodes = this.getTextAndImageNodes();
     if (!nodes) {
-      this.setTextAndImageNodes();
       return null;
     }
 
@@ -223,7 +221,7 @@ export default class _EPub extends _Object {
         continue;
       }
 
-      let topNode;
+      let rectIndex;
       if (node.nodeType === Node.TEXT_NODE) {
         const string = node.nodeValue;
         if (!string) {
@@ -242,19 +240,19 @@ export default class _EPub extends _Object {
               return null;
             }
             const rects = range.getAdjustedClientRects();
-            if ((topNode = this._findTopNodeRectOfCurrentPage(rects, startOffset, endOffset))) {
-              const location = (i + posSeparator + Math.min(j + topNode.index, words.length - 1));
-              return { rect: topNode.rect, location };
+            if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset)) !== null) {
+              latestTopNodeRect = rects[rectIndex];
+              return (i + posSeparator + Math.min(j + rectIndex, words.length - 1));
             }
           }
           offset += (word.length + 1);
         }
       } else if (node.nodeName === 'IMG') {
         const rects = range.getAdjustedClientRects();
-        if ((topNode = this._findTopNodeRectOfCurrentPage(rects, startOffset, endOffset))) {
+        if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset)) !== null) {
           // 이미지 노드는 워드 인덱스를 구할 수 없기 때문에 0을 사용하며, 위치를 찾을때 이미지 노드의 rect가 현재 위치다.
-          const location = `${i}${posSeparator}0`;
-          return { rect: topNode.rect, location };
+          latestTopNodeRect = rects[rectIndex];
+          return `${i}${posSeparator}0`;
         }
       }
     }
@@ -266,8 +264,9 @@ export default class _EPub extends _Object {
     debugTopNodeLocation = enabled;
   }
 
-  static showTopNodeLocation(topNode) {
-    if (!debugTopNodeLocation) {
+  static showTopNodeLocationIfNeeded() {
+    window.latestTopNodeRect = latestTopNodeRect;
+    if (!debugTopNodeLocation || latestTopNodeRect === null) {
       return;
     }
 
@@ -278,7 +277,7 @@ export default class _EPub extends _Object {
       document.body.appendChild(span);
     }
 
-    const rect = topNode.rect;
+    const rect = latestTopNodeRect;
     if (app.scrollMode) {
       rect.top += window.pageYOffset;
     } else {
@@ -297,20 +296,18 @@ export default class _EPub extends _Object {
       'z-index: 99 !important;';
   }
 
-  static _getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex) {
+  static _getOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
     const pageUnit = app.pageUnit;
     const totalPageSize = this.getTotalPageSize();
-    const notFound = { pageOffset: null };
 
     const nodes = textAndImageNodes;
-    if (pageUnit === 0 || nodeIndex === -1 || wordIndex === -1 ||
-      nodes === null || nodes.length <= nodeIndex) {
-      return notFound;
+    if (pageUnit === 0 || nodeIndex === -1 || wordIndex === -1 || nodes === null || nodes.length <= nodeIndex) {
+      return null;
     }
 
     const node = nodes[nodeIndex];
     if (!node) {
-      return notFound;
+      return null;
     }
 
     const range = document.createRange();
@@ -318,21 +315,21 @@ export default class _EPub extends _Object {
 
     let rect = range.getAdjustedBoundingClientRect();
     if (rect.left === 0 && rect.top === 0 && rect.right === 0 && rect.bottom === 0) {
-      return notFound;
+      return null;
     }
 
     let pageOffset = this.getPageOffsetFromRect(rect);
     if (pageOffset === null || totalPageSize <= pageUnit * pageOffset) {
-      return notFound;
+      return null;
     }
 
     if (node.nodeName === 'IMG' && wordIndex === 0) {
-      return { pageOffset, rect };
+      return app.scrollMode ? rect.top + window.pageYOffset : pageOffset;
     }
 
     const string = node.nodeValue;
     if (string === null) {
-      return notFound;
+      return null;
     }
 
     const words = string.split(this.getSplitWordRegex());
@@ -346,13 +343,13 @@ export default class _EPub extends _Object {
       range.setStart(range.startContainer, offset - word.length - 1);
       range.setEnd(range.startContainer, offset - 1);
     } catch (e) {
-      return notFound;
+      return null;
     }
 
     rect = range.getAdjustedBoundingClientRect();
     pageOffset = this.getPageOffsetFromRect(rect);
     if (pageOffset === null || totalPageSize <= pageUnit * pageOffset) {
-      return notFound;
+      return null;
     }
 
     if (rect.left < 0 || (pageOffset + 1) * pageUnit < rect.left + rect.width) {
@@ -363,16 +360,17 @@ export default class _EPub extends _Object {
       }
     }
 
-    return { pageOffset, rect };
+    return app.scrollMode ? rect.top + window.pageYOffset : pageOffset;
   }
 
-  static getPageOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
-    return this._getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex).pageOffset;
+  static getPageOffsetFromTopNodeLocation(location, posSeparator) {
+    const parts = location.split(posSeparator);
+    return this._getOffsetFromTopNodeLocation(parts[0], parts[1]);
   }
 
-  static getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
-    const rect = this._getPageOffsetAndRectFromTopNodeLocation(nodeIndex, wordIndex).rect;
-    return (rect || { top: null }).top;
+  static getScrollYOffsetFromTopNodeLocation(location, posSeparator) {
+    const parts = location.split(posSeparator);
+    return this._getOffsetFromTopNodeLocation(parts[0], parts[1]);
   }
 
   static _getImageSize(imgEl) {

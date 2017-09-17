@@ -50,9 +50,8 @@ export default class EPub extends _EPub {
   }
 
   static getTopNodeLocationOfCurrentPage(posSeparator) {
-    const pageUnit = app.pageUnit;
     const startOffset = 0;
-    const endOffset = pageUnit;
+    const endOffset = app.pageUnit;
     const notFound = `-1${posSeparator}-1`;
 
     // 앱이 백그라운드 상태일 때는 계산하지 않는다.
@@ -61,27 +60,13 @@ export default class EPub extends _EPub {
       return notFound;
     }
 
-    if (startOffset === endOffset) {
+    const location = this.findTopNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator);
+    this.showTopNodeLocationIfNeeded();
+    if (!location) {
       return notFound;
     }
 
-    const result =
-      this.findTopNodeRectAndLocationOfCurrentPage(startOffset, endOffset, posSeparator);
-    if (!result) {
-      return notFound;
-    }
-
-    this.showTopNodeLocation(result);
-
-    return result.location;
-  }
-
-  static getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
-    let scrollYOffset = super.getScrollYOffsetFromTopNodeLocation(nodeIndex, wordIndex);
-    if (scrollYOffset !== null) {
-      scrollYOffset += window.pageYOffset;
-    }
-    return scrollYOffset;
+    return location;
   }
 
   static reviseImagesInSpine() {
