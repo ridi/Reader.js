@@ -136,11 +136,11 @@ export default class EPub extends _EPub {
     return scrollYOffset;
   }
 
-  static getNodeLocationOfCurrentPage(posSeparator) {
+  static getNodeLocationOfCurrentPage(type = 'top', posSeparator) {
     const startOffset = 0;
     const endOffset = app.pageUnit;
 
-    const location = this.findNodeLocation(startOffset, endOffset, 'top', posSeparator);
+    const location = this.findNodeLocation(startOffset, endOffset, type, posSeparator);
     this.showNodeLocationIfNeeded();
     if (!location) {
       android.onTopNodeLocationOfCurrentPageNotFound();
