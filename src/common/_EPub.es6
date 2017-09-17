@@ -185,19 +185,23 @@ export default class _EPub extends _Object {
     textAndImageNodes = nodes;
   }
 
-  static _findRectIndex(rects, startOffset, endOffset) {
+  static _findRectIndex(rects, startOffset, endOffset, type) {
     const origin = app.scrollMode ? 'top' : 'left';
     for (let j = 0; j < rects.length; j++) {
       // rect 값이 현재 보고있는 페이지의 최상단에 위치하고 있는지
       const rect = rects[j];
-      if (startOffset <= rect[origin] && rect[origin] <= endOffset && rect.width > 0) {
+      if (type === 'bottom') {
+        if (endOffset <= rect[origin] && rect.width > 0) {
+          return j - 1;
+        }
+      } else if (startOffset <= rect[origin] && rect[origin] <= endOffset && rect.width > 0) {
         return j;
       }
     }
     return null;
   }
 
-  static findNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator) {
+  static findNodeLocation(startOffset, endOffset, type, posSeparator) {
     latestNodeRect = null;
 
     const nodes = this.getTextAndImageNodes();
@@ -205,6 +209,7 @@ export default class _EPub extends _Object {
       return null;
     }
 
+    let prev = null;
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const range = document.createRange();
@@ -240,19 +245,37 @@ export default class _EPub extends _Object {
               return null;
             }
             const rects = range.getAdjustedClientRects();
-            if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset)) !== null) {
+            if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset, type)) !== null) {
+              if (rectIndex < 0) {
+                latestNodeRect = prev.rect;
+                return prev.location;
+              }
               latestNodeRect = rects[rectIndex];
               return (i + posSeparator + Math.min(j + rectIndex, words.length - 1));
+            }
+            for (let k = rects.length - 1; k >= 0; k--) {
+              if (rects[k].left < endOffset) {
+                prev = { location: `${i}${posSeparator}${j}`, rect: rects[k] };
+              }
             }
           }
           offset += (word.length + 1);
         }
       } else if (node.nodeName === 'IMG') {
         const rects = range.getAdjustedClientRects();
-        if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset)) !== null) {
+        if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset, type)) !== null) {
+          if (rectIndex < 0) {
+            latestNodeRect = prev.rect;
+            return prev.location;
+          }
           // 이미지 노드는 워드 인덱스를 구할 수 없기 때문에 0을 사용하며, 위치를 찾을때 이미지 노드의 rect가 현재 위치다.
           latestNodeRect = rects[rectIndex];
           return `${i}${posSeparator}0`;
+        }
+        for (let k = rects.length - 1; k >= 0; k--) {
+          if (rects[k].left < endOffset) {
+            prev = { location: `${i}${posSeparator}0`, rect: rects[k] };
+          }
         }
       }
     }

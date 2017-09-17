@@ -60,7 +60,7 @@ export default class EPub extends _EPub {
       return notFound;
     }
 
-    const location = this.findNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator);
+    const location = this.findNodeLocation(startOffset, endOffset, 'top', posSeparator);
     this.showNodeLocationIfNeeded();
     if (!location) {
       return notFound;
