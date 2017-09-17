@@ -150,14 +150,14 @@ export default class _EPub extends _Object {
     return textAndImageNodes;
   }
 
-  static setTextAndImageNodes() {
+  static setTextAndImageNodes(el) {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
     const filter = node =>
       node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
 
     let calledFilter = false;
     const walk = document.createTreeWalker(
-      document.body,
+      el,
       NodeFilter.SHOW_TEXT || NodeFilter.SHOW_ELEMENT, {
         acceptNode(node) {
           calledFilter = true;
