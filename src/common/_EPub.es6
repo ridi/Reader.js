@@ -1,8 +1,8 @@
 import _Object from './_Object';
 import _Util from './_Util';
 
-let debugTopNodeLocation = false;
-let latestTopNodeRect = null;
+let debugNodeLocation = false;
+let latestNodeRect = null;
 let textAndImageNodes = null;
 
 export default class _EPub extends _Object {
@@ -151,7 +151,7 @@ export default class _EPub extends _Object {
   }
 
   static setTextAndImageNodes() {
-    // 주의! topNodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
+    // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
     const filter = node =>
       node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
 
@@ -197,8 +197,8 @@ export default class _EPub extends _Object {
     return null;
   }
 
-  static findTopNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator) {
-    latestTopNodeRect = null;
+  static findNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator) {
+    latestNodeRect = null;
 
     const nodes = this.getTextAndImageNodes();
     if (!nodes) {
@@ -241,7 +241,7 @@ export default class _EPub extends _Object {
             }
             const rects = range.getAdjustedClientRects();
             if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset)) !== null) {
-              latestTopNodeRect = rects[rectIndex];
+              latestNodeRect = rects[rectIndex];
               return (i + posSeparator + Math.min(j + rectIndex, words.length - 1));
             }
           }
@@ -251,7 +251,7 @@ export default class _EPub extends _Object {
         const rects = range.getAdjustedClientRects();
         if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset)) !== null) {
           // 이미지 노드는 워드 인덱스를 구할 수 없기 때문에 0을 사용하며, 위치를 찾을때 이미지 노드의 rect가 현재 위치다.
-          latestTopNodeRect = rects[rectIndex];
+          latestNodeRect = rects[rectIndex];
           return `${i}${posSeparator}0`;
         }
       }
@@ -260,24 +260,23 @@ export default class _EPub extends _Object {
     return null;
   }
 
-  static setDebugTopNodeLocation(enabled) {
-    debugTopNodeLocation = enabled;
+  static setDebugNodeLocation(enabled) {
+    debugNodeLocation = enabled;
   }
 
-  static showTopNodeLocationIfNeeded() {
-    window.latestTopNodeRect = latestTopNodeRect;
-    if (!debugTopNodeLocation || latestTopNodeRect === null) {
+  static showNodeLocationIfNeeded() {
+    if (!debugNodeLocation || latestNodeRect === null) {
       return;
     }
 
-    let span = document.getElementById('RidiTopNode');
+    let span = document.getElementById('RidiNodeLocation');
     if (!span) {
       span = document.createElement('span');
-      span.setAttribute('id', 'RidiTopNode');
+      span.setAttribute('id', 'RidiNodeLocation');
       document.body.appendChild(span);
     }
 
-    const rect = latestTopNodeRect;
+    const rect = latestNodeRect;
     if (app.scrollMode) {
       rect.top += window.pageYOffset;
     } else {
@@ -296,12 +295,12 @@ export default class _EPub extends _Object {
       'z-index: 99 !important;';
   }
 
-  static _getOffsetFromTopNodeLocation(nodeIndex, wordIndex) {
+  static _getOffsetFromNodeLocation(nodeIndex, wordIndex) {
     const pageUnit = app.pageUnit;
     const totalPageSize = this.getTotalPageSize();
 
     const nodes = textAndImageNodes;
-    if (pageUnit === 0 || nodeIndex === -1 || wordIndex === -1 || nodes === null || nodes.length <= nodeIndex) {
+    if (nodeIndex === -1 || wordIndex === -1 || nodes === null) {
       return null;
     }
 
@@ -363,14 +362,14 @@ export default class _EPub extends _Object {
     return app.scrollMode ? rect.top + window.pageYOffset : pageOffset;
   }
 
-  static getPageOffsetFromTopNodeLocation(location, posSeparator) {
+  static getPageOffsetFromNodeLocation(location, posSeparator) {
     const parts = location.split(posSeparator);
-    return this._getOffsetFromTopNodeLocation(parts[0], parts[1]);
+    return this._getOffsetFromNodeLocation(parts[0], parts[1]);
   }
 
-  static getScrollYOffsetFromTopNodeLocation(location, posSeparator) {
+  static getScrollYOffsetFromNodeLocation(location, posSeparator) {
     const parts = location.split(posSeparator);
-    return this._getOffsetFromTopNodeLocation(parts[0], parts[1]);
+    return this._getOffsetFromNodeLocation(parts[0], parts[1]);
   }
 
   static _getImageSize(imgEl) {

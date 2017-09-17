@@ -105,8 +105,8 @@ export default class TTSPiece {
     return !valid;
   }
 
-  // TopNodeLocation을 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
-  // TopNodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
+  // NodeLocation을 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
+  // NodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
   // <span><strong>TEXT</strong></span><br> 이런 경우에 대비하여 parentNode의 sibling까지 탐색하고 있다.
   isSiblingBrRecursive(checkNextSibling = true) {
     let node = this._node;

@@ -49,7 +49,7 @@ export default class EPub extends _EPub {
     return Math.floor(origin / app.pageUnit);
   }
 
-  static getTopNodeLocationOfCurrentPage(posSeparator) {
+  static getNodeLocationOfCurrentPage(posSeparator) {
     const startOffset = 0;
     const endOffset = app.pageUnit;
     const notFound = `-1${posSeparator}-1`;
@@ -60,8 +60,8 @@ export default class EPub extends _EPub {
       return notFound;
     }
 
-    const location = this.findTopNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator);
-    this.showTopNodeLocationIfNeeded();
+    const location = this.findNodeLocationOfCurrentPage(startOffset, endOffset, posSeparator);
+    this.showNodeLocationIfNeeded();
     if (!location) {
       return notFound;
     }
