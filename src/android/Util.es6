@@ -2,12 +2,21 @@ import _Util from '../common/_Util';
 import MutableClientRect from '../common/MutableClientRect';
 
 export default class Util extends _Util {
+  /**
+   * @param {number} idx
+   * @param {string} serializedRange
+   */
   static getRectsFromSerializedRange(idx, serializedRange) {
     const range = this.getRangeFromSerializedRange(serializedRange);
     const rects = this.getOnlyTextNodeRectsFromRange(range);
     android.onRectsOfSerializedRange(idx, serializedRange, this.rectsToAbsoluteCoord(rects));
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @returns {{x: number, y: number}}
+   */
   static adjustPoint(x, y) {
     const version = app.chromeMajorVersion;
     const point = { x, y };
@@ -27,14 +36,27 @@ export default class Util extends _Util {
     return point;
   }
 
+  /**
+   * @param {ClientRect} rect
+   * @returns {MutableClientRect}
+   */
   static adjustRect(rect) {
     return this._rectToRelativeForChrome(rect);
   }
 
+  /**
+   * @param {[ClientRect]} rects
+   * @returns {[MutableClientRect]}
+   */
   static adjustRects(rects) {
     return this._rectsToRelativeForChrome(rects);
   }
 
+  /**
+   * @param {ClientRect} rect
+   * @returns {MutableClientRect}
+   * @private
+   */
   static _rectToRelativeForChromeInternal(rect) {
     const adjustRect = new MutableClientRect(rect);
     if (!app.scrollMode) {
@@ -55,6 +77,11 @@ export default class Util extends _Util {
     return adjustRect;
   }
 
+  /**
+   * @param {ClientRect} rect
+   * @returns {MutableClientRect}
+   * @private
+   */
   static _rectToRelativeForChrome(rect) {
     if (this.checkCurseInChrome()) {
       return this._rectToRelativeForChromeInternal(rect);
@@ -62,6 +89,11 @@ export default class Util extends _Util {
     return new MutableClientRect(rect);
   }
 
+  /**
+   * @param {[ClientRect]} rects
+   * @returns {[MutableClientRect]}
+   * @private
+   */
   static _rectsToRelativeForChrome(rects) {
     if (this.checkCurseInChrome()) {
       const newRects = [];
@@ -71,6 +103,10 @@ export default class Util extends _Util {
     return rects;
   }
 
+  /**
+   * @param {number} version
+   * @returns {boolean}
+   */
   static checkCurseInChrome(version = app.chromeMajorVersion) {
     return version === 47 || (version >= 49 && version < 61);
   }

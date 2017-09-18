@@ -1,4 +1,7 @@
 export default class MutableClientRect {
+  /**
+   * @param {ClientRect} rect
+   */
   constructor(rect) {
     if (rect) {
       this.left = rect.left || 0;

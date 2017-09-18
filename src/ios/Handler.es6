@@ -3,12 +3,25 @@ import _EPub from '../common/_EPub';
 import Util from './Util';
 
 export default class Handler extends _Handler {
+  /**
+   * @param {number} x
+   * @returns {boolean}
+   */
   static isInViewportWidth(x) {
     const startViewportWidth = 0;
     const endViewportWidth = startViewportWidth + document.body.clientWidth;
     return x >= startViewportWidth && x <= endViewportWidth;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {number} rawX
+   * @param {number} rawY
+   * @param {number} canvasWidth
+   * @param {number} canvasHeight
+   * @param {boolean} isVerticalPagingOn
+   */
   static processSingleTapEvent(x, y, rawX, rawY, canvasWidth, canvasHeight, isVerticalPagingOn) {
     const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
     if (link !== null) {

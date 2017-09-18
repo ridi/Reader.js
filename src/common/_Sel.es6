@@ -3,8 +3,14 @@ import _App from './_App';
 import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel {
+  /**
+   * @returns {boolean}
+   */
   get nextPageContinuable() { return this._checkNextPageContinuable(this.getSelectedRange()); }
 
+  /**
+   * @param {number} maxLength
+   */
   constructor(maxLength = 0) {
     this._maxLength = maxLength;
     this._startContainer = null;
@@ -17,6 +23,14 @@ export default class _Sel {
     this._continueOffset = null;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit (character or word)
+   * @param {boolean} allowCollapsed
+   * @returns {TextRange|null}
+   * @private
+   */
   _caretRangeFromPoint(x, y, unit = 'word', allowCollapsed = false) {
     const point = _Util.adjustPoint(x, y);
     const range = document.caretRangeFromPoint(point.x, point.y);
@@ -32,6 +46,10 @@ export default class _Sel {
     return range;
   }
 
+  /**
+   * @param {TextRange} range
+   * @private
+   */
   _expandRangeByWord(range) {
     const startContainer = range.startContainer;
     if (startContainer.nodeValue === null) {
@@ -67,10 +85,20 @@ export default class _Sel {
     }
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {boolean}
+   */
   isOutOfBounds(/* range */) {
     return false;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit (character or word)
+   * @returns {boolean}
+   */
   startSelectionMode(x, y, unit) {
     const range = this._caretRangeFromPoint(x, y, unit);
     if (range === null) {
@@ -88,6 +116,12 @@ export default class _Sel {
     return true;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit (character or word)
+   * @returns {boolean}
+   */
   changeInitialSelection(x, y, unit) {
     const range = this._caretRangeFromPoint(x, y, unit);
     if (range === null) {
@@ -102,6 +136,12 @@ export default class _Sel {
     return true;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit (character or word)
+   * @returns {boolean}
+   */
   expandUpperSelection(x, y, unit = 'character') {
     const exRange = this._caretRangeFromPoint(x, y, unit, true);
     if (exRange === null) {
@@ -146,6 +186,12 @@ export default class _Sel {
     return true;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit (character or word)
+   * @returns {boolean}
+   */
   expandLowerSelection(x, y, unit = 'character') {
     const exRange = this._caretRangeFromPoint(x, y, unit, true);
     if (exRange === null) {
@@ -194,10 +240,18 @@ export default class _Sel {
     return true;
   }
 
+  /**
+   * @returns {number}
+   */
   getUpperBound() {
     return app.pageWidthUnit;
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {boolean}
+   * @private
+   */
   _checkNextPageContinuable(range) {
     if (!app.scrollMode) {
       const upperBound = this.getUpperBound();
@@ -229,6 +283,11 @@ export default class _Sel {
     return this._nextPageContinuable;
   }
 
+  /**
+   * @param {TextRange} range
+   * @param {number} upperBound
+   * @private
+   */
   _expandRangeBySentenceInPage(range, upperBound) {
     const originalOffset = range.endOffset;
     range.expand('sentence');
@@ -245,6 +304,11 @@ export default class _Sel {
     }
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {Node|null}
+   * @private
+   */
   _getNextTextNode(range) {
     const node = range.endContainer;
     const nextNode = node.nextSibling;
@@ -305,6 +369,9 @@ export default class _Sel {
     return this._getNextTextNode(range);
   }
 
+  /**
+   * @returns {boolean}
+   */
   expandSelectionIntoNextPage() {
     if (!this._nextPageContinuable) {
       return false;
@@ -317,6 +384,10 @@ export default class _Sel {
     return true;
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {boolean}
+   */
   validLength(range) {
     if (!(range.toString().length <= this._maxLength)) {
       if (!this._overflowed) {
@@ -328,6 +399,9 @@ export default class _Sel {
     return true;
   }
 
+  /**
+   * @returns {TextRange}
+   */
   getSelectedRange() {
     const range = document.createRange();
     range.setStart(this._startContainer, this._startOffset);
@@ -335,18 +409,30 @@ export default class _Sel {
     return range;
   }
 
+  /**
+   * @returns {string}
+   */
   getSelectedSerializedRange() {
     return rangy.serializeRange(this.getSelectedRange(), true, document.body);
   }
 
+  /**
+   * @returns {[MutableClientRect]}
+   */
   getSelectedRangeRects() {
     return _Util.getOnlyTextNodeRectsFromRange(this.getSelectedRange());
   }
 
+  /**
+   * @returns {string}
+   */
   getSelectedText() {
     return this.getSelectedRange().toString();
   }
 
+  /**
+   * @returns {string}
+   */
   getSelectedRectsCoord() {
     const rects = this.getSelectedRangeRects();
     if (rects.length) {

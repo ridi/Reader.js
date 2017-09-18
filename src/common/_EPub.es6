@@ -6,18 +6,30 @@ let latestNodeRect = null;
 let textAndImageNodes = null;
 
 export default class _EPub extends _Object {
+  /**
+   * @returns {number}
+   */
   static getTotalWidth() {
     return document.documentElement.scrollWidth;
   }
 
+  /**
+   * @returns {number}
+   */
   static getTotalHeight() {
     return document.documentElement.scrollHeight;
   }
 
+  /**
+   * @returns {number}
+   */
   static getTotalPageSize() {
     return app.scrollMode ? this.getTotalHeight() : this.getTotalWidth();
   }
 
+  /**
+   * @param {number} offset
+   */
   static scrollTo(offset) {
     if (app.scrollMode) {
       scroll(0, offset);
@@ -26,11 +38,25 @@ export default class _EPub extends _Object {
     }
   }
 
+  /**
+   * 해당 좌표에서 img를 찾고 이미지의 src를 반환한다.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @returns {string}
+   */
   static getImagePathFromPoint(x, y) {
     const el = document.elementFromPoint(x, y);
     return (el && el.nodeName === 'IMG') ? (el.src || 'null') : 'null';
   }
 
+  /**
+   * 해당 좌표에서 svg를 찾고 html을 추출하여 반환한다.
+   *
+   * @param {number} x
+   * @param {number} y
+   * @returns {string}
+   */
   static getSvgElementFromPoint(x, y) {
     let el = document.elementFromPoint(x, y);
     while (el && el.nodeName !== 'HTML' && el.nodeName !== 'BODY') {
@@ -58,6 +84,12 @@ export default class _EPub extends _Object {
     return 'null';
   }
 
+  /**
+   * el과 부모 노드에서 링크를 찾아 반환한다.
+   *
+   * @param {Node} el
+   * @returns {{node: Node, href: string, type: string}}
+   */
   static getLinkFromElement(el) {
     let target = el;
     while (target) {
@@ -73,6 +105,12 @@ export default class _EPub extends _Object {
     return null;
   }
 
+  /**
+   * el의 rect 기준점을 반환한다.
+   *
+   * @param {Node} el
+   * @returns {string} (top or left)
+   */
   static getOffsetDirectionFromElement(el) {
     let direction = app.scrollMode ? 'top' : 'left';
     if (el) {
@@ -84,6 +122,12 @@ export default class _EPub extends _Object {
     return direction;
   }
 
+  /**
+   * @param {string} anchor
+   * @param {function} block
+   * @returns {number}
+   * @private
+   */
   static _getOffsetFromAnchor(anchor, block) {
     const el = document.getElementById(anchor);
     if (el) {
@@ -112,37 +156,56 @@ export default class _EPub extends _Object {
     return block({ left: null, top: null }, null);
   }
 
-  static getPageOffsetFromAnchor(anchor) {
-    return this._getOffsetFromAnchor(anchor, (rect, el) => this.getPageOffsetFromRect(rect, el));
+  /**
+   * anchor의 위치를 구한다.
+   * 페이지 넘김 보기일 경우 pageOffset(zero-base)을 반환하며,
+   * 스크롤 보기일 경우 scrollY 값을 반환한다.
+   * 위치를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} anchor
+   * @returns {number|null}
+   */
+  static getOffsetFromAnchor(anchor) {
+    return this._getOffsetFromAnchor(anchor, (rect, el) => {
+      if (app.scrollMode) {
+        return rect.top === null ? null : rect.top + window.pageYOffset;
+      }
+      return rect.left === null ? null : this.getPageOffsetFromRect(rect, el);
+    });
   }
 
-  static getScrollYOffsetFromAnchor(anchor) {
-    return this._getOffsetFromAnchor(anchor, rect => rect.top);
-  }
-
-  static _getOffsetFromSerializedRange(serializedRange, block) {
+  /**
+   * serializedRange(rangy.js 참고)의 위치를 구한다.
+   * 페이지 넘김 보기일 경우 pageOffset(zero-base)을 반환하며,
+   * 스크롤 보기일 경우 scrollY 값을 반환한다.
+   * 위치를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} serializedRange
+   * @returns {number|null}
+   */
+  static getOffsetFromSerializedRange(serializedRange) {
     try {
       const range = _Util.getRangeFromSerializedRange(serializedRange);
       const rects = range.getAdjustedClientRects();
-      return block(rects.length ? rects[0] : null);
+      if (rects.length > 0) {
+        if (app.scrollMode) {
+          return rects[0].top + window.pageYOffset;
+        }
+        return this.getPageOffsetFromRect(rects[0]);
+      }
+      return null;
     } catch (e) {
-      return block(null);
+      return null;
     }
   }
 
-  static getPageOffsetFromSerializedRange(serializedRange) {
-    return this._getOffsetFromSerializedRange(serializedRange, rect => this.getPageOffsetFromRect(rect));
-  }
-
-  static getScrollYOffsetFromSerializedRange(serializedRange) {
-    return this._getOffsetFromSerializedRange(serializedRange, rect => (rect || { top: null }).top);
-  }
-
   static getFootnoteRegex() {
+    // 이 곳을 수정했다면 네이티브 코드도 수정해야 한다.
     return /^(\[|\{|\(|주|)[0-9].*(\)|\}|\]|\.|)$/gm;
   }
 
   static getSplitWordRegex() {
+    // 주의! NodeLocation의 wordIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
     return new RegExp(' |\\u00A0');
   }
 
@@ -150,6 +213,11 @@ export default class _EPub extends _Object {
     return textAndImageNodes;
   }
 
+  /**
+   * el에 속한 모든 TextNode, ImageNode를 찾아서 textAndImageNodes에 넣는다.
+   *
+   * @param {Node} el
+   */
   static setTextAndImageNodes(el) {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
     const filter = node =>
@@ -185,10 +253,20 @@ export default class _EPub extends _Object {
     textAndImageNodes = nodes;
   }
 
+  /**
+   * rects 중에 startOffset~endOffset 사이에 위치한 rect의 index를 반환한다.
+   * type이 bottom일 때 -1을 반환하는 경우가 있을 수 있는데 이전 rects에 마지막 rect를 의미한다.
+   *
+   * @param {[MutableClientRect]} rects
+   * @param {number} startOffset
+   * @param {number} endOffset
+   * @param {string} type (top or bottom)
+   * @returns {number|null}
+   * @private
+   */
   static _findRectIndex(rects, startOffset, endOffset, type) {
     const origin = app.scrollMode ? 'top' : 'left';
     for (let j = 0; j < rects.length; j++) {
-      // rect 값이 현재 보고있는 페이지의 최상단에 위치하고 있는지
       const rect = rects[j];
       if (type === 'bottom') {
         if (endOffset <= rect[origin] && rect.width > 0) {
@@ -201,7 +279,18 @@ export default class _EPub extends _Object {
     return null;
   }
 
+  /**
+   * startOffset과 endOffset 사이에 위치한 node의 NodeLocation을 반환한다.
+   * type으로 startOffset에 근접한 위치(top)를 찾을 것인지 endOffset에 근접한 위치(bottom)를 찾을 것인지 정할 수 있다.
+   *
+   * @param {number} startOffset
+   * @param {number} endOffset
+   * @param {string} type (top or bottom)
+   * @param {string} posSeparator
+   * @returns {string|null}
+   */
   static findNodeLocation(startOffset, endOffset, type, posSeparator) {
+    // 디버깅용으로 NodeLocation을 화면에 표시할 때 사용한다.
     latestNodeRect = null;
 
     const nodes = this.getTextAndImageNodes();
@@ -209,6 +298,7 @@ export default class _EPub extends _Object {
       return null;
     }
 
+    // 현재 페이지에 위치한 노드 정보를 임시로 저장한 것으로 BottomNodeLocation을 구할 때 사용한다.
     let prev = null;
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
@@ -220,7 +310,7 @@ export default class _EPub extends _Object {
         return null;
       }
 
-      // 노드가 현재 보고있는 페이지의 최상단에 위치하거나 걸쳐있는지.
+      // node가 여러 페이지에 걸쳐있을 때 현재 페이지도 포함하고 있는지.
       const origin = app.scrollMode ? (rect.top + rect.height) : (rect.left + rect.width);
       if (rect.width === 0 || origin < startOffset) {
         continue;
@@ -268,8 +358,8 @@ export default class _EPub extends _Object {
             latestNodeRect = prev.rect;
             return prev.location;
           }
-          // 이미지 노드는 워드 인덱스를 구할 수 없기 때문에 0을 사용하며, 위치를 찾을때 이미지 노드의 rect가 현재 위치다.
           latestNodeRect = rects[rectIndex];
+          // imageNode는 wordIndex를 구할 수 없기 때문에 0을 넣는다.
           return `${i}${posSeparator}0`;
         }
         for (let k = rects.length - 1; k >= 0; k--) {
@@ -287,6 +377,9 @@ export default class _EPub extends _Object {
     debugNodeLocation = enabled;
   }
 
+  /**
+   * 마지막으로 구한 NodeLocation을 화면에 표시한다.
+   */
   static showNodeLocationIfNeeded() {
     if (!debugNodeLocation || latestNodeRect === null) {
       return;
@@ -318,7 +411,20 @@ export default class _EPub extends _Object {
       'z-index: 99 !important;';
   }
 
-  static _getOffsetFromNodeLocation(nodeIndex, wordIndex) {
+  /**
+   * NodeLocation의 위치를 구한다.
+   * 페이지 넘김 보기일 경우 pageOffset(zero-base)을 반환하며,
+   * 스크롤 보기일 경우 scrollY 값을 반환한다.
+   * 위치를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} location
+   * @param {string} posSeparator
+   * @returns {number|null}
+   */
+  static getOffsetFromNodeLocation(location, posSeparator) {
+    const parts = location.split(posSeparator);
+    const nodeIndex = parts[0];
+    const wordIndex = parts[1];
     const pageUnit = app.pageUnit;
     const totalPageSize = this.getTotalPageSize();
 
@@ -385,16 +491,11 @@ export default class _EPub extends _Object {
     return app.scrollMode ? rect.top + window.pageYOffset : pageOffset;
   }
 
-  static getPageOffsetFromNodeLocation(location, posSeparator) {
-    const parts = location.split(posSeparator);
-    return this._getOffsetFromNodeLocation(parts[0], parts[1]);
-  }
-
-  static getScrollYOffsetFromNodeLocation(location, posSeparator) {
-    const parts = location.split(posSeparator);
-    return this._getOffsetFromNodeLocation(parts[0], parts[1]);
-  }
-
+  /**
+   * @param {Node} imgEl
+   * @returns {{dWidth: *, dHeight: *, nWidth: number, nHeight: number, sWidth: *, sHeight: *, aWidth: string, aHeight: string}}
+   * @private
+   */
   static _getImageSize(imgEl) {
     const attrs = imgEl.attributes;
     const zeroAttr = document.createAttribute('size');
@@ -416,6 +517,13 @@ export default class _EPub extends _Object {
     };
   }
 
+  /**
+   * @param {Node} imgEl
+   * @param {number} canvasWidth
+   * @param {number} canvasHeight
+   * @returns {{el: Node, width: string, height: string, position: string,
+   * size: {dWidth, dHeight, nWidth, nHeight, sWidth, sHeight, aWidth, aHeight}}}
+   */
   static reviseImage(imgEl, canvasWidth, canvasHeight) {
     const isPercentValue = (value) => {
       if (typeof value === 'string') {

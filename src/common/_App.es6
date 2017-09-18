@@ -1,11 +1,34 @@
 import _Object from './_Object';
 
 export default class _App extends _Object {
+  /**
+   * @returns {boolean}
+   */
   get doublePageMode() { return this._doublePageMode; }
+
+  /**
+   * @returns {boolean}
+   */
   get scrollMode() { return this._scrollMode; }
+
+  /**
+   * @returns {number}
+   */
   get pageWidthUnit() { return this._width; }
+
+  /**
+   * @returns {number}
+   */
   get pageHeightUnit() { return this._height; }
+
+  /**
+   * @returns {number}
+   */
   get systemMajorVersion() { return this._systemMajorVersion; }
+
+  /**
+   * @returns {number}
+   */
   get pageUnit() {
     if (this.scrollMode) {
       return this.pageHeightUnit;
@@ -13,6 +36,13 @@ export default class _App extends _Object {
     return this.pageWidthUnit;
   }
 
+  /**
+   * @param {number} width
+   * @param {number} height
+   * @param {number} systemMajorVersion
+   * @param {boolean} doublePageMode
+   * @param {boolean} scrollMode
+   */
   constructor(width, height, systemMajorVersion, doublePageMode, scrollMode) {
     super();
 
@@ -28,6 +58,9 @@ export default class _App extends _Object {
     this._systemMajorVersion = systemMajorVersion;
   }
 
+  /**
+   * @returns {number}
+   */
   getCurPage() {
     if (this.scrollMode) {
       return window.pageYOffset / this.pageHeightUnit;

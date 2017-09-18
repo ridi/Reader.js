@@ -16,6 +16,9 @@ export default class EPub extends _EPub {
     viewport.content = value;
   }
 
+  /**
+   * @param {number} offset
+   */
   static scrollTo(offset = 0) {
     // offset이 maxOffset을 넘길 수 없도록 보정한다. 이게 필요한 이유는 아래와 같다.
     // - 보기 설정 미리보기를 보여주는 중에 마지막 페이지보다 뒤로 이동해 빈 페이지가 보이는 것을 방지
@@ -33,6 +36,11 @@ export default class EPub extends _EPub {
     super.scrollTo(adjustOffset);
   }
 
+  /**
+   * @param {MutableClientRect} rect
+   * @param {Node} el
+   * @returns {number|null}
+   */
   static getPageOffsetFromRect(rect, el) {
     if (rect === null) {
       return null;
@@ -49,6 +57,11 @@ export default class EPub extends _EPub {
     return Math.floor(origin / app.pageUnit);
   }
 
+  /**
+   * @param {string} type (top or bottom)
+   * @param {string} posSeparator
+   * @returns {string}
+   */
   static getNodeLocationOfCurrentPage(type = 'top', posSeparator) {
     const startOffset = 0;
     const endOffset = app.pageUnit;
@@ -130,6 +143,9 @@ export default class EPub extends _EPub {
     tryReviseImages();
   }
 
+  /**
+   * @returns {boolean}
+   */
   static isImagesRevised() {
     return onImagesRevise;
   }

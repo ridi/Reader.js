@@ -3,11 +3,20 @@ import _EPub from '../common/_EPub';
 import Util from './Util';
 
 export default class Handler extends _Handler {
+  /**
+   * @param {number} x
+   * @returns {boolean}
+   */
   static isInViewportWidth(x) {
     const point = Util.adjustPoint(0, 0);
     return x >= point.x && x <= point.x + document.documentElement.clientWidth;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} nativePoints
+   */
   static processSingleTapEvent(x, y, nativePoints) {
     const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
     if (link !== null) {
@@ -43,6 +52,10 @@ export default class Handler extends _Handler {
     android.onSingleTapEventNotProcessed(nativePoints);
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
   static processLongTapZoomEvent(x, y) {
     const point = Util.adjustPoint(x, y);
 

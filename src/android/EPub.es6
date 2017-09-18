@@ -4,6 +4,10 @@ import Util from './Util';
 let scrollTimer = null;
 
 export default class EPub extends _EPub {
+  /**
+   * @param {number} columnWidth
+   * @returns {number}
+   */
   static calcPageCount(columnWidth) {
     if (app.scrollMode) {
       return Math.round(this.getTotalHeight() / app.pageHeightUnit);
@@ -30,6 +34,14 @@ export default class EPub extends _EPub {
     return Math.ceil(totalWidth / app.pageWidthUnit);
   }
 
+  /**
+   * @param {number} currentTime
+   * @param {number} start
+   * @param {number} change
+   * @param {number} duration
+   * @returns {number}
+   * @private
+   */
   static _easeInOut(currentTime, start, change, duration) {
     let time = currentTime;
     time /= duration / 2;
@@ -40,6 +52,10 @@ export default class EPub extends _EPub {
     return ((-change / 2) * ((time * (time - 2)) - 1)) + start;
   }
 
+  /**
+   * @param {number} offset
+   * @param {boolean} animated
+   */
   static scrollTo(offset = 0, animated = false) {
     // offset이 maxOffset을 넘길 수 없도록 보정한다. 이게 필요한 이유는 아래와 같다.
     // - 스크롤 보기에서 잘못해서 paddingBottom 영역으로 이동해 다음 스파인으로 이동되는 것을 방지
@@ -94,6 +110,11 @@ export default class EPub extends _EPub {
     }
   }
 
+  /**
+   * @param {MutableClientRect} rect
+   * @param {Node} el
+   * @returns {number|null}
+   */
   static getPageOffsetFromRect(rect, el) {
     if (rect === null) {
       return null;
@@ -120,22 +141,10 @@ export default class EPub extends _EPub {
     return fOffset;
   }
 
-  static getScrollYOffsetFromAnchor(anchor) {
-    let scrollYOffset = super.getScrollYOffsetFromAnchor(anchor);
-    if (scrollYOffset !== null) {
-      scrollYOffset += window.pageYOffset;
-    }
-    return scrollYOffset;
-  }
-
-  static getScrollYOffsetFromSerializedRange(serializedRange) {
-    let scrollYOffset = super.getScrollYOffsetFromSerializedRange(serializedRange);
-    if (scrollYOffset !== null) {
-      scrollYOffset += window.pageYOffset;
-    }
-    return scrollYOffset;
-  }
-
+  /**
+   * @param {string} type (top or bottom)
+   * @param {string} posSeparator
+   */
   static getNodeLocationOfCurrentPage(type = 'top', posSeparator) {
     const startOffset = 0;
     const endOffset = app.pageUnit;
@@ -150,6 +159,10 @@ export default class EPub extends _EPub {
     android.onTopNodeLocationOfCurrentPageFound(location);
   }
 
+  /**
+   * @param {number} canvasWidth
+   * @param {number} canvasHeight
+   */
   static reviseImagesInSpine(canvasWidth, canvasHeight) {
     const results = [];
 
@@ -181,6 +194,13 @@ export default class EPub extends _EPub {
     });
   }
 
+  /**
+   * @param {Node} imgEl
+   * @param {number} canvasWidth
+   * @param {number} canvasHeight
+   * @returns {{el: Node, width: string, height: string, position: string,
+   * size: {dWidth, dHeight, nWidth, nHeight, sWidth, sHeight, aWidth, aHeight}}}
+   */
   static reviseImage(imgEl, canvasWidth, canvasHeight) {
     const result = super.reviseImage(imgEl, canvasWidth, canvasHeight);
     const size = result.size;

@@ -2,6 +2,10 @@ import _Sel from '../common/_Sel';
 import Util from './Util';
 
 export default class Sel extends _Sel {
+  /**
+   * @param {TextRange} range
+   * @returns {boolean}
+   */
   isOutOfBounds(range) {
     // 화면 하단 바깥쪽으로 드레그 했을 때 viewport 밖인데도 caretRangeFromPoint로 노드를 잡을 수 있어
     // 하이라이트가 뒷페이지까지 이어지는 문제가 발생하고 있다(Android 4.x~)
@@ -13,6 +17,11 @@ export default class Sel extends _Sel {
     return testRect.left > pageWidth;
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {number}
+   * @private
+   */
   _clientLeftOfRangeForCheckingNextPageContinuable(range) {
     const rect = range.getAdjustedBoundingClientRect();
     return Math.floor(rect.left + rect.width);
@@ -27,6 +36,10 @@ export default class Sel extends _Sel {
     }
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
   startSelectionMode(x, y) {
     if (super.startSelectionMode(x, y)) {
       const coord = this.getSelectedRectsCoord();
@@ -36,6 +49,10 @@ export default class Sel extends _Sel {
     }
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
   changeInitialSelection(x, y) {
     if (super.changeInitialSelection(x, y)) {
       const coord = this.getSelectedRectsCoord();
@@ -45,6 +62,10 @@ export default class Sel extends _Sel {
     }
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
   expandUpperSelection(x, y) {
     if (super.expandUpperSelection(x, y)) {
       const coord = this.getSelectedRectsCoord();
@@ -54,6 +75,10 @@ export default class Sel extends _Sel {
     }
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
   expandLowerSelection(x, y) {
     if (super.expandLowerSelection(x, y)) {
       const coord = this.getSelectedRectsCoord();

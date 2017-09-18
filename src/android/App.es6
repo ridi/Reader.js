@@ -3,15 +3,55 @@ import Util from './Util';
 import EPub from './EPub';
 
 export default class App extends _App {
+  /**
+   * @returns {number}
+   */
   get chromeMajorVersion() { return this._chromeMajorVersion; }
+
+  /**
+   * @returns {number}
+   */
   get pageWeightForChrome() { return this._pageWeightForChrome; }
+
+  /**
+   * @returns {boolean}
+   */
   get pageOverflowForChrome() { return this._pageOverflowForChrome; }
+
+  /**
+   * @returns {number}
+   */
   get prevPage() { return this._prevPage; }
+
+  /**
+   * @returns {string}
+   */
   get contentsSrc() { return this._contentsSrc; }
+
+  /**
+   * @returns {number}
+   */
   get htmlClientWidth() { return this._htmlClientWidth; }
+
+  /**
+   * @returns {number}
+   */
   get bodyClientWidth() { return this._bodyClientWidth; }
+
+  /**
+   * @returns {number}
+   */
   get columnGap() { return this._columnGap; }
 
+  /**
+   * @param {number} width
+   * @param {number} height
+   * @param {number} systemMajorVersion
+   * @param {boolean} doublePageMode
+   * @param {boolean} scrollMode
+   * @param {string} contentsSrc
+   * @param {number} pageOffset
+   */
   constructor(width, height, systemMajorVersion, doublePageMode, scrollMode, contentsSrc, pageOffset = 0) {
     super(width, height, systemMajorVersion, doublePageMode, scrollMode);
     const chrome = ((navigator.userAgent || '').match(/chrome\/[\d]+/gi) || [''])[0];
@@ -31,6 +71,10 @@ export default class App extends _App {
     this._updateClientWidthAndGap();
   }
 
+  /**
+   * @param {number} width
+   * @param {number} gap
+   */
   applyColumnProperty(width, gap) {
     document.documentElement.setAttribute('style',
       `-webkit-column-width: ${width}px !important; ` +
@@ -45,6 +89,11 @@ export default class App extends _App {
     }, 0);
   }
 
+  /**
+   * @param {number} width
+   * @param {number} height
+   * @param {string} style
+   */
   changePageSizeWithStyle(width, height, style) {
     const prevPage = this.getCurPage();
 
@@ -94,17 +143,21 @@ export default class App extends _App {
     });
   }
 
+  /**
+   * @param args
+   * @private
+   */
   _moveTo(...args) {
     const target = args[0];
     const method = args[1];
     if (this.scrollMode) {
-      const scrollYOffset = target[`getScrollYOffsetFrom${method}`](args[2], args[3]);
+      const scrollYOffset = target[`getOffsetFrom${method}`](args[2], args[3]);
       if (scrollYOffset !== null) {
         android[`onScrollYOffsetOf${method}Found`](android.dipToPixel(scrollYOffset));
         return;
       }
     } else {
-      const pageOffset = target[`getPageOffsetFrom${method}`](args[2], args[3]);
+      const pageOffset = target[`getOffsetFrom${method}`](args[2], args[3]);
       if (pageOffset !== null) {
         android[`onPageOffsetOf${method}Found`](pageOffset);
         return;
@@ -116,18 +169,30 @@ export default class App extends _App {
     }
   }
 
+  /**
+   * @param {string} anchor
+   */
   moveToAnchor(anchor) {
     this._moveTo(EPub, 'Anchor', anchor);
   }
 
+  /**
+   * @param {string} serializedRange
+   */
   moveToSerializedRange(serializedRange) {
     this._moveTo(EPub, 'SerializedRange', serializedRange);
   }
 
-  moveToTopNodeLocation(nodeIndex, wordIndex) {
-    this._moveTo(EPub, 'TopNodeLocation', nodeIndex, wordIndex);
+  /**
+   * @param {string} location
+   */
+  moveToTopNodeLocation(location) {
+    this._moveTo(EPub, 'NodeLocation', location);
   }
 
+  /**
+   * @param {string} message
+   */
   static toast(message = '') {
     android.onShowToast(message, message.length > 20 ? 1 : 0);
   }

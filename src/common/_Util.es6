@@ -2,12 +2,21 @@ import _Object from './_Object';
 import MutableClientRect from './MutableClientRect';
 
 export default class _Util extends _Object {
+  /**
+   * @param {Node} node
+   * @returns {NodeIterator}
+   */
   static createTextNodeIterator(node) {
     return document.createNodeIterator(
       node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true,
     );
   }
 
+  /**
+   * @param {Node} target
+   * @param {String} property
+   * @returns {number}
+   */
   static getStylePropertyIntValue(target, property) {
     let style = target;
     if (target.nodeType) {
@@ -16,6 +25,11 @@ export default class _Util extends _Object {
     return parseInt(style[property], 10) || 0;
   }
 
+  /**
+   * @param {Node} target
+   * @param {[String]} properties
+   * @returns {number}
+   */
   static getStylePropertiesIntValue(target, properties) {
     let style = target;
     if (target.nodeType) {
@@ -28,6 +42,12 @@ export default class _Util extends _Object {
     return value;
   }
 
+  /**
+   * @param {Node} el
+   * @param {string} property
+   * @returns {string}
+   * @private
+   */
   static _getMatchedCSSValue(el, property) {
     // element property has highest priority
     let val = el.style.getPropertyValue(property);
@@ -63,6 +83,12 @@ export default class _Util extends _Object {
     return val;
   }
 
+  /**
+   * @param {Node} el
+   * @param {string} property
+   * @param {boolean} recursive
+   * @returns {string|null}
+   */
   static getMatchedCSSValue(el, property, recursive = false) {
     let val;
     let target = el;
@@ -76,10 +102,21 @@ export default class _Util extends _Object {
     return val;
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {boolean}
+   * @private
+   */
   static _isWhiteSpaceRange(range) {
     return /^\s*$/.test(range.toString());
   }
 
+  /**
+   * @param {[MutableClientRect]} array
+   * @param {[MutableClientRect]} rects
+   * @param {function} adjust
+   * @returns {[MutableClientRect]}
+   */
   static concatArray(array, rects, adjust = rect => rect) {
     for (let i = 0; i < rects.length; i++) {
       array.push(adjust(rects[i]));
@@ -87,6 +124,10 @@ export default class _Util extends _Object {
     return array;
   }
 
+  /**
+   * @param {TextRange} range
+   * @returns {[MutableClientRect]}
+   */
   static getOnlyTextNodeRectsFromRange(range) {
     if (range.startContainer === range.endContainer) {
       const innerText = range.startContainer.innerText;
@@ -137,6 +178,10 @@ export default class _Util extends _Object {
     return textNodeRects;
   }
 
+  /**
+   * @param {string} serializedRange
+   * @returns {TextRange}
+   */
   static getRangeFromSerializedRange(serializedRange) {
     const tmpRange = rangy.deserializeRange(serializedRange, document.body);
     const range = document.createRange();
@@ -146,6 +191,11 @@ export default class _Util extends _Object {
     return range;
   }
 
+  /**
+   * @param {[MutableClientRect]} rects
+   * @param {boolean} absolute
+   * @returns {string}
+   */
   static rectsToCoord(rects, absolute) {
     const insets = { left: 0, top: 0 };
     if (absolute) {
@@ -168,22 +218,43 @@ export default class _Util extends _Object {
     return result;
   }
 
+  /**
+   * @param {[MutableClientRect]} rects
+   * @returns {string}
+   */
   static rectsToAbsoluteCoord(rects) {
     return this.rectsToCoord(rects, true);
   }
 
+  /**
+   * @param {[MutableClientRect]} rects
+   * @returns {string}
+   */
   static rectsToRelativeCoord(rects) {
     return this.rectsToCoord(rects, false);
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @returns {{x: number, y: number}}
+   */
   static adjustPoint(x, y) {
     return { x, y };
   }
 
+  /**
+   * @param {ClientRect} rect
+   * @returns {MutableClientRect}
+   */
   static adjustRect(rect) {
     return new MutableClientRect(rect);
   }
 
+  /**
+   * @param {[ClientRect]} rects
+   * @returns {MutableClientRect[]}
+   */
   static adjustRects(rects) {
     return this.concatArray([], rects, this.adjustRect);
   }
