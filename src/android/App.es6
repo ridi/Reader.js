@@ -144,7 +144,7 @@ export default class App extends _App {
   }
 
   /**
-   * @param args
+   * @param {*} args
    * @private
    */
   _moveTo(...args) {
