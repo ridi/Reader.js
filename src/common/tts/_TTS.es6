@@ -88,12 +88,13 @@ import TTSPiece from './TTSPiece';
 import TTSChunk from './TTSChunk';
 import TTSRange from './TTSRange';
 import TTSUtil from './TTSUtil';
-import _EPub from '../_EPub';
 
 export default class _TTS {
   get chunks() { return this._chunks; }
+  get nodes() { return this._getNodes(); }
 
-  constructor() {
+  constructor(getNodes) {
+    this._getNodes = getNodes;
     this.debug = false;
     // reserveNodesCountMagic을 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
     this.reserveNodesCountMagic = 40;
@@ -111,25 +112,23 @@ export default class _TTS {
       throw new Error('TTS: range is invalid.');
     }
 
-    const nodes = _EPub.getTextAndImageNodes();
-    if (nodes === null) {
-      throw new Error('TTS: nodes is empty. make call epub.getTextAndImageNodes().');
-    }
-
+    const nodes = this.nodes;
     let nodeIndex = -1;
     let wordIndex = 0;
-    for (let i = 0, offset = 0; i < nodes.length; i += 1, offset = 0) {
-      if (nodes[i] === range.startContainer) {
-        nodeIndex = i;
-        const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
-        for (; wordIndex < words.length; wordIndex++) {
-          if (range.startOffset <= offset + words[wordIndex].length) {
-            break;
-          } else {
-            offset += (words[wordIndex].length + 1);
+    if (nodes) {
+      for (let i = 0, offset = 0; i < nodes.length; i += 1, offset = 0) {
+        if (nodes[i] === range.startContainer) {
+          nodeIndex = i;
+          const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
+          for (; wordIndex < words.length; wordIndex++) {
+            if (range.startOffset <= offset + words[wordIndex].length) {
+              break;
+            } else {
+              offset += (words[wordIndex].length + 1);
+            }
           }
+          break;
         }
-        break;
       }
     }
 
@@ -212,7 +211,11 @@ export default class _TTS {
 
     this.playChunksByNodeLocation(nodeIndex, wordIndex);
 
-    const nodes = _EPub.getTextAndImageNodes();
+    const nodes = this.nodes;
+    if (!nodes) {
+      return;
+    }
+
     const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < nodes.length);
     const hasMoreBeforeChunks = () => (this.processedNodeMinIndex - 1 >= 0);
     let generateMoreChunks = () => {};
@@ -255,9 +258,9 @@ export default class _TTS {
    * isMakingTemporalChunk : Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
    */
   makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
-    const nodes = _EPub.getTextAndImageNodes();
+    const nodes = this.nodes;
     if (nodes === null) {
-      throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
+      return 0;
     }
 
     let _nodeIndex = Math.max(nodeIndex, 0);
@@ -281,7 +284,7 @@ export default class _TTS {
 
       let piece;
       try {
-        piece = new TTSPiece(_nodeIndex, _wordIndex);
+        piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, _wordIndex);
       } catch (e) {
         /* eslint-disable no-console */
         console.error(e);
@@ -334,9 +337,9 @@ export default class _TTS {
   }
 
   makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
-    const nodes = _EPub.getTextAndImageNodes();
+    const nodes = this.nodes;
     if (nodes === null) {
-      throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
+      return 0;
     }
 
     const wordsInNode = node => (node ? (node.nodeValue || '').split(TTSUtil.getSplitWordRegex()) : []);
@@ -365,7 +368,7 @@ export default class _TTS {
 
       let piece;
       try {
-        piece = new TTSPiece(_nodeIndex, startWordIndex, endWordIndex);
+        piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
         /* eslint-disable no-console */
         console.error(e);

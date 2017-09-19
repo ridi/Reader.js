@@ -1,5 +1,4 @@
 import TTSUtil from './TTSUtil';
-import _EPub from '../_EPub';
 import _Util from '../_Util';
 
 export default class TTSPiece {
@@ -16,23 +15,9 @@ export default class TTSPiece {
   // 마지막 글자 까지의 offset
   get paddingRight() { return this._paddingRight; }
 
-  constructor(nodeIndex, startWordIndex = -1, endWordIndex = -1) {
-    if (typeof nodeIndex !== 'number' || typeof startWordIndex !== 'number'
-      || typeof endWordIndex !== 'number') {
-      throw new Error('TTSPiece: nodeIndex or startWordIndex or endWordIndex is invalid.');
-    }
-
-    const nodes = _EPub.getTextAndImageNodes();
-    if (nodes === null) {
-      throw new Error('TTSPiece: nodes is empty. make call epub.setTextAndImageNodes().');
-    } else if (nodes.length - 1 < nodeIndex) {
-      throw new Error(`TTSPiece: nodeIndex is out of bounds(${nodeIndex}/${nodes.length - 1}).`);
-    } else if (nodes[nodeIndex] === null) {
-      throw new Error('TTSPiece: node not found on nodes.');
-    } else {
-      this._node = nodes[nodeIndex];
-      this._nodeIndex = nodeIndex;
-    }
+  constructor(node, nodeIndex, startWordIndex = -1, endWordIndex = -1) {
+    this._node = node;
+    this._nodeIndex = nodeIndex;
 
     const nodeValue = this._node.nodeValue;
     this._paddingLeft = 0;
@@ -91,7 +76,7 @@ export default class TTSPiece {
       } else {
         do {
           // 주석 링크는 읽지 않는다
-          if (el.nodeName === 'A' && this._text.match(_EPub.getFootnoteRegex()) !== null) {
+          if (el.nodeName === 'A' && this._text.match(_Util.getFootnoteRegex()) !== null) {
             valid = false;
             break;
           }

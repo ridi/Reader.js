@@ -1,18 +1,32 @@
+import _Object from './_Object';
 import _Util from './_Util';
-import _App from './_App';
 import TTSUtil from './tts/TTSUtil';
 
-export default class _Sel {
+export default class _Sel extends _Object {
   /**
-   * @returns {boolean}
+   * @returns {Content}
+   */
+  get content() { return this._content; }
+
+  /**
+   * @returns {Context}
+   */
+  get context() { return this._context; }
+
+  /**
+   * @returns {Boolean}
    */
   get nextPageContinuable() { return this._checkNextPageContinuable(this.getSelectedRange()); }
 
   /**
-   * @param {number} maxLength
+   * @param {Content} content
+   * @param {Context} context
    */
-  constructor(maxLength = 0) {
-    this._maxLength = maxLength;
+  constructor(content, context) {
+    super();
+    this._content = content;
+    this._context = context;
+    this._maxLength = context.maxSelectionLength;
     this._startContainer = null;
     this._startOffset = null;
     this._endContainer = null;
@@ -24,10 +38,17 @@ export default class _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @param {string} unit (character or word)
-   * @param {boolean} allowCollapsed
+   * @param {Context} context
+   */
+  changeContext(context) {
+    this._context = context;
+  }
+
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @param {String} unit (character or word)
+   * @param {Boolean} allowCollapsed
    * @returns {TextRange|null}
    * @private
    */
@@ -47,7 +68,7 @@ export default class _Sel {
   }
 
   /**
-   * @param {TextRange} range
+   * @param {Range} range
    * @private
    */
   _expandRangeByWord(range) {
@@ -86,18 +107,18 @@ export default class _Sel {
   }
 
   /**
-   * @param {TextRange} range
-   * @returns {boolean}
+   * @param {Range} range
+   * @returns {Boolean}
    */
   isOutOfBounds(/* range */) {
     return false;
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @param {string} unit (character or word)
-   * @returns {boolean}
+   * @param {Number} x
+   * @param {Number} y
+   * @param {String} unit (character or word)
+   * @returns {Boolean}
    */
   startSelectionMode(x, y, unit) {
     const range = this._caretRangeFromPoint(x, y, unit);
@@ -117,10 +138,10 @@ export default class _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @param {string} unit (character or word)
-   * @returns {boolean}
+   * @param {Number} x
+   * @param {Number} y
+   * @param {String} unit (character or word)
+   * @returns {Boolean}
    */
   changeInitialSelection(x, y, unit) {
     const range = this._caretRangeFromPoint(x, y, unit);
@@ -137,10 +158,10 @@ export default class _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @param {string} unit (character or word)
-   * @returns {boolean}
+   * @param {Number} x
+   * @param {Number} y
+   * @param {String} unit (character or word)
+   * @returns {Boolean}
    */
   expandUpperSelection(x, y, unit = 'character') {
     const exRange = this._caretRangeFromPoint(x, y, unit, true);
@@ -187,10 +208,10 @@ export default class _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @param {string} unit (character or word)
-   * @returns {boolean}
+   * @param {Number} x
+   * @param {Number} y
+   * @param {String} unit (character or word)
+   * @returns {Boolean}
    */
   expandLowerSelection(x, y, unit = 'character') {
     const exRange = this._caretRangeFromPoint(x, y, unit, true);
@@ -204,8 +225,7 @@ export default class _Sel {
       return false;
     }
 
-    if (exRange.endContainer === this._endContainer &&
-      exRange.endOffset === this._endOffset) {
+    if (exRange.endContainer === this._endContainer && exRange.endOffset === this._endOffset) {
       return false;
     }
 
@@ -241,19 +261,19 @@ export default class _Sel {
   }
 
   /**
-   * @returns {number}
+   * @returns {Number}
    */
   getUpperBound() {
-    return app.pageWidthUnit;
+    return this.context.pageWidthUnit;
   }
 
   /**
-   * @param {TextRange} range
-   * @returns {boolean}
+   * @param {Range} range
+   * @returns {Boolean}
    * @private
    */
   _checkNextPageContinuable(range) {
-    if (!app.scrollMode) {
+    if (!this.context.isScrollMode) {
       const upperBound = this.getUpperBound();
       const clonedRange = range.cloneRange();
       let node = clonedRange.endContainer;
@@ -284,8 +304,8 @@ export default class _Sel {
   }
 
   /**
-   * @param {TextRange} range
-   * @param {number} upperBound
+   * @param {Range} range
+   * @param {Number} upperBound
    * @private
    */
   _expandRangeBySentenceInPage(range, upperBound) {
@@ -305,7 +325,7 @@ export default class _Sel {
   }
 
   /**
-   * @param {TextRange} range
+   * @param {Range} range
    * @returns {Node|null}
    * @private
    */
@@ -370,7 +390,7 @@ export default class _Sel {
   }
 
   /**
-   * @returns {boolean}
+   * @returns {Boolean}
    */
   expandSelectionIntoNextPage() {
     if (!this._nextPageContinuable) {
@@ -385,13 +405,13 @@ export default class _Sel {
   }
 
   /**
-   * @param {TextRange} range
-   * @returns {boolean}
+   * @param {Range} range
+   * @returns {Boolean}
    */
   validLength(range) {
     if (!(range.toString().length <= this._maxLength)) {
       if (!this._overflowed) {
-        _App.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다.`);
+        _Util.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다.`);
       }
       this._overflowed = true;
       return false;
@@ -400,7 +420,7 @@ export default class _Sel {
   }
 
   /**
-   * @returns {TextRange}
+   * @returns {Range}
    */
   getSelectedRange() {
     const range = document.createRange();
@@ -410,28 +430,29 @@ export default class _Sel {
   }
 
   /**
-   * @returns {string}
+   * @param {Content} content
+   * @returns {String}
    */
   getSelectedSerializedRange() {
-    return rangy.serializeRange(this.getSelectedRange(), true, document.body);
+    return rangy.serializeRange(this.getSelectedRange(), true, this.content.body);
   }
 
   /**
-   * @returns {[MutableClientRect]}
+   * @returns {MutableClientRect[]}
    */
   getSelectedRangeRects() {
     return _Util.getOnlyTextNodeRectsFromRange(this.getSelectedRange());
   }
 
   /**
-   * @returns {string}
+   * @returns {String}
    */
   getSelectedText() {
     return this.getSelectedRange().toString();
   }
 
   /**
-   * @returns {string}
+   * @returns {String}
    */
   getSelectedRectsCoord() {
     const rects = this.getSelectedRangeRects();

@@ -1,22 +1,15 @@
-import App from './App';
-import Sel from './Sel';
-import EPub from './EPub';
-import Handler from './Handler';
-import Searcher from './Searcher';
+import Context from './Content';
+import Reader from './Reader';
 import Util from './Util';
 import TTS from './TTS';
 import TTSUtterance from '../common/tts/TTSUtterance';
 import TTSUtil from '../common/tts/TTSUtil';
 
-export default function (width, height, systemMajorVersion, selMaxLength, doublePageMode, scrollMode, contentsSrc, pageOffset) {
-  window.CURSE = 3; // Chrome 47, 49+ 대응
-  window.app = new App(width, height, systemMajorVersion, doublePageMode, scrollMode, contentsSrc, pageOffset);
-  window.sel = new Sel(selMaxLength);
-  window.epub = EPub;
-  window.handler = Handler;
-  window.searcher = Searcher;
+export default function (width, height, gap, doublePageMode, scrollMode, systemMajorVersion, maxSelectionLength, curPage, contentSrc) {
+  const context = new Context(width, height, gap, doublePageMode, scrollMode, systemMajorVersion, maxSelectionLength);
+  window.reader = new Reader(document.documentElement, context, curPage, contentSrc);
   window.util = Util;
-  window.tts = new TTS();
+  window.tts = new TTS(() => window.reader.content.nodes);
   window.TTSUtterance = TTSUtterance;
   window.TTSUtil = TTSUtil;
 }

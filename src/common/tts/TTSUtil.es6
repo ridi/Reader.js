@@ -1,4 +1,4 @@
-import EPub from '../_EPub';
+import _Util from '../_Util';
 
 export default class TTSUtil {
   static find(list, callback) {
@@ -16,7 +16,7 @@ export default class TTSUtil {
   }
 
   static getSplitWordRegex() {
-    return EPub.getSplitWordRegex();
+    return _Util.getSplitWordRegex();
   }
 
   static getWhitespaceRegex(prefix, suffix, flags) {
