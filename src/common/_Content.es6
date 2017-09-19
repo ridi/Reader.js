@@ -10,7 +10,7 @@ export default class _Content extends _Object {
   /**
    * @returns {HTMLElement}
    */
-  get body() { return this.wrapper.getElementsByTagName('BODY')[0]; }
+  get body() { return this.wrapper.getElementsByTagName('BODY')[0] || this.wrapper; }
 
   /**
    * @returns {Node[]}

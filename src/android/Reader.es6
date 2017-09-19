@@ -1,4 +1,5 @@
 import _Reader from '../common/_Reader';
+import MutableClientRect from '../common/MutableClientRect';
 import Content from './Content';
 import Curse from './Curse';
 import Handler from './Handler';
@@ -31,13 +32,12 @@ export default class Reader extends _Reader {
     super(wrapper, context);
 
     this._content = new Content(wrapper, contentSrc);
-    this._handler = new Handler(this.content, this.context, anchor => {
+    this._handler = new Handler(this.content, this.context, (anchor) => {
       const offset = this.getOffsetFromAnchor(anchor);
       if (context.isScrollMode) {
         return offset >= this.pageYOffset;
-      } else {
-        return offset >= this.curPage;
       }
+      return offset >= this.curPage;
     });
     this._sel = new Sel(this.content, this.context);
     if (context.isCursedChrome && !context.isScrollMode) {
@@ -50,21 +50,21 @@ export default class Reader extends _Reader {
         // - 페이지 이동에 따라 0~3의 가중치(pageWeight)를 부여
         // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함
         // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌
-        const curPage = this.curPage;
+        const _curPage = this.curPage;
         const prevPage = this.curse.prevPage;
         let pageWeight = this.curse.pageWeight;
-        if (curPage > prevPage) { // next
-          pageWeight = Math.min(pageWeight + (curPage - prevPage), this.curse.magic);
+        if (_curPage > prevPage) { // next
+          pageWeight = Math.min(pageWeight + (_curPage - prevPage), this.curse.magic);
           if (!this.curse.pageOverflow) {
             this.curse.pageOverflow = pageWeight === this.curse.magic;
           }
-        } else if (curPage < prevPage) { // prev
-          pageWeight = Math.max(pageWeight - (prevPage - curPage), 0);
+        } else if (_curPage < prevPage) { // prev
+          pageWeight = Math.max(pageWeight - (prevPage - _curPage), 0);
           if (pageWeight === 0) {
             this.curse.pageOverflow = false;
           }
         }
-        this.curse.prevPage = curPage;
+        this.curse.prevPage = _curPage;
         this.curse.pageWeight = pageWeight;
       };
       this._addScrollListener();

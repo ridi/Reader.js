@@ -146,7 +146,7 @@ export default class _Reader extends _Object {
    * @private
    */
   _adjustRects(rects) {
-    return _Util.concatArray([], rects, this._adjustRect);
+    return _Util.concatArray([], rects, () => this._adjustRect);
   }
 
   /**
@@ -333,7 +333,7 @@ export default class _Reader extends _Object {
           continue;
         }
 
-        const words = string.split(this.getSplitWordRegex());
+        const words = string.split(_Util.getSplitWordRegex());
         let offset = range.startOffset;
         for (let j = 0; j < words.length; j++) {
           const word = words[j];
