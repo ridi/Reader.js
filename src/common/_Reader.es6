@@ -395,7 +395,7 @@ export default class _Reader extends _Object {
     if (!span) {
       span = document.createElement('span');
       span.setAttribute('id', 'RidiNodeLocation');
-      this.content.wrapper.appendChild(span);
+      document.body.appendChild(span);
     }
 
     const rect = this._latestNodeRect;
