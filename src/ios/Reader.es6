@@ -17,7 +17,7 @@ export default class Reader extends _Reader {
     super(wrapper, context);
     this._appInBackground = false;
     this._content = new Content(wrapper);
-    this._handler = new Handler(this.content, this.context, this._adjustPoint);
+    this._handler = new Handler(this.content, this.context, this.adjustPoint);
     this._sel = new Sel(this.content, this.context);
     this._setViewport();
   }
