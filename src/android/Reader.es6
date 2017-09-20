@@ -32,7 +32,7 @@ export default class Reader extends _Reader {
     super(wrapper, context);
 
     this._content = new Content(wrapper, contentSrc);
-    this._handler = new Handler(this.content, this.context, (anchor) => {
+    this._handler = new Handler(this.content, this.context, this._adjustPoint, (anchor) => {
       const offset = this.getOffsetFromAnchor(anchor);
       if (context.isScrollMode) {
         return offset >= this.pageYOffset;
@@ -40,7 +40,7 @@ export default class Reader extends _Reader {
       return offset >= this.curPage;
     });
     this._sel = new Sel(this.content, this.context);
-    if (context.isCursedChrome && !context.isScrollMode) {
+    if (context.isCursedChrome) {
       // curPage는 Reader의 computed-property로 구하는게 가능하지만 Reader가 초기화되는 시점에는 정확한 위치 정보가 아니라 쓰면 안된다.
       this._curse = new Curse(curPage);
       this._scrollListener = () => {
@@ -67,18 +67,22 @@ export default class Reader extends _Reader {
         this.curse.prevPage = _curPage;
         this.curse.pageWeight = pageWeight;
       };
-      this._addScrollListener();
+      this.addScrollListenerIfNeeded();
     }
     this.calcPageForDoublePageMode = false;
     this._updateClientWidthAndGap();
   }
 
-  _addScrollListener() {
-    window.addEventListener('scroll', this._scrollListener, false);
+  addScrollListenerIfNeeded() {
+    if (this._scrollListener && !this.context.isScrollMode) {
+      window.addEventListener('scroll', this._scrollListener, false);
+    }
   }
 
-  _removeScrollListener() {
-    window.removeEventListener('scroll', this._scrollListener, false);
+  removeScrollListenerIfNeeded() {
+    if (this._scrollListener) {
+      window.removeEventListener('scroll', this._scrollListener, false);
+    }
   }
 
   /**
@@ -138,10 +142,10 @@ export default class Reader extends _Reader {
    */
   changeContext(context, curPage) {
     super.changeContext(context);
-    if (context.isCursedChrome && context.isScrollMode) {
+    if (context.isCursedChrome) {
       this._curse = new Curse(curPage);
-      this._removeScrollListener();
-      this._addScrollListener();
+      this.removeScrollListenerIfNeeded();
+      this.addScrollListenerIfNeeded();
     }
   }
 

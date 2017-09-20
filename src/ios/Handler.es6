@@ -22,7 +22,7 @@ export default class Handler extends _Handler {
    * @param {Boolean} isVerticalPagingOn
    */
   processSingleTapEvent(x, y, rawX, rawY, canvasWidth, canvasHeight, isVerticalPagingOn) {
-    const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
+    const link = this.getLinkFromPoint(x, y);
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';

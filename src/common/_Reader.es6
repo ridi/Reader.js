@@ -146,7 +146,7 @@ export default class _Reader extends _Object {
    * @private
    */
   _adjustRects(rects) {
-    return _Util.concatArray([], rects, () => this._adjustRect);
+    return _Util.concatArray([], rects, rect => this._adjustRect(rect));
   }
 
   /**
@@ -399,7 +399,7 @@ export default class _Reader extends _Object {
     }
 
     const rect = this._latestNodeRect;
-    rect[this.context.isScrollMode ? 'top' : 'left'] = this.pageOffset;
+    rect[this.context.isScrollMode ? 'top' : 'left'] += this.pageOffset;
     span.style.cssText =
       'position: absolute !important;' +
       'background-color: red !important;' +
@@ -427,7 +427,7 @@ export default class _Reader extends _Object {
     const parts = location.split(posSeparator);
     const nodeIndex = parts[0];
     const wordIndex = parts[1];
-    const pageUnit = this.pageUnit;
+    const pageUnit = this.context.pageUnit;
     const totalSize = this.totalSize;
     const isScrollMode = this.context.isScrollMode;
 

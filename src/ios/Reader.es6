@@ -17,7 +17,7 @@ export default class Reader extends _Reader {
     super(wrapper, context);
     this._appInBackground = false;
     this._content = new Content(wrapper);
-    this._handler = new Handler(this.content, this.context);
+    this._handler = new Handler(this.content, this.context, this._adjustPoint);
     this._sel = new Sel(this.content, this.context);
     this._setViewport();
   }
@@ -72,7 +72,8 @@ export default class Reader extends _Reader {
 
     const direction = this.getOffsetDirectionFromElement(el);
     const origin = rect[direction] + this.pageOffset;
-    return Math.floor(origin / this.context.pageUnit);
+    const pageUnit = direction === 'left' ? this.context.pageWidthUnit : this.context.pageHeightUnit;
+    return Math.floor(origin / pageUnit);
   }
 
   /**

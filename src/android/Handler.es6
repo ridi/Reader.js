@@ -5,10 +5,11 @@ export default class Handler extends _Handler {
   /**
    * @param {Content} content
    * @param {Context} context
+   * @param {function} adjustPoint
    * @param {function} checkAnchor
    */
-  constructor(content, context, checkAnchor) {
-    super(content, context);
+  constructor(content, context, adjustPoint, checkAnchor) {
+    super(content, context, adjustPoint);
     this._checkAnchor = checkAnchor;
   }
 
@@ -17,7 +18,7 @@ export default class Handler extends _Handler {
    * @returns {Boolean}
    */
   isInViewportWidth(x) {
-    const point = Util.adjustPoint(0, 0);
+    const point = this.adjustPoint(0, 0);
     return x >= point.x && x <= point.x + this.content.wrapper.clientWidth;
   }
 
@@ -27,7 +28,7 @@ export default class Handler extends _Handler {
    * @param {String} nativePoints
    */
   processSingleTapEvent(x, y, nativePoints) {
-    const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
+    const link = this.getLinkFromPoint(x, y);
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';
@@ -62,7 +63,7 @@ export default class Handler extends _Handler {
    * @param {Number} y
    */
   processLongTapZoomEvent(x, y) {
-    const point = Util.adjustPoint(x, y);
+    const point = this.adjustPoint(x, y);
 
     let src = this.content.getImagePathFromPoint(point.x, point.y);
     if (src !== 'null') {
