@@ -48,7 +48,7 @@ export default class _Content extends _Object {
     let calledFilter = false;
     const walk = document.createTreeWalker(
       this.body,
-      NodeFilter.SHOW_TEXT || NodeFilter.SHOW_ELEMENT, {
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
         acceptNode(node) {
           calledFilter = true;
           if (filter(node)) {
