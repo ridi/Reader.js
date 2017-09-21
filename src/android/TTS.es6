@@ -9,7 +9,7 @@ export default class TTS extends _TTS {
       android.onUtteranceFound(chunk.getStartNodeIndex(),
         chunk.getStartWordIndex(),
         chunk.getUtterance().text,
-        Util.rectsToAbsoluteCoord(chunk.getClientRects(true)),
+        this.reader.rectsToAbsoluteCoord(chunk.getClientRects(true)),
         isMakingTemporalChunk,
         addAtFirst);
     }

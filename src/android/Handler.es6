@@ -3,23 +3,12 @@ import Util from './Util';
 
 export default class Handler extends _Handler {
   /**
-   * @param {Content} content
-   * @param {Context} context
-   * @param {function} adjustPoint
-   * @param {function} checkAnchor
-   */
-  constructor(content, context, adjustPoint, checkAnchor) {
-    super(content, context, adjustPoint);
-    this._checkAnchor = checkAnchor;
-  }
-
-  /**
    * @param {Number} x
    * @returns {Boolean}
    */
   isInViewportWidth(x) {
-    const point = this.adjustPoint(0, 0);
-    return x >= point.x && x <= point.x + this.content.wrapper.clientWidth;
+    const point = this.reader.adjustPoint(0, 0);
+    return x >= point.x && x <= point.x + this.reader.content.wrapper.clientWidth;
   }
 
   /**
@@ -36,8 +25,7 @@ export default class Handler extends _Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = Util.rectsToAbsoluteCoord(range.getAdjustedClientRects());
-
+        const rects = this.reader.rectsToAbsoluteCoord(range.getAdjustedClientRects());
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
@@ -47,7 +35,12 @@ export default class Handler extends _Handler {
           const src = href.replace(location.href, '');
           if (src[0] === '#' || src.match(this.content.src) !== null) {
             const anchor = src.substring(src.lastIndexOf('#') + 1);
-            canUseFootnote = this._checkAnchor(anchor);
+            const offset = this.reader.getOffsetFromAnchor(anchor);
+            if (this.reader.context.isScrollMode) {
+              canUseFootnote = offset >= this.reader.pageYOffset;
+            } else {
+              canUseFootnote = offset >= this.reader.curPage;
+            }
           }
         }
 
@@ -63,14 +56,14 @@ export default class Handler extends _Handler {
    * @param {Number} y
    */
   processLongTapZoomEvent(x, y) {
-    const point = this.adjustPoint(x, y);
+    const point = this.reader.adjustPoint(x, y);
 
-    let src = this.content.getImagePathFromPoint(point.x, point.y);
+    let src = this.reader.content.getImagePathFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onImageLongTapZoom(src);
     }
 
-    src = this.content.getSvgElementFromPoint(point.x, point.y);
+    src = this.reader.content.getSvgElementFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onSvgElementLongTapZoom(src);
     }

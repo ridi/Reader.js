@@ -91,10 +91,11 @@ import TTSUtil from './TTSUtil';
 
 export default class _TTS {
   get chunks() { return this._chunks; }
-  get nodes() { return this._getNodes(); }
+  get nodes() { return this.reader.content.nodes; }
+  get reader() { return this._reader; }
 
-  constructor(getNodes) {
-    this._getNodes = getNodes;
+  constructor(reader) {
+    this._reader = reader;
     this.debug = false;
     // reserveNodesCountMagic을 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
     this.reserveNodesCountMagic = 40;

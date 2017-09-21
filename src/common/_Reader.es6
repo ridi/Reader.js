@@ -1,4 +1,5 @@
 import _Object from './_Object';
+import _Sel from './_Sel';
 import _Util from './_Util';
 import MutableClientRect from './MutableClientRect';
 
@@ -26,12 +27,12 @@ export default class _Reader extends _Object {
   /**
    * @returns {Number}
    */
-  get totalWidth() { return this._wrapper.scrollWidth; }
+  get totalWidth() { return this.content.wrapper.scrollWidth; }
 
   /**
    * @returns {Number}
    */
-  get totalHeight() { return this._wrapper.scrollHeight; }
+  get totalHeight() { return this.content.wrapper.scrollHeight; }
 
   /**
    * @returns {Number}
@@ -64,7 +65,6 @@ export default class _Reader extends _Object {
    */
   constructor(wrapper, context) {
     super();
-    this._wrapper = wrapper;
     this._context = context;
     this.debugNodeLocation = false;
     this.methodSwizzling();
@@ -104,14 +104,14 @@ export default class _Reader extends _Object {
      * @returns {MutableClientRect}
      */
     function getAdjustedBoundingClientRect() {
-      return reader._adjustRect(this.getBoundingClientRect() || new MutableClientRect());
+      return reader.adjustRect(this.getBoundingClientRect() || new MutableClientRect());
     }
 
     /**
      * @returns {MutableClientRect[]}
      */
     function getAdjustedClientRects() {
-      return reader._adjustRects(this.getClientRects() || []);
+      return reader.adjustRects(this.getClientRects() || []);
     }
 
     Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
@@ -125,28 +125,25 @@ export default class _Reader extends _Object {
    * @param {Number} x
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
-   * @private
    */
-  _adjustPoint(x, y) {
+  adjustPoint(x, y) {
     return { x, y };
   }
 
   /**
    * @param {ClientRect} rect
    * @returns {MutableClientRect}
-   * @private
    */
-  _adjustRect(rect) {
+  adjustRect(rect) {
     return new MutableClientRect(rect);
   }
 
   /**
    * @param {ClientRect[]} rects
    * @returns {MutableClientRect[]}
-   * @private
    */
-  _adjustRects(rects) {
-    return _Util.concatArray([], rects, rect => this._adjustRect(rect));
+  adjustRects(rects) {
+    return _Util.concatArray([], rects, rect => this.adjustRect(rect));
   }
 
   /**
@@ -154,8 +151,6 @@ export default class _Reader extends _Object {
    */
   changeContext(context) {
     this._context = context;
-    this._handler.changeContext(context);
-    this._sel.changeContext(context);
   }
 
   /**
@@ -554,7 +549,7 @@ export default class _Reader extends _Object {
    * @param {String} serializedRange
    * @returns {Range}
    */
-  static getRangeFromSerializedRange(serializedRange) {
+  getRangeFromSerializedRange(serializedRange) {
     const tmpRange = rangy.deserializeRange(serializedRange, this.content.body);
     const range = document.createRange();
     range.setStart(tmpRange.startContainer, tmpRange.startOffset);
@@ -567,71 +562,51 @@ export default class _Reader extends _Object {
    * @param {String} serializedRange
    * @returns {MutableClientRect[]}
    */
-  static getRectsFromSerializedRange(serializedRange) {
+  getRectsFromSerializedRange(serializedRange) {
     const range = this.getRangeFromSerializedRange(serializedRange);
-    return this.getOnlyTextNodeRectsFromRange(range);
+    return _Sel.getOnlyTextNodeRectsFromRange(range);
   }
 
   /**
-   * @param {Range} range
-   * @returns {Boolean}
+   * @param {MutableClientRect[]} rects
+   * @param {Boolean} absolute
+   * @returns {String}
    * @private
    */
-  static _isWhiteSpaceRange(range) {
-    return /^\s*$/.test(range.toString());
+  _rectsToCoord(rects, absolute) {
+    const insets = { left: 0, top: 0 };
+    if (absolute) {
+      if (this.context.isScrollMode) {
+        insets.top = this.pageYOffset;
+      } else {
+        insets.left = this.pageXOffset;
+      }
+    }
+
+    let result = '';
+    for (let i = 0; i < rects.length; i++) {
+      const rect = rects[i];
+      result += `${(rect.left + insets.left)},`;
+      result += `${(rect.top + insets.top)},`;
+      result += `${rect.width},`;
+      result += `${rect.height},`;
+    }
+    return result;
   }
 
   /**
-   * @param {Range} range
-   * @returns {MutableClientRect[]}
+   * @param {MutableClientRect[]} rects
+   * @returns {String}
    */
-  static getOnlyTextNodeRectsFromRange(range) {
-    if (range.startContainer === range.endContainer) {
-      const innerText = range.startContainer.innerText;
-      if (innerText !== undefined && innerText.length === 0) {
-        return [];
-      }
-      return range.getAdjustedClientRects();
-    }
+  rectsToAbsoluteCoord(rects) {
+    return this._rectsToCoord(rects);
+  }
 
-    const iterator = this.createTextNodeIterator(range.commonAncestorContainer);
-    let textNodeRects = [];
-
-    let workRange = document.createRange();
-    workRange.setStart(range.startContainer, range.startOffset);
-    workRange.setEnd(range.startContainer, range.startContainer.length);
-    textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-
-    let node;
-    while ((node = iterator.nextNode())) {
-      // startContainer 노드보다 el이 앞에 있으면
-      if (range.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
-        range.startContainer === node) {
-        continue;
-      }
-
-      // endContainer 뒤로 넘어가면 멈춤
-      if (range.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
-        range.endContainer === node) {
-        break;
-      }
-
-      workRange = document.createRange();
-      workRange.selectNodeContents(node);
-      if (this._isWhiteSpaceRange(workRange)) {
-        continue;
-      }
-
-      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
-
-    workRange = document.createRange();
-    workRange.setStart(range.endContainer, 0);
-    workRange.setEnd(range.endContainer, range.endOffset);
-    if (!this._isWhiteSpaceRange(workRange)) {
-      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
-
-    return textNodeRects;
+  /**
+   * @param {MutableClientRect[]} rects
+   * @returns {String}
+   */
+  rectsToRelativeCoord(rects) {
+    return this._rectsToCoord(rects);
   }
 }

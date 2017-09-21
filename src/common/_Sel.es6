@@ -4,14 +4,9 @@ import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel extends _Object {
   /**
-   * @returns {Content}
+   * @returns {Reader}
    */
-  get content() { return this._content; }
-
-  /**
-   * @returns {Context}
-   */
-  get context() { return this._context; }
+  get reader() { return this._reader; }
 
   /**
    * @returns {Boolean}
@@ -19,14 +14,12 @@ export default class _Sel extends _Object {
   get nextPageContinuable() { return this._checkNextPageContinuable(this.getSelectedRange()); }
 
   /**
-   * @param {Content} content
-   * @param {Context} context
+   * @param {Reader} reader
    */
-  constructor(content, context) {
+  constructor(reader) {
     super();
-    this._content = content;
-    this._context = context;
-    this._maxLength = context.maxSelectionLength;
+    this._reader = reader;
+    this._maxLength = reader.context.maxSelectionLength;
     this._startContainer = null;
     this._startOffset = null;
     this._endContainer = null;
@@ -38,13 +31,6 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @param {Context} context
-   */
-  changeContext(context) {
-    this._context = context;
-  }
-
-  /**
    * @param {Number} x
    * @param {Number} y
    * @param {String} unit (character or word)
@@ -53,7 +39,7 @@ export default class _Sel extends _Object {
    * @private
    */
   _caretRangeFromPoint(x, y, unit = 'word', allowCollapsed = false) {
-    const point = _Util.adjustPoint(x, y);
+    const point = this.reader.adjustPoint(x, y);
     const range = document.caretRangeFromPoint(point.x, point.y);
     if (range === null) {
       return null;
@@ -264,7 +250,7 @@ export default class _Sel extends _Object {
    * @returns {Number}
    */
   getUpperBound() {
-    return this.context.pageWidthUnit;
+    return this.reader.context.pageWidthUnit;
   }
 
   /**
@@ -273,7 +259,7 @@ export default class _Sel extends _Object {
    * @private
    */
   _checkNextPageContinuable(range) {
-    if (!this.context.isScrollMode) {
+    if (!this.reader.context.isScrollMode) {
       const upperBound = this.getUpperBound();
       const clonedRange = range.cloneRange();
       let node = clonedRange.endContainer;
@@ -434,14 +420,14 @@ export default class _Sel extends _Object {
    * @returns {String}
    */
   getSelectedSerializedRange() {
-    return rangy.serializeRange(this.getSelectedRange(), true, this.content.body);
+    return rangy.serializeRange(this.getSelectedRange(), true, this.reader.content.body);
   }
 
   /**
    * @returns {MutableClientRect[]}
    */
   getSelectedRangeRects() {
-    return _Util.getOnlyTextNodeRectsFromRange(this.getSelectedRange());
+    return _Sel.getOnlyTextNodeRectsFromRange(this.getSelectedRange());
   }
 
   /**
@@ -458,8 +444,71 @@ export default class _Sel extends _Object {
     const rects = this.getSelectedRangeRects();
     if (rects.length) {
       this._overflowed = false;
-      return _Util.rectsToAbsoluteCoord(rects);
+      return this.reader.rectsToAbsoluteCoord(rects);
     }
     return '';
+  }
+
+  /**
+   * @param {Range} range
+   * @returns {Boolean}
+   * @private
+   */
+  static _isWhiteSpaceRange(range) {
+    return /^\s*$/.test(range.toString());
+  }
+
+  /**
+   * @param {Range} range
+   * @returns {MutableClientRect[]}
+   */
+  static getOnlyTextNodeRectsFromRange(range) {
+    if (range.startContainer === range.endContainer) {
+      const innerText = range.startContainer.innerText;
+      if (innerText !== undefined && innerText.length === 0) {
+        return [];
+      }
+      return range.getAdjustedClientRects();
+    }
+
+    const iterator = _Util.createTextNodeIterator(range.commonAncestorContainer);
+    let textNodeRects = [];
+
+    let workRange = document.createRange();
+    workRange.setStart(range.startContainer, range.startOffset);
+    workRange.setEnd(range.startContainer, range.startContainer.length);
+    textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
+
+    let node;
+    while ((node = iterator.nextNode())) {
+      // startContainer 노드보다 el이 앞에 있으면
+      if (range.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
+        range.startContainer === node) {
+        continue;
+      }
+
+      // endContainer 뒤로 넘어가면 멈춤
+      if (range.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
+        range.endContainer === node) {
+        break;
+      }
+
+      workRange = document.createRange();
+      workRange.selectNodeContents(node);
+      if (this._isWhiteSpaceRange(workRange)) {
+        continue;
+      }
+
+      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
+    }
+
+    workRange = document.createRange();
+    workRange.setStart(range.endContainer, 0);
+    workRange.setEnd(range.endContainer, range.endOffset);
+    if (!this._isWhiteSpaceRange(workRange)) {
+      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
+    }
+
+    return textNodeRects;
   }
 }

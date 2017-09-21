@@ -32,24 +32,17 @@ export default class Reader extends _Reader {
     super(wrapper, context);
 
     this._content = new Content(wrapper, contentSrc);
-    this._handler = new Handler(this.content, this.context, this._adjustPoint, (anchor) => {
-      const offset = this.getOffsetFromAnchor(anchor);
-      if (context.isScrollMode) {
-        return offset >= this.pageYOffset;
-      }
-      return offset >= this.curPage;
-    });
-    this._sel = new Sel(this.content, this.context);
+    this._handler = new Handler(this);
+    this._sel = new Sel(this);
     if (context.isCursedChrome) {
       // curPage는 Reader의 computed-property로 구하는게 가능하지만 Reader가 초기화되는 시점에는 정확한 위치 정보가 아니라 쓰면 안된다.
       this._curse = new Curse(curPage);
       this._scrollListener = () => {
         // * Chrome 47, 49+ 대응
-        // viewport의 범위와 curPage의 clientLeft 기준이 변경됨에 따라 아래와 같이 대응함
-        // (Util._rectToRelativeForChromeInternal, Util.adjustPoint 참고)
-        // - 페이지 이동에 따라 0~3의 가중치(pageWeight)를 부여
-        // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함
-        // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌
+        // viewport의 범위와 curPage의 clientLeft 기준이 변경됨에 따라 아래와 같이 대응함. (adjustPoint, adjustRect 참고)
+        // - 페이지 이동에 따라 0~3의 가중치(pageWeight)를 부여.
+        // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함.
+        // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌.
         const _curPage = this.curPage;
         const prevPage = this.curse.prevPage;
         let pageWeight = this.curse.pageWeight;
@@ -89,9 +82,8 @@ export default class Reader extends _Reader {
    * @param {Number} x
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
-   * @private
    */
-  _adjustPoint(x, y) {
+  adjustPoint(x, y) {
     const context = this.context;
     const curse = this.curse;
     const point = { x, y };
@@ -115,9 +107,8 @@ export default class Reader extends _Reader {
   /**
    * @param {ClientRect} rect
    * @returns {MutableClientRect}
-   * @private
    */
-  _adjustRect(rect) {
+  adjustRect(rect) {
     const context = this.context;
     const curse = this.curse;
     const adjustRect = new MutableClientRect(rect);
@@ -157,7 +148,7 @@ export default class Reader extends _Reader {
    * @returns {Number}
    * @private
    */
-  static _easeInOut(currentTime, start, change, duration) {
+  _easeInOut(currentTime, start, change, duration) {
     let time = currentTime;
     time /= duration / 2;
     if (time < 1) {

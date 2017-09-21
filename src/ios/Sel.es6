@@ -5,7 +5,7 @@ export default class Sel extends _Sel {
    * @returns {Number}
    */
   getUpperBound() {
-    return this.context.pageWidthUnit * (this.context.isDoublePageMode ? 2 : 1);
+    return this.reader.context.pageWidthUnit * (this.reader.context.isDoublePageMode ? 2 : 1);
   }
 
   /**

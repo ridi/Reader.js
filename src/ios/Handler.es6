@@ -30,7 +30,7 @@ export default class Handler extends _Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = Util.rectsToAbsoluteCoord(range.getAdjustedClientRects());
+        const rects = this.reader.rectsToAbsoluteCoord(range.getAdjustedClientRects());
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         const canUseFootnote = href.match(/^file:\/\//gm) !== null &&
@@ -51,7 +51,7 @@ export default class Handler extends _Handler {
       }
     }
 
-    if (!this.context.isScrollMode) {
+    if (!this.reader.context.isScrollMode) {
       if (isVerticalPagingOn) {
         if (rawY < canvasHeight / 3) {
           location.href = 'ridi+epub://navigation/viewPageByTopOrLeftTouch';

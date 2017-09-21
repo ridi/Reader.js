@@ -30,7 +30,6 @@ export default class _Util extends _Object {
   /**
    * @param {Node} imgEl
    * @returns {{dWidth: *, dHeight: *, nWidth: number, nHeight: number, sWidth: *, sHeight: *, aWidth: string, aHeight: string}}
-   * @private
    */
   static getImageSize(imgEl) {
     const attrs = imgEl.attributes;
@@ -154,40 +153,5 @@ export default class _Util extends _Object {
       array.push(adjust(rects[i]));
     }
     return array;
-  }
-
-  /**
-   * @param {MutableClientRect[]} rects
-   * @param {{left: Number, top: Number}} insets
-   * @returns {String}
-   */
-  static rectsToCoord(rects, insets = { left: 0, top: 0 }) {
-    let result = '';
-    for (let i = 0; i < rects.length; i++) {
-      const rect = rects[i];
-      result += `${(rect.left + insets.left)},`;
-      result += `${(rect.top + insets.top)},`;
-      result += `${rect.width},`;
-      result += `${rect.height},`;
-    }
-    return result;
-  }
-
-  /**
-   * @param {MutableClientRect[]} rects
-   * @param {Number} pageXOffset
-   * @param {Number} pageYOffset
-   * @returns {String}
-   */
-  static rectsToAbsoluteCoord(rects, pageXOffset, pageYOffset) {
-    return this.rectsToCoord(rects, { left: pageXOffset, top: pageYOffset });
-  }
-
-  /**
-   * @param {MutableClientRect[]} rects
-   * @returns {String}
-   */
-  static rectsToRelativeCoord(rects) {
-    return this.rectsToCoord(rects);
   }
 }

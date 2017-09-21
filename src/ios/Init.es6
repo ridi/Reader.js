@@ -9,7 +9,7 @@ export default function (width, height, gap, doublePageMode, scrollMode, systemM
   const context = new Context(width, height, gap, doublePageMode, scrollMode, systemMajorVersion, maxSelectionLength);
   window.reader = new Reader(document.documentElement, context);
   window.util = Util;
-  window.tts = new TTS(() => window.reader.content.nodes);
+  window.tts = new TTS(window.reader);
   window.TTSUtterance = TTSUtterance;
   window.TTSUtil = TTSUtil;
 }
