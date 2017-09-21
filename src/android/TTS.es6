@@ -1,5 +1,4 @@
 import _TTS from '../common/tts/_TTS';
-import Util from './Util';
 
 export default class TTS extends _TTS {
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
