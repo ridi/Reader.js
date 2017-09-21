@@ -573,7 +573,7 @@ export default class _Reader extends _Object {
    * @returns {String}
    * @private
    */
-  _rectsToCoord(rects, absolute) {
+  _rectsToCoord(rects, absolute = false) {
     const insets = { left: 0, top: 0 };
     if (absolute) {
       if (this.context.isScrollMode) {
@@ -599,7 +599,7 @@ export default class _Reader extends _Object {
    * @returns {String}
    */
   rectsToAbsoluteCoord(rects) {
-    return this._rectsToCoord(rects);
+    return this._rectsToCoord(rects, true);
   }
 
   /**
