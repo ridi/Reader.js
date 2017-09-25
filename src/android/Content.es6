@@ -9,16 +9,16 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {Number} pageWidthUnit
-   * @param {Number} pageHeightUnit
+   * @param {Number} screenWidth
+   * @param {Number} screenHeight
    */
-  reviseImagesInSpine(pageWidthUnit, pageHeightUnit) {
+  reviseImagesInSpine(screenWidth, screenHeight) {
     const results = [];
 
     const els = this.images;
     for (let i = 0; i < els.length; i++) {
       const el = els[i];
-      const result = this.reviseImage(el, pageWidthUnit, pageHeightUnit);
+      const result = this.reviseImage(el, screenWidth, screenHeight);
       if (result.width.length || result.height.length || result.position.length) {
         results.push({
           el,
@@ -45,13 +45,13 @@ export default class Content extends _Content {
 
   /**
    * @param {Node} imgEl
-   * @param {Number} pageWidthUnit
-   * @param {Number} pageHeightUnit
+   * @param {Number} screenWidth
+   * @param {Number} screenHeight
    * @returns {{el: Node, width: String, height: String, position: String,
    * size: {dWidth, dHeight, nWidth, nHeight, sWidth, sHeight, aWidth, aHeight}}}
    */
-  reviseImage(imgEl, pageWidthUnit, pageHeightUnit) {
-    const result = super.reviseImage(imgEl, pageWidthUnit, pageHeightUnit);
+  reviseImage(imgEl, screenWidth, screenHeight) {
+    const result = super.reviseImage(imgEl, screenWidth, screenHeight);
     const size = result.size;
 
     //

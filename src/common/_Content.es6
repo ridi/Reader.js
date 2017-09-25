@@ -138,12 +138,12 @@ export default class _Content extends _Object {
 
   /**
    * @param {Node} imgEl
-   * @param {Number} pageWidthUnit
-   * @param {Number} pageHeightUnit
+   * @param {Number} screenWidth
+   * @param {Number} screenHeight
    * @returns {{el: Node, width: String, height: String, position: String,
    * size: {dWidth, dHeight, nWidth, nHeight, sWidth, sHeight, aWidth, aHeight}}}
    */
-  reviseImage(imgEl, pageWidthUnit, pageHeightUnit) {
+  reviseImage(imgEl, screenWidth, screenHeight) {
     const isPercentValue = (value) => {
       if (typeof value === 'string') {
         return value.search(/%/);
@@ -232,7 +232,7 @@ export default class _Content extends _Object {
       Math.abs(calcRate(size.nWidth, size.nHeight) - calcRate(size.dWidth, size.dHeight)) > diff) {
       if (size.dWidth >= size.dHeight && size.dWidth < size.nWidth) {
         rate = (calcRate(size.dWidth, size.nWidth) / 100);
-        if (size.dWidth < pageWidthUnit && Math.round(size.nHeight * rate) < pageHeightUnit) {
+        if (size.dWidth < screenWidth && Math.round(size.nHeight * rate) < screenHeight) {
           cssWidth = `${size.dWidth}px`;
           cssHeight = `${Math.round(size.nHeight * rate)}px`;
         } else {
@@ -241,7 +241,7 @@ export default class _Content extends _Object {
         }
       } else if (size.dWidth < size.dHeight && size.dHeight < size.nHeight) {
         rate = (calcRate(size.dHeight, size.nHeight) / 100);
-        if (Math.round(size.nWidth * rate) < pageWidthUnit && size.dHeight < pageHeightUnit) {
+        if (Math.round(size.nWidth * rate) < screenWidth && size.dHeight < screenHeight) {
           cssWidth = `${Math.round(size.nWidth * rate)}px`;
           cssHeight = `${size.dHeight}px`;
         } else {
@@ -264,15 +264,15 @@ export default class _Content extends _Object {
 
     const width = parseInt(cssWidth, 10) || size.dWidth;
     const height = parseInt(cssHeight, 10) || size.dHeight;
-    if (width > pageWidthUnit || height > pageHeightUnit) {
+    if (width > screenWidth || height > screenHeight) {
       const margin = _Util.getStylePropertiesIntValue(imgEl,
         ['line-height', 'margin-top', 'margin-bottom', 'padding-top', 'padding-bottom']);
-      const vmin = Math.min(pageWidthUnit, pageHeightUnit);
-      let adjustHeight = Math.max((pageHeightUnit - margin) * maxHeight, vmin * maxHeight);
+      const vmin = Math.min(screenWidth, screenHeight);
+      let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin * maxHeight);
       let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;
-      if (adjustWidth > pageWidthUnit) {
-        adjustHeight *= pageWidthUnit / adjustWidth;
-        adjustWidth = pageWidthUnit;
+      if (adjustWidth > screenWidth) {
+        adjustHeight *= screenWidth / adjustWidth;
+        adjustWidth = screenWidth;
       }
       cssWidth = `${adjustWidth}px`;
       cssHeight = `${adjustHeight}px`;

@@ -2,17 +2,17 @@ import _Content from '../common/_Content';
 
 export default class Content extends _Content {
   /**
-   * @param {Number} pageWidthUnit
-   * @param {Number} pageHeightUnit
+   * @param {Number} screenWidth
+   * @param {Number} screenHeight
    */
-  reviseImagesInSpine(pageWidthUnit, pageHeightUnit) {
+  reviseImagesInSpine(screenWidth, screenHeight) {
     const elList = [];
     const els = this.images;
     const tryReviseImages = () => {
       if (els.length === elList.length) {
         const results = [];
         elList.forEach((el) => {
-          const result = this.reviseImage(el, pageWidthUnit, pageHeightUnit);
+          const result = this.reviseImage(el, screenWidth, screenHeight);
           if (result.width.length || result.height.length || result.position.length) {
             results.push({
               el,
