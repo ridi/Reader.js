@@ -14,7 +14,7 @@ export default class Curse extends _Object {
   constructor(curPage) {
     super();
     this.pageWeight = Math.min(curPage, this.magic);
-    this.pageOverflow = curPage === this.magic;
+    this.pageOverflow = this.pageWeight === this.magic;
     this.prevPage = curPage;
   }
 }

@@ -21,9 +21,10 @@ export default class Context extends _Context {
    * @param {Boolean} doublePageMode
    * @param {Boolean} scrollMode
    * @param {Boolean} systemMajorVersion
+   * @param {Number} maxSelectionLength
    */
-  constructor(width, height, gap, doublePageMode, scrollMode, systemMajorVersion) {
-    super(width, height, gap, doublePageMode, scrollMode, systemMajorVersion);
+  constructor(width, height, gap, doublePageMode, scrollMode, systemMajorVersion, maxSelectionLength) {
+    super(width, height, gap, doublePageMode, scrollMode, systemMajorVersion, maxSelectionLength);
 
     const chrome = ((navigator.userAgent || '').match(/chrome\/[\d]+/gi) || [''])[0];
     const version = parseInt((chrome.match(/[\d]+/g) || [''])[0], 10);

@@ -63,7 +63,7 @@ export default class Reader extends _Reader {
       this.addScrollListenerIfNeeded();
     }
     this.calcPageForDoublePageMode = false;
-    this._updateClientWidthAndGap();
+    this._updateClientWidth();
   }
 
   addScrollListenerIfNeeded() {
@@ -184,7 +184,7 @@ export default class Reader extends _Reader {
       const height = this.context.pageHeightUnit;
       const marginBottom = Util.getStylePropertyIntValue(body, 'margin-bottom');
       const extraPages = marginBottom / (this.context.isDoublePageMode ? height * 2 : height);
-      const maxPage = Math.max(Math.ceil(this.getTotalWidth() / width) - 1 - extraPages, 0);
+      const maxPage = Math.max(Math.ceil(this.totalWidth / width) - 1 - extraPages, 0);
       adjustOffset = Math.min(adjustOffset, maxPage * width);
     }
 
@@ -271,6 +271,15 @@ export default class Reader extends _Reader {
   }
 
   /**
+   * @param {Number} index
+   * @param {String} serializedRange
+   */
+  getRectsFromSerializedRange(index, serializedRange) {
+    const rects = super.getRectsFromSerializedRange(serializedRange);
+    android.onRectsOfSerializedRange(index, serializedRange, this.rectsToAbsoluteCoord(rects));
+  }
+
+  /**
    * @param {String} type (top or bottom)
    * @param {String} posSeparator
    */
@@ -281,11 +290,11 @@ export default class Reader extends _Reader {
     const location = this.findNodeLocation(startOffset, endOffset, type, posSeparator);
     this.showNodeLocationIfNeeded();
     if (!location) {
-      android.onTopNodeLocationOfCurrentPageNotFound();
+      android.onNodeLocationOfCurrentPageNotFound();
       return;
     }
 
-    android.onTopNodeLocationOfCurrentPageFound(location);
+    android.onNodeLocationOfCurrentPageFound(location);
   }
 
   /**
@@ -302,7 +311,7 @@ export default class Reader extends _Reader {
     this.content.body.setAttribute('style', style);
     setTimeout(() => {
       this.content.body.setAttribute('style', originStyle);
-      this._updateClientWidthAndGap();
+      this._updateClientWidth();
     }, 0);
   }
 
@@ -322,10 +331,10 @@ export default class Reader extends _Reader {
     styleElement.innerHTML = style;
     this.scrollTo(prevPage * this.pageUnit);
 
-    this._updateClientWidthAndGap();
+    this._updateClientWidth();
   }
 
-  _updateClientWidthAndGap() {
+  _updateClientWidth() {
     this._htmlClientWidth = this.content.wrapper.clientWidth;
     this._bodyClientWidth = this.content.body.clientWidth;
   }
@@ -349,10 +358,7 @@ export default class Reader extends _Reader {
         return;
       }
     }
-    const notFound = android[`on${method}NotFound`];
-    if (notFound) {
-      notFound();
-    }
+    android[`on${method}NotFound`]();
   }
 
   /**
