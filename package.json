@@ -1,12 +1,21 @@
 {
-  "name": "ridibooks-reader",
-  "version": "0.1.0",
-  "description": "Javascript library for Ridibooks viewer for iOS/Android written in ECMAScript 6",
+  "name": "@ridi/reader.js",
+  "version": "1.0.0",
+  "description": "Javascript library for Ridibooks iOS/Android viewer written in ECMAScript 6",
   "author": "Ridibooks Viewer Team <viewer.team@ridi.com>",
+  "keywords": [
+    "ridi",
+    "javascript",
+    "epub"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ridibooks/Reader.js"
   },
+  "bugs": {
+    "url": "https://github.com/ridibooks/Reader.js/issues"
+  },
+  "license": "MIT",
   "scripts": {
     "lint": "eslint --ext .js,.es6,.jsx ./src/**"
   },
@@ -29,6 +38,5 @@
     "gruntify-eslint": "^4.0.0",
     "@ridi/eslint-config": "^3.0.0",
     "time-grunt": "^1.3.0"
-  },
-  "license": "MIT"
+  }
 }
