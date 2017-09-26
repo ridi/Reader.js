@@ -6,7 +6,7 @@ module.exports = function(grunt) {
     gitinfo: {},
     variants: {
       name: 'reader',
-      platforms: '{android,ios}',
+      platforms: '{android,ios,web}',
       SHA: grunt.option('ci') ? '' : '<%= gitinfo.local.branch.current.SHA %> ',
       banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> <%= variants.SHA %>*/\n',
       strict: '\"use strict\";\n',
