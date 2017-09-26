@@ -1,5 +1,6 @@
 import _Object from './_Object';
 import _Util from './_Util';
+import rangy from '../libs/rangy';
 import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel extends _Object {

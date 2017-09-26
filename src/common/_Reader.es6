@@ -2,6 +2,7 @@ import _Object from './_Object';
 import _Sel from './_Sel';
 import _Util from './_Util';
 import MutableClientRect from './MutableClientRect';
+import rangy from '../libs/rangy';
 
 export default class _Reader extends _Object {
   /**
@@ -67,38 +68,11 @@ export default class _Reader extends _Object {
     super();
     this._context = context;
     this.debugNodeLocation = false;
-    this.methodSwizzling();
+    this.setCustomMethod();
   }
 
-  methodSwizzling() {
+  setCustomMethod() {
     const reader = this;
-
-    Range.prototype.originGetClientRects = Range.prototype.getClientRects;
-
-    /**
-     * @returns {ClientRect[]}
-     */
-    function getClientRects() {
-      const rects = this.originGetClientRects();
-      if (rects === null) {
-        return [];
-      }
-
-      const newRects = [];
-      for (let i = 0; i < rects.length; i++) {
-        const rect = rects[i];
-        if (rect.width <= 1) {
-          // Webkit, Chrome 버전에 따라 다음 페이지의 첫 글자를 선택했을 때
-          // 마지막 rect의 너비가 1 이하인 값이 들어오게 되는데 이게 오작동을
-          // 발생시키는 요인이 되기 때문에 버린다.
-          continue;
-        }
-        newRects.push(rect);
-      }
-      return newRects;
-    }
-
-    Range.prototype.getClientRects = getClientRects;
 
     /**
      * @returns {MutableClientRect}
@@ -111,7 +85,19 @@ export default class _Reader extends _Object {
      * @returns {MutableClientRect[]}
      */
     function getAdjustedClientRects() {
-      return reader.adjustRects(this.getClientRects() || []);
+      const rects = this.getClientRects() || [];
+      const newRects = [];
+      for (let i = 0; i < rects.length; i++) {
+        const rect = rects[i];
+        if (rect.width <= 1) {
+          // Webkit, Chrome 버전에 따라 다음 페이지의 첫 글자를 선택했을 때
+          // 마지막 rect의 너비가 1 이하인 값이 들어오게 되는데 이게 오작동을
+          // 발생시키는 요인이 되기 때문에 버린다.
+          continue;
+        }
+        newRects.push(rect);
+      }
+      return reader.adjustRects(newRects);
     }
 
     Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;

@@ -22,8 +22,8 @@ export default class Reader extends _Reader {
     this._setViewport();
   }
 
-  methodSwizzling() {
-    super.methodSwizzling();
+  setCustomMethod() {
+    super.setCustomMethod();
 
     /* eslint-disable no-console */
     console.log = (log => (message) => {
