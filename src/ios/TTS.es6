@@ -1,8 +1,14 @@
 import _TTS from '../common/tts/_TTS';
 
 export default class TTS extends _TTS {
+  /**
+   * @returns {Boolean}
+   */
   get makeChunksFinished() { return this._makeChunksFinished; }
 
+  /**
+   * @param {Reader} reader
+   */
   constructor(reader) {
     super(reader);
     this._makeChunksFinished = false;
@@ -25,6 +31,10 @@ export default class TTS extends _TTS {
     return JSON.stringify(temporalChunk);
   }
 
+  /**
+   * @param {Boolean} isMakingTemporalChunk
+   * @param {Boolean} addAtFirst
+   */
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     if (!isMakingTemporalChunk) {
       this._chunkSetsForPolling.push({ addAtFirst, chunks: this.chunks.map(chunk => chunk.toJSONForNative(this.reader)) });
@@ -35,9 +45,8 @@ export default class TTS extends _TTS {
   }
 
   didFinishMakeChunks() {
-    if (this._didFinishMakeChunksEnabled) {
+    if (super.didFinishMakeChunks()) {
       this._makeChunksFinished = true;
-      this._didFinishMakeChunksEnabled = false;
     }
   }
 

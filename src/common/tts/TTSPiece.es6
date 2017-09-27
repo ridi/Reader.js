@@ -2,19 +2,56 @@ import TTSUtil from './TTSUtil';
 import _Util from '../_Util';
 
 export default class TTSPiece {
+  /**
+   * @returns {Number}
+   */
   get nodeIndex() { return this._nodeIndex; }
+
+  /**
+   * @returns {Number}
+   */
   get startWordIndex() { return this._startWordIndex; }
+
+  /**
+   * @returns {Number}
+   */
   get endWordIndex() { return this._endWordIndex; }
+
+  /**
+   * @returns {Node}
+   */
   get node() { return this._node; }
+
+  /**
+   * @returns {String}
+   */
   get text() { return this._text; }
+
+  /**
+   * @returns {Number}
+   */
   get length() { return this._length; }
-  // node.nodeValue (piece.text 아님) 의 좌측 끝에서 startWordIndex에 해당하는 단어의
-  // 첫 글자 까지의 offset
+
+  /**
+   * node.nodeValue (piece.text 아님) 의 좌측 끝에서 startWordIndex에 해당하는 단어의 첫 글자까지의 offset
+   *
+   * @returns {Number}
+   */
   get paddingLeft() { return this._paddingLeft; }
-  // node.nodeValue (piece.text 아님) 의 우측 끝에서 endWordIndex에 해당하는 단어의
-  // 마지막 글자 까지의 offset
+
+  /**
+   * node.nodeValue (piece.text 아님) 의 우측 끝에서 endWordIndex에 해당하는 단어의 마지막 글자까지의 offset
+   *
+   * @returns {Number}
+   */
   get paddingRight() { return this._paddingRight; }
 
+  /**
+   * @param {Node} node
+   * @param {Number} nodeIndex
+   * @param {Number} startWordIndex
+   * @param {Number} endWordIndex
+   */
   constructor(node, nodeIndex, startWordIndex = -1, endWordIndex = -1) {
     this._node = node;
     this._nodeIndex = nodeIndex;
@@ -61,6 +98,9 @@ export default class TTSPiece {
     this._length = this._text.length;
   }
 
+  /**
+   * @returns {Boolean}
+   */
   isInvalid() {
     const node = this._node;
     let el = (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
@@ -90,9 +130,14 @@ export default class TTSPiece {
     return !valid;
   }
 
-  // NodeLocation을 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
-  // NodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
-  // <span><strong>TEXT</strong></span><br> 이런 경우에 대비하여 parentNode의 sibling까지 탐색하고 있다.
+  /**
+   * NodeLocation을 작업할 때 br 태그로 newLine이 가능하다는 것을 잊고 있었음;
+   * NodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
+   * <span><strong>TEXT</strong></span><br> 이런 경우에 대비하여 parentNode의 sibling까지 탐색하고 있다.
+   *
+   * @param {Boolean} checkNextSibling
+   * @returns {Boolean}
+   */
   isSiblingBrRecursive(checkNextSibling = true) {
     let node = this._node;
     while (node) {
@@ -117,6 +162,9 @@ export default class TTSPiece {
     return false;
   }
 
+  /**
+   * @returns {Boolean}
+   */
   isOnlyWhitespace() {
     const pNode = this._node.previousSibling;
     const regex = TTSUtil.getWhitespaceAndNewLineRegex(null, `{${this.length},}`);
@@ -127,6 +175,9 @@ export default class TTSPiece {
     return only;
   }
 
+  /**
+   * @returns {Boolean}
+   */
   isSentence() {
     return this.text.trim().match(TTSUtil.getSentenceRegex(null, '$')) !== null;
   }

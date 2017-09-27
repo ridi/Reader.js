@@ -1,6 +1,10 @@
 import _TTS from '../common/tts/_TTS';
 
 export default class TTS extends _TTS {
+  /**
+   * @param {Boolean} isMakingTemporalChunk
+   * @param {Boolean} addAtFirst
+   */
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     while (this.chunks.length > 0) {
       // this.chunks에는 항상 chunk들이 본문에서의 순서대로 들어있다.
@@ -15,9 +19,8 @@ export default class TTS extends _TTS {
   }
 
   didFinishMakeChunks() {
-    if (this._didFinishMakeChunksEnabled) {
+    if (super.didFinishMakeChunks()) {
       android.onFinishMakeChunks();
-      this._didFinishMakeChunksEnabled = false;
     }
   }
 }
