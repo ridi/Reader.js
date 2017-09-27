@@ -3,12 +3,10 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    gitinfo: {},
     variants: {
       name: 'reader',
       platforms: '{android,ios,web}',
-      SHA: grunt.option('ci') ? '' : '<%= gitinfo.local.branch.current.SHA %> ',
-      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> <%= variants.SHA %>*/\n',
+      banner: '/*! <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today("yyyy-mm-dd") %>) */\n',
       strict: '\"use strict\";\n',
       srcPath: 'src',
       buildPath: 'build',
@@ -106,14 +104,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-gitinfo');
   grunt.loadNpmTasks('gruntify-eslint');
 
-  grunt.registerTask('default', ['gitinfo', 'clean', 'lint', 'bundle']);
+  grunt.registerTask('default', ['clean', 'lint', 'bundle']);
+  grunt.registerTask('lint', ['jshint', 'eslint']);
+  grunt.registerTask('bundle', ['babel', 'browserify', 'uglify']);
   grunt.registerTask('show-config', function() {
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
-
-  grunt.registerTask('lint', ['jshint', 'eslint']);
-  grunt.registerTask('bundle', ['babel', 'browserify', 'uglify']);
 };
