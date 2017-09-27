@@ -2,7 +2,6 @@ import _Object from './_Object';
 import _Sel from './_Sel';
 import _Util from './_Util';
 import MutableClientRect from './MutableClientRect';
-import rangy from '../libs/rangy';
 
 export default class _Reader extends _Object {
   /**

@@ -84,7 +84,6 @@
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
 
-import rangy from '../../libs/rangy';
 import TTSPiece from './TTSPiece';
 import TTSChunk from './TTSChunk';
 import TTSRange from './TTSRange';

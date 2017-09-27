@@ -10,6 +10,7 @@ module.exports = {
     'browser': true
   },
   'globals': {
+    'rangy': true,
     'android': true
   },
 };

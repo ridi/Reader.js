@@ -1,14 +1,35 @@
 module.exports = function(grunt) {
   require('time-grunt')(grunt);
 
+  var platforms = 'android,ios,web';
+
+  function libconcat(options) {
+    var object = {};
+    platforms.split(',').forEach(function(platform) {
+      if ((options.allow || platforms).indexOf(platform) >= 0) {
+        object[platform] = {
+          src: [
+            options.src + '/*' + platform + '.js',
+            '<%= variants.libPath %>/*.js',
+          ],
+          dest: options.dest + '/<%= variants.name %>.' + platform + '.js',
+          options: {
+            banner: '<%= variants.banner %><%= variants.strict %>'
+          }
+        };
+      }
+    });
+    return object;
+  }
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     variants: {
       name: 'reader',
-      platforms: '{android,ios,web}',
       banner: '/*! <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today("yyyy-mm-dd") %>) */\n',
       strict: '\"use strict\";\n',
       srcPath: 'src',
+      libPath: '<%= variants.srcPath %>/libs',
       buildPath: 'build',
       intermediatePath: '<%= variants.buildPath %>',
       distPath: 'dist'
@@ -64,7 +85,7 @@ module.exports = function(grunt) {
       build: {
         files: [{
           expand: true,
-          src: '<%= variants.intermediatePath %>/src/<%= variants.platforms %>/index.js',
+          src: '<%= variants.intermediatePath %>/src/{' + platforms + '}/index.js',
           dest: '<%= variants.distPath %>',
           rename: function(dest, src) {
             return dest + '/' + '<%= variants.name %>.' + src.split('/').slice(-2, -1) + '.js';
@@ -74,11 +95,16 @@ module.exports = function(grunt) {
           browserifyOptions: {
             paths: ['js'],
             standalone: 'ReaderJS',
-          },
-          banner: '<%= variants.banner %><%= variants.strict %>'
+          }
         }
       }
     },
+
+    concat: libconcat({
+      src: '<%= variants.distPath %>',
+      dest: '<%= variants.distPath %>',
+      allow: 'android,ios'
+    }),
 
     uglify: {
       build: {
@@ -101,6 +127,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -108,7 +135,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', ['clean', 'lint', 'bundle']);
   grunt.registerTask('lint', ['jshint', 'eslint']);
-  grunt.registerTask('bundle', ['babel', 'browserify', 'uglify']);
+  grunt.registerTask('bundle', ['babel', 'browserify', 'concat', 'uglify']);
   grunt.registerTask('show-config', function() {
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
