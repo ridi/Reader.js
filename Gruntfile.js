@@ -26,7 +26,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     variants: {
       name: 'reader',
-      banner: '/*! <%= pkg.name %> v<%= pkg.version %> (<%= grunt.template.today("yyyy-mm-dd") %>) */\n',
+      banner: '/*! <%= pkg.name %> v<%= pkg.version %> */\n',
       strict: '\"use strict\";\n',
       srcPath: 'src',
       libPath: '<%= variants.srcPath %>/libs',
