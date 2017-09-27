@@ -121,6 +121,16 @@ module.exports = function(grunt) {
           mangle: false
         }
       }
+    },
+
+    watch: {
+      scripts: {
+        files: ['<%= variants.srcPath %>/**/*.{js,es6}'],
+        tasks: ['default'],
+        options: {
+          spawn: false
+        }
+      }
     }
   });
 
@@ -131,6 +141,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('gruntify-eslint');
 
   grunt.registerTask('default', ['clean', 'lint', 'bundle']);
