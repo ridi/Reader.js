@@ -1,7 +1,7 @@
 {
   "name": "@ridi/reader.js",
   "version": "1.0.0",
-  "description": "Javascript library for Ridibooks iOS/Android viewer written in ECMAScript 6",
+  "description": "Javascript library for RIDI ePub Viewer written in ECMAScript 6",
   "author": "Ridibooks Viewer Team <viewer.team@ridi.com>",
   "keywords": [
     "ridi",
@@ -10,10 +10,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ridibooks/Reader.js"
+    "url": "https://github.com/ridi/Reader.js"
   },
   "bugs": {
-    "url": "https://github.com/ridibooks/Reader.js/issues"
+    "url": "https://github.com/ridi/Reader.js/issues"
   },
   "files": [
     "dist"
