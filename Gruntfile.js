@@ -6,18 +6,16 @@ module.exports = function(grunt) {
   function libconcat(options) {
     var object = {};
     platforms.split(',').forEach(function(platform) {
-      if ((options.allow || platforms).indexOf(platform) >= 0) {
-        object[platform] = {
-          src: [
-            options.src + '/*' + platform + '.js',
-            '<%= variants.libPath %>/*.js',
-          ],
-          dest: options.dest + '/<%= variants.name %>.' + platform + '.js',
-          options: {
-            banner: '<%= variants.banner %><%= variants.strict %>'
-          }
-        };
-      }
+      object[platform] = {
+        src: [
+          options.src + '/*' + platform + '.js',
+          '<%= variants.libPath %>/*.js'
+        ],
+        dest: options.dest + '/<%= variants.name %>.' + platform + '.js',
+        options: {
+          banner: '<%= variants.banner %><%= variants.strict %>'
+        }
+      };
     });
     return object;
   }
@@ -102,8 +100,7 @@ module.exports = function(grunt) {
 
     concat: libconcat({
       src: '<%= variants.distPath %>',
-      dest: '<%= variants.distPath %>',
-      allow: 'android,ios'
+      dest: '<%= variants.distPath %>'
     }),
 
     uglify: {
