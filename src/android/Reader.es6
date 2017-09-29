@@ -233,7 +233,8 @@ export default class Reader extends _Reader {
       return -1;
     }
 
-    if (this.context.chromeMajorVersion >= 45) {
+    const version = this.context.chromeMajorVersion;
+    if (version >= 45 && version < 60) {
       // Chrome 45 버전부터 epub.totalWidth() 값을 신뢰할 수 없게 되어 다단으로 나뉘어진 body의 높이로 페이지를 계산한다.
       const bodyHeight = parseFloat(window.getComputedStyle(this.content.body).height, 10);
       let pageCount = bodyHeight / this.context.pageHeightUnit;
