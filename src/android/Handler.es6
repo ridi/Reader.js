@@ -1,24 +1,23 @@
 import _Handler from '../common/_Handler';
-import _EPub from '../common/_EPub';
 import Util from './Util';
 
 export default class Handler extends _Handler {
   /**
-   * @param {number} x
-   * @returns {boolean}
+   * @param {Number} x
+   * @returns {Boolean}
    */
-  static isInViewportWidth(x) {
-    const point = Util.adjustPoint(0, 0);
-    return x >= point.x && x <= point.x + document.documentElement.clientWidth;
+  isInViewportWidth(x) {
+    const point = this.reader.adjustPoint(0, 0);
+    return x >= point.x && x <= point.x + this.reader.content.wrapper.clientWidth;
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @param {string} nativePoints
+   * @param {Number} x
+   * @param {Number} y
+   * @param {String} nativePoints
    */
-  static processSingleTapEvent(x, y, nativePoints) {
-    const link = this.getLinkFromPoint(Util.adjustPoint(x, y));
+  processSingleTapEvent(x, y, nativePoints) {
+    const link = this.getLinkFromPoint(x, y);
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';
@@ -26,21 +25,21 @@ export default class Handler extends _Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = Util.rectsToAbsoluteCoord(range.getAdjustedClientRects());
-
+        const rects = this.reader.rectsToAbsoluteCoord(range.getAdjustedClientRects());
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
-          (text.trim().match(_EPub.getFootnoteRegex()) !== null || footnoteType >= 3.0);
+          (text.trim().match(Util.getFootnoteRegex()) !== null || footnoteType >= 3.0);
 
         if (canUseFootnote) {
           const src = href.replace(location.href, '');
-          if (src[0] === '#' || src.match(app.contentsSrc) !== null) {
+          if (src[0] === '#' || src.match(this.content.src) !== null) {
             const anchor = src.substring(src.lastIndexOf('#') + 1);
-            if (app.scrollMode) {
-              canUseFootnote = _EPub.getScrollYOffsetFromAnchor(anchor) >= window.pageYOffset;
+            const offset = this.reader.getOffsetFromAnchor(anchor);
+            if (this.reader.context.isScrollMode) {
+              canUseFootnote = offset >= this.reader.pageYOffset;
             } else {
-              canUseFootnote = _EPub.getPageOffsetFromAnchor(anchor) >= app.getCurPage();
+              canUseFootnote = offset >= this.reader.curPage;
             }
           }
         }
@@ -53,22 +52,20 @@ export default class Handler extends _Handler {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
+   * @param {Number} x
+   * @param {Number} y
    */
-  static processLongTapZoomEvent(x, y) {
-    const point = Util.adjustPoint(x, y);
+  processLongTapZoomEvent(x, y) {
+    const point = this.reader.adjustPoint(x, y);
 
-    let src = _EPub.getImagePathFromPoint(point.x, point.y);
+    let src = this.reader.content.getImagePathFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onImageLongTapZoom(src);
     }
 
-    src = _EPub.getSvgElementFromPoint(point.x, point.y);
+    src = this.reader.content.getSvgElementFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onSvgElementLongTapZoom(src);
     }
   }
 }
-
-Handler.staticOverride(Handler, _Handler, ['isInViewportWidth']);

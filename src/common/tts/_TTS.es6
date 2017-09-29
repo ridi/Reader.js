@@ -88,59 +88,109 @@ import TTSPiece from './TTSPiece';
 import TTSChunk from './TTSChunk';
 import TTSRange from './TTSRange';
 import TTSUtil from './TTSUtil';
-import _EPub from '../_EPub';
 
 export default class _TTS {
+  /**
+   * @returns {Reader}
+   */
+  get reader() { return this._reader; }
+
+  /**
+   * @returns {Node[]}
+   */
+  get nodes() { return this.reader.content.nodes; }
+
+  /**
+   * @returns {TTSChunk[]}
+   */
   get chunks() { return this._chunks; }
 
-  constructor() {
+  /**
+   * 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
+   *
+   * @returns {Number}
+   */
+  get reserveNodesCountMagic() { return 40; }
+
+  /**
+   * @returns {Number}
+   */
+  get makeChunksInterval() { return 100; }
+
+  /**
+   * @returns {Number}
+   */
+  get processedNodeMinIndex() { return this._processedNodeMinIndex; }
+
+  /**
+   * @returns {Number}
+   */
+  get processedNodeMaxIndex() { return this._processedNodeMaxIndex; }
+
+  /**
+   * @returns {Boolean}
+   */
+  get didFinishMakeChunksEnabled() { return this._didFinishMakeChunksEnabled; }
+
+  /**
+   * @param {Reader} reader
+   */
+  constructor(reader) {
+    this._reader = reader;
     this.debug = false;
-    // reserveNodesCountMagic을 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
-    this.reserveNodesCountMagic = 40;
-    this.makeChunksInterval = 100;
-    this.processedNodeMinIndex = -1;
-    this.processedNodeMaxIndex = -1;
+    this._processedNodeMinIndex = -1;
+    this._processedNodeMaxIndex = -1;
     this._generateMoreChunksTimeoutId = 0;
     this._didFinishMakeChunksEnabled = false;
     this._chunks = [];
   }
 
+  /**
+   * @param {String} serializedRange
+   * @returns {{nodeIndex: Number, wordIndex: Number}}
+   * @private
+   */
   _serializedRangeToNodeLocation(serializedRange) {
     const range = rangy.deserializeRange(serializedRange, document.body);
     if (range === null) {
       throw new Error('TTS: range is invalid.');
     }
 
-    const nodes = _EPub.getTextAndImageNodes();
-    if (nodes === null) {
-      throw new Error('TTS: nodes is empty. make call epub.getTextAndImageNodes().');
-    }
-
+    const nodes = this.nodes;
     let nodeIndex = -1;
     let wordIndex = 0;
-    for (let i = 0, offset = 0; i < nodes.length; i += 1, offset = 0) {
-      if (nodes[i] === range.startContainer) {
-        nodeIndex = i;
-        const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
-        for (; wordIndex < words.length; wordIndex++) {
-          if (range.startOffset <= offset + words[wordIndex].length) {
-            break;
-          } else {
-            offset += (words[wordIndex].length + 1);
+    if (nodes) {
+      for (let i = 0, offset = 0; i < nodes.length; i += 1, offset = 0) {
+        if (nodes[i] === range.startContainer) {
+          nodeIndex = i;
+          const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
+          for (; wordIndex < words.length; wordIndex++) {
+            if (range.startOffset <= offset + words[wordIndex].length) {
+              break;
+            } else {
+              offset += (words[wordIndex].length + 1);
+            }
           }
+          break;
         }
-        break;
       }
     }
 
     return { nodeIndex, wordIndex };
   }
 
+  /**
+   * @param {String} serializedRange
+   */
   playChunksBySerializedRange(serializedRange) {
     const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
     this.playChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
   }
 
+  /**
+   * @param {Number} nodeIndex
+   * @param {Number} wordIndex
+   */
   playChunksByNodeLocation(nodeIndex, wordIndex) {
     this.makeChunksByNodeLocation(nodeIndex, wordIndex, true);
     if (this.chunks.length === 0) {
@@ -183,11 +233,18 @@ export default class _TTS {
     }
   }
 
+  /**
+   * @param {String} serializedRange
+   */
   makeAdjacentChunksBySerializedRange(serializedRange) {
     const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
     this.makeAdjacentChunksByNodeLocation(nodeLocation.nodeIndex, nodeLocation.wordIndex);
   }
 
+  /**
+   * @param {Number} nodeIndex
+   * @param {Number} wordIndex
+   */
   makeAdjacentChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
     /**
      * Android에서 spine 넘어갈 때 didFinishMakeChunks 중복 호출을 통제하기 위해
@@ -212,7 +269,11 @@ export default class _TTS {
 
     this.playChunksByNodeLocation(nodeIndex, wordIndex);
 
-    const nodes = _EPub.getTextAndImageNodes();
+    const nodes = this.nodes;
+    if (!nodes) {
+      return;
+    }
+
     const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < nodes.length);
     const hasMoreBeforeChunks = () => (this.processedNodeMinIndex - 1 >= 0);
     let generateMoreChunks = () => {};
@@ -250,14 +311,16 @@ export default class _TTS {
     scheduleTask();
   }
 
-  /*
-   * nodeIndex / wordIndex : inclusive
-   * isMakingTemporalChunk : Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
+  /**
+   * @param {Number} nodeIndex
+   * @param {Number} wordIndex
+   * @param {Boolean} isMakingTemporalChunk : Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
+   * @returns {Number}
    */
   makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
-    const nodes = _EPub.getTextAndImageNodes();
+    const nodes = this.nodes;
     if (nodes === null) {
-      throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
+      return 0;
     }
 
     let _nodeIndex = Math.max(nodeIndex, 0);
@@ -281,7 +344,7 @@ export default class _TTS {
 
       let piece;
       try {
-        piece = new TTSPiece(_nodeIndex, _wordIndex);
+        piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, _wordIndex);
       } catch (e) {
         /* eslint-disable no-console */
         console.error(e);
@@ -328,15 +391,21 @@ export default class _TTS {
       }
     }
     if (!isMakingTemporalChunk) {
-      this.processedNodeMaxIndex = maxIndex;
+      this._processedNodeMaxIndex = maxIndex;
     }
     return this.chunks.length;
   }
 
+  /**
+   * @param {Number} nodeIndex
+   * @param {Number} wordIndex
+   * @param {Boolean} isMakingTemporalChunk
+   * @returns {Boolean}
+   */
   makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
-    const nodes = _EPub.getTextAndImageNodes();
+    const nodes = this.nodes;
     if (nodes === null) {
-      throw new Error('tts: nodes is empty. make call epub.getTextAndImageNodes().');
+      return 0;
     }
 
     const wordsInNode = node => (node ? (node.nodeValue || '').split(TTSUtil.getSplitWordRegex()) : []);
@@ -365,7 +434,7 @@ export default class _TTS {
 
       let piece;
       try {
-        piece = new TTSPiece(_nodeIndex, startWordIndex, endWordIndex);
+        piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
         /* eslint-disable no-console */
         console.error(e);
@@ -426,21 +495,39 @@ export default class _TTS {
       }
     }
     if (!isMakingTemporalChunk) {
-      this.processedNodeMinIndex = minIndex;
+      this._processedNodeMinIndex = minIndex;
     }
     return this.chunks.length;
   }
 
-  // makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
+  /**
+   * makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
+   *
+   * @param {Boolean} isMakingTemporalChunk
+   * @param {Boolean} addAtFirst
+   */
   didFinishMakePartialChunks(/* isMakingTemporalChunk, addAtFirst */) {
     throw new Error('Must override this method');
   }
 
-  // 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
+  /**
+   * 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
+   *
+   * @returns {Boolean}
+   */
   didFinishMakeChunks() {
-    throw new Error('Must override this method');
+    if (this.didFinishMakeChunksEnabled) {
+      this._didFinishMakeChunksEnabled = false;
+      return true;
+    }
+    return false;
   }
 
+  /**
+   * @param {TTSPiece[]} pieces
+   * @param {Boolean} addAtFirst
+   * @private
+   */
   _addChunk(pieces, addAtFirst) {
     if (pieces.length === 0) {
       return;
@@ -512,10 +599,10 @@ export default class _TTS {
   }
 
   flush() {
-    this.processedNodeMinIndex = -1;
-    this.processedNodeMaxIndex = -1;
-    this._chunks = [];
+    this._processedNodeMinIndex = -1;
+    this._processedNodeMaxIndex = -1;
     this._generateMoreChunksTimeoutId += 1;
     this._didFinishMakeChunksEnabled = false;
+    this._chunks = [];
   }
 }

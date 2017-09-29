@@ -4,7 +4,7 @@ export default class _Object {
    *
    * @param {class} from
    * @param {class} to
-   * @param {[function]} methods
+   * @param {function[]} methods
    */
   static staticOverride(from, to, methods) {
     const _to = to;

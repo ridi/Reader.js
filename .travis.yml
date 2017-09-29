@@ -4,8 +4,7 @@ node_js: node
 before_script: npm install -g grunt-cli
 
 script:
-  - grunt --platform=ios --ci
-  - grunt --platform=android --ci
+  - grunt
 
 after_success: >-
   curl -s -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Travis-API-Version: 3" -H "Authorization: token $TRAVIS_PRIVATE_API_TOKEN" -d '{"request": {"branch": "master"}}' https://api.travis-ci.com/repo/ridi-viewer%2FTTS-JS-Unit-Test/requests

@@ -4,7 +4,14 @@ import TTSUtil from './TTSUtil';
 import _Util from '../_Util';
 
 export default class TTSChunk {
+  /**
+   * @returns {TTSRange}
+   */
   get range() { return this._range; }
+
+  /**
+   * @param {TTSRange} newRange
+   */
   set range(newRange) {
     if (newRange instanceof TTSRange) {
       this._range = newRange;
@@ -13,20 +20,32 @@ export default class TTSChunk {
     }
   }
 
+  /**
+   * @param {TTSPiece} pieces
+   * @param {TTSRange} range
+   */
   constructor(pieces, range = null) {
     this._pieces = pieces;
     this.range = range;
   }
 
-  toJSONForNative() {
+  /**
+   * @param {Reader} reader
+   * @returns {{nodeIndex: Number, wordIndex: Number, text: (String), rects: String}}
+   */
+  toJSONForNative(reader) {
     return {
       nodeIndex: this.getStartNodeIndex(),
       wordIndex: this.getStartWordIndex(),
       text: this.getUtterance().text,
-      rects: _Util.rectsToAbsoluteCoord(this.getClientRects(true)),
+      rects: reader.rectsToAbsoluteCoord(this.getClientRects(true)),
     };
   }
 
+  /**
+   * @returns {String}
+   * @private
+   */
   _getFullText() {
     let fullText = '';
     this._pieces.forEach((piece) => {
@@ -35,10 +54,16 @@ export default class TTSChunk {
     return fullText;
   }
 
+  /**
+   * @returns {String}
+   */
   getText() {
     return this._getFullText().substring(this.range.startOffset, this.range.endOffset);
   }
 
+  /**
+   * @returns {TTSUtterance}
+   */
   getUtterance() {
     return new TTSUtterance(this.getText())
       .removeNewLine()
@@ -54,6 +79,10 @@ export default class TTSChunk {
       .insertPauseTag();
   }
 
+  /**
+   * @param {Number} offset
+   * @returns {TTSPiece|null}
+   */
   getPiece(offset) {
     let length = 0;
     return TTSUtil.find(this._pieces, (piece) => {
@@ -62,6 +91,10 @@ export default class TTSChunk {
     });
   }
 
+  /**
+   * @param {TTSPiece} piece
+   * @returns {Number}
+   */
   getOffset(piece) {
     let offset = piece.paddingLeft;
     return this._pieces.find((item) => {
@@ -73,22 +106,37 @@ export default class TTSChunk {
     }) !== undefined ? offset : 0;
   }
 
+  /**
+   * @returns {TTSPiece|null}
+   */
   getStartWordPiece() {
     return this.getPiece(this.range.startOffset);
   }
 
+  /**
+   * @returns {TTSPiece|null}
+   */
   getEndWordPiece() {
     return this.getPiece(this.range.endOffset);
   }
 
+  /**
+   * @returns {Number|null}
+   */
   getStartNodeIndex() {
     return this.getStartWordPiece().nodeIndex;
   }
 
+  /**
+   * @returns {Number|null}
+   */
   getEndNodeIndex() {
     return this.getEndWordPiece().nodeIndex;
   }
 
+  /**
+   * @returns {Number}
+   */
   getStartWordIndex() {
     // start word piece === this._pieces[0]인 경우
     // |---------------||---- text of this._pieces[0] ----------------------
@@ -126,6 +174,9 @@ export default class TTSChunk {
     return words.length - 1;
   }
 
+  /**
+   * @returns {Number}
+   */
   getEndWordIndex() {
     const piece = this.getEndWordPiece();
     const firstPaddingLeft = this._pieces[0].paddingLeft;
@@ -167,6 +218,10 @@ export default class TTSChunk {
     return words.length - 1;
   }
 
+  /**
+   * @param {Boolean} removeBlank
+   * @returns {MutableClientRect[]}
+   */
   getClientRects(removeBlank) {
     const chunkRange = this.range;
     const pieces = this._pieces;
@@ -283,6 +338,10 @@ export default class TTSChunk {
     return rects;
   }
 
+  /**
+   * @param {TTSRange} range
+   * @returns {TTSChunk}
+   */
   copy(range) {
     return new TTSChunk(this._pieces, range);
   }

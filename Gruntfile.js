@@ -1,46 +1,42 @@
 module.exports = function(grunt) {
-  var platform = grunt.option('platform');
-  if (platform === undefined || (platform !== 'android' && platform !== 'ios')) {
-    throw 'Usage: grunt [default|epub-debug|show-config] --platform=[android|ios] --dist=path {--ci}';
-  }
-
-  var buildPath = 'build';
-  var distPath = grunt.option('dist') || buildPath;
-
   require('time-grunt')(grunt);
+
+  var platforms = 'android,ios,web';
+
+  function libconcat(options) {
+    var object = {};
+    platforms.split(',').forEach(function(platform) {
+      object[platform] = {
+        src: [
+          options.src + '/*' + platform + '.js',
+          '<%= variants.libPath %>/*.js'
+        ],
+        dest: options.dest + '/<%= variants.name %>.' + platform + '.js',
+        options: {
+          banner: '<%= variants.banner %><%= variants.strict %>'
+        }
+      };
+    });
+    return object;
+  }
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    gitinfo: {},
     variants: {
       name: 'reader',
-      SHA: grunt.option('ci') ? '' : '<%= gitinfo.local.branch.current.SHA %> ',
-      banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> <%= variants.SHA %>*/\n',
+      banner: '/*! <%= pkg.name %> v<%= pkg.version %> */\n',
       strict: '\"use strict\";\n',
-      platform: platform,
-      basePath: 'src',
-      commonPath: '<%= variants.basePath %>/common',
-      platformPath: '<%= variants.basePath %>/<%= variants.platform %>',
-      libsPath: '<%= variants.basePath %>/libs',
-      buildPath: buildPath,
-      distPath: distPath,
-      src: {
-        es6: [
-          '<%= variants.commonPath %>/**/*.es6',
-          '<%= variants.platformPath %>/*.es6'
-        ],
-        js: [
-          '<%= variants.libsPath %>/*.js'
-        ]
-      },
-      intermediate: '<%= variants.buildPath %>/<%= variants.name %>.js',
-      dist: '<%= variants.distPath %>/<%= variants.name %>.js'
+      srcPath: 'src',
+      libPath: '<%= variants.srcPath %>/libs',
+      buildPath: 'build',
+      intermediatePath: '<%= variants.buildPath %>',
+      distPath: 'dist'
     },
 
     clean: {
       src: [
         '<%= variants.buildPath %>',
-        '<%= variants.dist %>'
+        '<%= variants.distPath %>'
       ],
       options: {
         force: true
@@ -57,90 +53,80 @@ module.exports = function(grunt) {
         }
       },
       files: [
-        '<%= variants.src.js %>'
+        '<%= variants.srcPath %>/**/*.js'
       ]
     },
 
     eslint: {
       files: [
-        '<%= variants.src.es6 %>'
+        '<%= variants.srcPath %>/**/*.es6'
       ]
     },
 
     babel: {
       build: {
+        files: [{
+          expand: true,
+          src: '<%= variants.srcPath %>/**/*.{js,es6}',
+          dest: '<%= variants.intermediatePath %>',
+          ext: '.js',
+          extDot: 'last'
+        }],
         options: {
           presets: ['es2015'],
           sourceMaps: false
-        },
-        files: [{
-          expand: true,
-          src: ['<%= variants.src.es6 %>'],
-          dest: '<%= variants.buildPath %>',
-          ext: '.js',
-          extDot: 'last'
-        }]
+        }
       }
     },
 
     browserify: {
       build: {
-        src: [
-          '<%= variants.buildPath %>/<%= variants.platformPath %>/Init.js'
-        ],
-        dest: '<%= variants.intermediate %>',
+        files: [{
+          expand: true,
+          src: '<%= variants.intermediatePath %>/src/{' + platforms + '}/index.js',
+          dest: '<%= variants.distPath %>',
+          rename: function(dest, src) {
+            return dest + '/' + '<%= variants.name %>.' + src.split('/').slice(-2, -1) + '.js';
+          }
+        }],
         options: {
           browserifyOptions: {
             paths: ['js'],
-            standalone: 'Reader'
+            standalone: 'ReaderJS',
           }
         }
       }
     },
 
-    concat: {
-      build: {
-        src: [
-          '<%= variants.intermediate %>',
-          '<%= variants.src.js %>'
-        ],
-        dest: '<%= variants.intermediate %>',
-        options: {
-          banner: '<%= variants.banner %><%= variants.strict %>'
-        }
-      }
-    },
+    concat: libconcat({
+      src: '<%= variants.distPath %>',
+      dest: '<%= variants.distPath %>'
+    }),
 
     uglify: {
-      options: {
-        banner: '<%= variants.banner %>',
-        mangle: false
-      },
-      dynamic_mappings: {
+      build: {
         files: [{
-            expand: true,
-            flatten: true,
-            src: '<%= variants.intermediate %>',
-            dest: '<%= variants.dist %>',
-            rename: function(dest) {
-              return dest.replace('.js', '.min.js');
-            }
+          expand: true,
+          src: '<%= variants.distPath %>/*.js',
+          dest: '<%= variants.distPath %>',
+          rename: function(dest, src) {
+            return src.replace('.js', '.min.js');
           }
-        ]
+        }],
+        options: {
+          banner: '<%= variants.banner %>',
+          mangle: false
+        }
       }
     },
 
-    copy: {
-      dynamic_mappings: {
-        files: [{
-            expand: true,
-            src: '<%= variants.intermediate %>',
-            dest: '<%= variants.dist %>',
-            rename: function(dest) {
-              return dest.replace('.js', '.min.js');
-            }
-          }
-        ]
+    watch: {
+      scripts: {
+        files: ['<%= variants.srcPath %>/**/*.{js,es6}'],
+        tasks: ['default'],
+        options: {
+          spawn: false
+        }
       }
     }
   });
@@ -148,20 +134,17 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-gitinfo');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('gruntify-eslint');
 
-  grunt.registerTask('default', ['gitinfo', 'clean', 'lint', 'bundle', 'uglify']);
-  grunt.registerTask('epub-debug', ['clean', 'lint', 'bundle', 'copy']);
-  grunt.registerTask('show-config', function() { // debug
+  grunt.registerTask('default', ['clean', 'lint', 'bundle']);
+  grunt.registerTask('lint', ['jshint', 'eslint']);
+  grunt.registerTask('bundle', ['babel', 'browserify', 'concat', 'uglify']);
+  grunt.registerTask('show-config', function() {
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
-
-  grunt.registerTask('lint', ['jshint', 'eslint']);
-  grunt.registerTask('bundle', ['babel', 'browserify', 'concat']);
 };

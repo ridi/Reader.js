@@ -1,28 +1,51 @@
 import TTSUtil from './TTSUtil';
 
 export default class TTSUtterance {
+  /**
+   * @returns {String}
+   */
   get text() { return this._text; }
+
+  /**
+   * @returns {Number}
+   */
   get length() { return this._length; }
 
+  /**
+   * @param {String} text
+   */
   constructor(text) {
     this._text = text;
     this._length = text.length;
   }
 
-  // 개행문자는 읽을 때 잡음으로 변환되기 때문에 제거한다.
+  /**
+   * 개행문자는 읽을 때 잡음으로 변환되기 때문에 제거한다.
+   *
+   * @returns {TTSUtterance}
+   */
   removeNewLine() {
     return new TTSUtterance(this.text.replace(TTSUtil.getNewLineRegex(), ' '));
   }
 
-  // 읽지 말아야할 특수문자를 제거한다.
-  // (사용자 사전으로 처리할 수 없기 때문에 코드로)
+  /**
+   * 읽지 말아야할 특수문자를 제거한다.
+   * (사용자 사전으로 처리할 수 없기 때문에 코드로)
+   * 
+   * @param {String[]} characters
+   * @returns {TTSUtterance}
+   */
   removeSpecialCharacters(characters) {
     const regex = new RegExp(`[${characters.join('')}]`, 'gm');
     return new TTSUtterance(this.text.replace(regex, ' '));
   }
 
-  // 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 제거한다.
-  // TODO: 한자 단독으로 쓰일 때 처리하기
+  /**
+   * 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 제거한다.
+   * TODO: 한자 단독으로 쓰일 때 처리하기
+   *
+   * @returns {TTSUtterance}
+   */
   removeHanja() {
     let text = this.text;
     for (let i = 0; i < this.length; i++) {
@@ -33,7 +56,11 @@ export default class TTSUtterance {
     return new TTSUtterance(text);
   }
 
-  // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
+  /**
+   * // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
+   *
+   * @returns {TTSUtterance}
+   */
   removeLatin() {
     const removeList = [];
     const text = this.text;
@@ -129,7 +156,11 @@ export default class TTSUtterance {
     return new TTSUtterance(result);
   }
 
-  // 한글에 틸드 문자가 붙을 경우 소리를 늘리는 의미기에 자모에 맞춰 늘려준다.
+  /**
+   * 한글에 틸드 문자가 붙을 경우 소리를 늘리는 의미기에 자모에 맞춰 늘려준다.
+   *
+   * @returns {TTSUtterance}
+   */
   replaceTilde() {
     const extendTable = [
       '아', '에', '아', '에', '어',
@@ -204,6 +235,10 @@ export default class TTSUtterance {
     return new TTSUtterance(text);
   }
 
+  /**
+   * @param {String[]} strs
+   * @returns {TTSUtterance}
+   */
   removeAllRepeatedCharacter(strs) {
     let text = this.text;
     for (let i = 0; i < strs.length; i++) {
@@ -213,6 +248,9 @@ export default class TTSUtterance {
     return new TTSUtterance(text);
   }
 
+  /**
+   * @returns {TTSUtterance}
+   */
   replaceNumeric() {
     const Type = {
       None: -1,
@@ -333,7 +371,11 @@ export default class TTSUtterance {
     return new TTSUtterance(text);
   }
 
-  // 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
+  /**
+   * 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
+   *
+   * @returns {TTSUtterance}
+   */
   replaceBracket() {
     const pattern = /\([\d]{1,2}\)/gm;
     let text = this.text;
@@ -350,12 +392,20 @@ export default class TTSUtterance {
     return new TTSUtterance(text);
   }
 
-  // 판타지 소설에서 '=' 문자로 구분선을 만들기 때문에 사용자 사전에 넣지는 못하고 수동으로.. '=' 하나만
+  /**
+   * 판타지 소설에서 '=' 문자로 구분선을 만들기 때문에 사용자 사전에 넣지는 못하고 수동으로.. '=' 하나만
+   *
+   * @returns {TTSUtterance}
+   */
   replaceEqual() {
     return new TTSUtterance(this.text.replace(/([^=])([=]{1})([^=])/gm, '$1는 $3'));
   }
 
-  // TODO: 영문 월을 한글로 변환하기
+  /**
+   * TODO: 영문 월을 한글로 변환하기
+   *
+   * @returns {TTSUtterance}
+   */
   replaceDate() {
     // const abbrMonth = [
     //   "jan", "feb", "mar", "may", "apr", "jun", "jul", "aug", "sep", "oct", "nov", "dec"
@@ -367,7 +417,11 @@ export default class TTSUtterance {
     return new TTSUtterance(this.text);
   }
 
-  // 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
+  /**
+   * 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
+   *
+   * @returns {TTSUtterance}
+   */
   insertPauseTag() {
     let text = this.text;
     text = text.replace(/([\D])([·]{2,})([\D])/gm, '$1<pause=\'200ms\'>$2$3');

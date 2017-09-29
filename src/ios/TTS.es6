@@ -1,10 +1,16 @@
 import _TTS from '../common/tts/_TTS';
 
 export default class TTS extends _TTS {
+  /**
+   * @returns {Boolean}
+   */
   get makeChunksFinished() { return this._makeChunksFinished; }
 
-  constructor() {
-    super();
+  /**
+   * @param {Reader} reader
+   */
+  constructor(reader) {
+    super(reader);
     this._makeChunksFinished = false;
     this._chunkSetsForPolling = [];
     this._temporalChunk = null;
@@ -25,19 +31,22 @@ export default class TTS extends _TTS {
     return JSON.stringify(temporalChunk);
   }
 
+  /**
+   * @param {Boolean} isMakingTemporalChunk
+   * @param {Boolean} addAtFirst
+   */
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     if (!isMakingTemporalChunk) {
-      this._chunkSetsForPolling.push({ addAtFirst, chunks: this.chunks.map(chunk => chunk.toJSONForNative()) });
+      this._chunkSetsForPolling.push({ addAtFirst, chunks: this.chunks.map(chunk => chunk.toJSONForNative(this.reader)) });
     } else if (this.chunks.length > 0) {
-      this._temporalChunk = this.chunks.pop().toJSONForNative();
+      this._temporalChunk = this.chunks.pop().toJSONForNative(this.reader);
     }
     this._chunks = [];
   }
 
   didFinishMakeChunks() {
-    if (this._didFinishMakeChunksEnabled) {
+    if (super.didFinishMakeChunks()) {
       this._makeChunksFinished = true;
-      this._didFinishMakeChunksEnabled = false;
     }
   }
 

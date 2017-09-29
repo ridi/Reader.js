@@ -1,6 +1,11 @@
-import EPub from '../_EPub';
+import _Util from '../_Util';
 
 export default class TTSUtil {
+  /**
+   * @param {TTSPiece[]} list
+   * @param {function} callback
+   * @returns {TTSPiece|null}
+   */
   static find(list, callback) {
     for (let i = 0; i < list.length; i++) {
       const item = list[i];
@@ -11,26 +16,61 @@ export default class TTSUtil {
     return null;
   }
 
+  /**
+   * @param {String} prefix
+   * @param {String} pattern
+   * @param {String} suffix
+   * @param {String} flags
+   * @returns {RegExp}
+   * @private
+   */
   static _createRegex(prefix, pattern, suffix, flags) {
     return new RegExp(`${prefix || ''}${pattern || ''}${suffix || ''}`, flags || 'gm');
   }
 
+  /**
+   * @returns {RegExp}
+   */
   static getSplitWordRegex() {
-    return EPub.getSplitWordRegex();
+    return _Util.getSplitWordRegex();
   }
 
+  /**
+   * @param {String} prefix
+   * @param {String} suffix
+   * @param {String} flags
+   * @returns {RegExp}
+   */
   static getWhitespaceRegex(prefix, suffix, flags) {
     return this._createRegex(prefix, '[ \\u00A0]', suffix, flags);
   }
 
+  /**
+   * @param {String} prefix
+   * @param {String} suffix
+   * @param {String} flags
+   * @returns {RegExp}
+   */
   static getNewLineRegex(prefix, suffix, flags) {
     return this._createRegex(prefix, '[\\r\\n]', suffix, flags);
   }
 
+  /**
+   * @param {String} prefix
+   * @param {String} suffix
+   * @param {String} flags
+   * @returns {RegExp}
+   */
   static getWhitespaceAndNewLineRegex(prefix, suffix, flags) {
     return this._createRegex(prefix, '[\\t\\r\\n\\s\\u00A0]', suffix, flags);
   }
 
+  /**
+   * @param {String} prefix
+   * @param {String} suffix
+   * @param {String} flags
+   * @returns {RegExp}
+   */
   static getSentenceRegex(prefix, suffix, flags) {
     /* eslint-disable no-useless-escape */
     return this._createRegex(prefix, '[.。?!\"”\'’」』〞〟]', suffix, flags);
@@ -39,16 +79,30 @@ export default class TTSUtil {
 
   // *** Char ***
 
+  /**
+   * @param {String} ch
+   * @returns {Boolean}
+   */
   static isLastCharOfSentence(ch = '') {
     return ch.match(this.getSentenceRegex()) !== null;
   }
 
+  /**
+   * @param {String} ch
+   * @returns {Boolean}
+   */
   static isDigitOrLatin(ch = '') {
     const code = ch.charCodeAt(0);
     return this.isLatinCharCode(code) || this.isDigitCharCode(code);
   }
 
-  // '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
+  /**
+   * '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
+   *
+   * @param {String} textWithPeriod
+   * @param {String} textAfterPeriod
+   * @returns {Boolean}
+   */
   static isPeriodPointOrName(textWithPeriod, textAfterPeriod) {
     if (textWithPeriod === undefined || textAfterPeriod === undefined) {
       return false;
@@ -67,6 +121,10 @@ export default class TTSUtil {
 
   // *** Bracket ***
 
+  /**
+   * @param {String} text
+   * @returns {String}
+   */
   static getBrackets(text = '') {
     try {
       /* eslint-disable no-useless-escape */
@@ -77,10 +135,19 @@ export default class TTSUtil {
     }
   }
 
+  /**
+   * @param {String} open
+   * @param {String} close
+   * @returns {Boolean}
+   */
   static isOnePairBracket(open = '', close = '') {
     return (open + close).match(/\(\)|\{\}|\[\]/gm) !== null;
   }
 
+  /**
+   * @param {String[]} sentences
+   * @returns {String[]}
+   */
   static mergeSentencesWithinBrackets(sentences = []) {
     const resultSentences = [];
     const brackets = [];
@@ -111,6 +178,12 @@ export default class TTSUtil {
 
   // *** CharCode ***
 
+  /**
+   * @param {Number} code
+   * @param {Number[]} table
+   * @returns {Boolean}
+   * @private
+   */
   static _containCharCode(code, table) {
     if (!isNaN(code)) {
       for (let i = 0; i < table.length; i += 2) {
@@ -122,32 +195,58 @@ export default class TTSUtil {
     return false;
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isDigitCharCode(code) {
     return this._containCharCode(code, [0x0030, 0x0039]);
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isSpaceCharCode(code) {
     return code === 0x0020 || code === 0x00A0;
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isTildeCharCode(code) {
     return code === 0x007E || code === 0x223C || code === 0x301C; // ~, ∼, 〜
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isColonCharCode(code) {
     return code === 0x003A;
   }
 
+  /**
+   * @returns {Number[]}
+   */
   static hangulCodeTable() {
     return [
       0xAC00, 0xD7AF,
     ];
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isHangulCharCode(code) {
     return this._containCharCode(code, this.hangulCodeTable());
   }
 
+  /**
+   * @returns {Number[]}
+   */
   static latinCodeTable() {
     return [
       0x0020, 0x007F, // Latin Basic
@@ -157,6 +256,11 @@ export default class TTSUtil {
     ];
   }
 
+  /**
+   * @param {Number} code
+   * @param {String} flag
+   * @returns {Boolean}
+   */
   static isLatinCharCode(code, flag) {
     if (isNaN(code)) {
       return false;
@@ -203,6 +307,9 @@ export default class TTSUtil {
     return this._containCharCode(code, table);
   }
 
+  /**
+   * @returns {Number[]}
+   */
   static chineseCodeTable() {
     return [
       0x4E00,
@@ -228,10 +335,17 @@ export default class TTSUtil {
     ];
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isChineseCharCode(code) {
     return this._containCharCode(code, this.chineseCodeTable());
   }
 
+  /**
+   * @returns {Number[]}
+   */
   static japaneseCodeTable() {
     return [
       0x3000,
@@ -247,10 +361,18 @@ export default class TTSUtil {
     ];
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Boolean}
+   */
   static isJapaneseCharCode(code) {
     return this._containCharCode(code, this.japaneseCodeTable());
   }
 
+  /**
+   * @param {Number[]} tables
+   * @returns {RegExp}
+   */
   static getContainCharRegex(tables = []) {
     const toUnicode = (num) => {
       // FIXME: BMP를 벗어나는 애들 처리(http://ujinbot.blogspot.kr/2013/10/blog-post.html)
@@ -275,6 +397,10 @@ export default class TTSUtil {
 
   // Hangel
 
+  /**
+   * @param {Number} code
+   * @returns {Number}
+   */
   static getInitialCharCode(code) {
     //      ㄱ  ㄲ ㄴ  ㄷ  ㄸ ㄹ  ㅁ ㅂ  ㅃ  ㅅ ㅆ  ㅇ ㅈ  ㅉ ㅊ  ㅋ ㅌ  ㅍ ㅎ
     // 0x31 31 32 34 37 38 39 41 42 43 45 46 47 48 49 4A 4B 4C 4D 4E
@@ -285,10 +411,18 @@ export default class TTSUtil {
     return 0x3100 + codes[((((code - 0xAC00) - ((code - 0xAC00) % 28))) / 28) / 21];
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Number}
+   */
   static getMedialCharCodeIndex(code) {
     return ((((code - 0xAC00) - ((code - 0xAC00) % 28))) / 28) % 21;
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Number}
+   */
   static getMedialCharCode(code) {
     //      ㅏ  ㅐ  ㅑ ㅒ  ㅓ ㅔ  ㅕ ㅖ  ㅗ  ㅘ ㅙ  ㅚ ㅛ ㅜ  ㅝ  ㅞ ㅟ  ㅠ ㅡ  ㅢ  ㅣ
     // 0x31 4F 50 51 52 53 54 55 56 57 58 59 5A 5B 5C 5D 5E 5F 60 61 62 63
@@ -300,6 +434,10 @@ export default class TTSUtil {
     return 0x3100 + codes[index];
   }
 
+  /**
+   * @param {Number} code
+   * @returns {Number}
+   */
   static getFinalCharCode(code) {
     //             ㄱ  ㄲ ㄳ  ㄴ ㄵ  ㄶ  ㄷ ㄹ  ㄺ ㄻ  ㄼ  ㄽ ㄾ  ㄿ ㅀ  ㅁ ㅂ  ㅄ  ㅅ ㅆ  ㅇ ㅈ  ㅊ ㅋ  ㅌ  ㅍ ㅎ
     // 0x0000 0x31 31 32 33 34 35 36 37 39 3A 3B 3C 3D 3E 3F 40 41 42 44 45 46 47 48 4A 4B 4C 4D 4E
@@ -314,7 +452,13 @@ export default class TTSUtil {
 
   // *** Numeric ***
 
-  // 기(양)수사 : 수량을 쓸 때 쓰는 수사
+  /**
+   * 기(양)수사 : 수량을 쓸 때 쓰는 수사
+   *
+   * @param {Number} num
+   * @param {Boolean} isHangul
+   * @returns {String}
+   */
   static numericToNotationString(num, isHangul = true) {
     let ones;
     let tens;
@@ -387,7 +531,13 @@ export default class TTSUtil {
     return convertMillions(num).trim();
   }
 
-  // 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
+  /**
+   * 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
+   *
+   * @param {Number} num
+   * @param {String} suffix
+   * @returns {String|null}
+   */
   static numericToOrdinalString(num, suffix = '') {
     const ones = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];
     const tens = ['', '하나', '둘', '셋', '넷', '다섯', '여섯', '일곱', '여덟', '아홉'];

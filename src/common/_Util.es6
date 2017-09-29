@@ -1,5 +1,4 @@
 import _Object from './_Object';
-import MutableClientRect from './MutableClientRect';
 
 export default class _Util extends _Object {
   /**
@@ -13,9 +12,50 @@ export default class _Util extends _Object {
   }
 
   /**
+   * @returns {RegExp}
+   */
+  static getFootnoteRegex() {
+    // 이 곳을 수정했다면 네이티브 코드도 수정해야 한다.
+    return /^(\[|\{|\(|주|)[0-9].*(\)|\}|\]|\.|)$/gm;
+  }
+
+  /**
+   * @returns {RegExp}
+   */
+  static getSplitWordRegex() {
+    // 주의! NodeLocation의 wordIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
+    return new RegExp(' |\\u00A0');
+  }
+
+  /**
+   * @param {Node} imgEl
+   * @returns {{dWidth: *, dHeight: *, nWidth: number, nHeight: number, sWidth: *, sHeight: *, aWidth: string, aHeight: string}}
+   */
+  static getImageSize(imgEl) {
+    const attrs = imgEl.attributes;
+    const zeroAttr = document.createAttribute('size');
+    zeroAttr.value = '0px';
+
+    return {
+      // 화면에 맞춰 랜더링된 크기
+      dWidth: imgEl.width,
+      dHeight: imgEl.height,
+      // 원본 크기
+      nWidth: imgEl.naturalWidth,
+      nHeight: imgEl.naturalHeight,
+      // CSS에서 명시된 크기
+      sWidth: _Util.getMatchedCSSValue(imgEl, 'width'),
+      sHeight: _Util.getMatchedCSSValue(imgEl, 'height'),
+      // 엘리먼트 속성으로 명시된 크기
+      aWidth: (attrs.width || zeroAttr).value,
+      aHeight: (attrs.height || zeroAttr).value,
+    };
+  }
+
+  /**
    * @param {Node} target
    * @param {String} property
-   * @returns {number}
+   * @returns {Number}
    */
   static getStylePropertyIntValue(target, property) {
     let style = target;
@@ -27,8 +67,8 @@ export default class _Util extends _Object {
 
   /**
    * @param {Node} target
-   * @param {[String]} properties
-   * @returns {number}
+   * @param {String[]} properties
+   * @returns {Number}
    */
   static getStylePropertiesIntValue(target, properties) {
     let style = target;
@@ -44,8 +84,8 @@ export default class _Util extends _Object {
 
   /**
    * @param {Node} el
-   * @param {string} property
-   * @returns {string}
+   * @param {String} property
+   * @returns {String}
    * @private
    */
   static _getMatchedCSSValue(el, property) {
@@ -85,9 +125,9 @@ export default class _Util extends _Object {
 
   /**
    * @param {Node} el
-   * @param {string} property
-   * @param {boolean} recursive
-   * @returns {string|null}
+   * @param {String} property
+   * @param {Boolean} recursive
+   * @returns {String|null}
    */
   static getMatchedCSSValue(el, property, recursive = false) {
     let val;
@@ -103,19 +143,10 @@ export default class _Util extends _Object {
   }
 
   /**
-   * @param {TextRange} range
-   * @returns {boolean}
-   * @private
-   */
-  static _isWhiteSpaceRange(range) {
-    return /^\s*$/.test(range.toString());
-  }
-
-  /**
-   * @param {[MutableClientRect]} array
-   * @param {[MutableClientRect]} rects
+   * @param {MutableClientRect[]} array
+   * @param {MutableClientRect[]} rects
    * @param {function} adjust
-   * @returns {[MutableClientRect]}
+   * @returns {MutableClientRect[]}
    */
   static concatArray(array, rects, adjust = rect => rect) {
     for (let i = 0; i < rects.length; i++) {
@@ -123,179 +154,4 @@ export default class _Util extends _Object {
     }
     return array;
   }
-
-  /**
-   * @param {TextRange} range
-   * @returns {[MutableClientRect]}
-   */
-  static getOnlyTextNodeRectsFromRange(range) {
-    if (range.startContainer === range.endContainer) {
-      const innerText = range.startContainer.innerText;
-      if (innerText !== undefined && innerText.length === 0) {
-        return [];
-      }
-      return range.getAdjustedClientRects();
-    }
-
-    const iterator = this.createTextNodeIterator(range.commonAncestorContainer);
-    let textNodeRects = [];
-
-    let workRange = document.createRange();
-    workRange.setStart(range.startContainer, range.startOffset);
-    workRange.setEnd(range.startContainer, range.startContainer.length);
-    textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-
-    let node;
-    while ((node = iterator.nextNode())) {
-      // startContainer 노드보다 el이 앞에 있으면
-      if (range.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
-        range.startContainer === node) {
-        continue;
-      }
-
-      // endContainer 뒤로 넘어가면 멈춤
-      if (range.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
-        range.endContainer === node) {
-        break;
-      }
-
-      workRange = document.createRange();
-      workRange.selectNodeContents(node);
-      if (this._isWhiteSpaceRange(workRange)) {
-        continue;
-      }
-
-      textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
-
-    workRange = document.createRange();
-    workRange.setStart(range.endContainer, 0);
-    workRange.setEnd(range.endContainer, range.endOffset);
-    if (!this._isWhiteSpaceRange(workRange)) {
-      textNodeRects = this.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
-
-    return textNodeRects;
-  }
-
-  /**
-   * @param {string} serializedRange
-   * @returns {TextRange}
-   */
-  static getRangeFromSerializedRange(serializedRange) {
-    const tmpRange = rangy.deserializeRange(serializedRange, document.body);
-    const range = document.createRange();
-    range.setStart(tmpRange.startContainer, tmpRange.startOffset);
-    range.setEnd(tmpRange.endContainer, tmpRange.endOffset);
-    tmpRange.detach();
-    return range;
-  }
-
-  /**
-   * @param {[MutableClientRect]} rects
-   * @param {boolean} absolute
-   * @returns {string}
-   */
-  static rectsToCoord(rects, absolute) {
-    const insets = { left: 0, top: 0 };
-    if (absolute) {
-      if (app.scrollMode) {
-        insets.top = window.pageYOffset;
-      } else {
-        insets.left = window.pageXOffset;
-      }
-    }
-
-    let result = '';
-    for (let i = 0; i < rects.length; i++) {
-      const rect = rects[i];
-      result += `${(rect.left + insets.left)},`;
-      result += `${(rect.top + insets.top)},`;
-      result += `${rect.width},`;
-      result += `${rect.height},`;
-    }
-
-    return result;
-  }
-
-  /**
-   * @param {[MutableClientRect]} rects
-   * @returns {string}
-   */
-  static rectsToAbsoluteCoord(rects) {
-    return this.rectsToCoord(rects, true);
-  }
-
-  /**
-   * @param {[MutableClientRect]} rects
-   * @returns {string}
-   */
-  static rectsToRelativeCoord(rects) {
-    return this.rectsToCoord(rects, false);
-  }
-
-  /**
-   * @param {number} x
-   * @param {number} y
-   * @returns {{x: number, y: number}}
-   */
-  static adjustPoint(x, y) {
-    return { x, y };
-  }
-
-  /**
-   * @param {ClientRect} rect
-   * @returns {MutableClientRect}
-   */
-  static adjustRect(rect) {
-    return new MutableClientRect(rect);
-  }
-
-  /**
-   * @param {[ClientRect]} rects
-   * @returns {MutableClientRect[]}
-   */
-  static adjustRects(rects) {
-    return this.concatArray([], rects, this.adjustRect);
-  }
 }
-
-Range.prototype.originGetClientRects = Range.prototype.getClientRects;
-
-function getClientRects() {
-  const rects = this.originGetClientRects();
-  if (rects === null) {
-    return [];
-  }
-
-  const newRects = [];
-  for (let i = 0; i < rects.length; i++) {
-    const rect = rects[i];
-    if (rect.width <= 1) {
-      // Webkit, Chrome 버전에 따라 다음 페이지의 첫 글자를 선택했을 때
-      // 마지막 rect의 너비가 1 이하인 값이 들어오게 되는데 이게 오작동을
-      // 발생시키는 요인이 되기 때문에 버린다.
-      continue;
-    }
-    newRects.push(rect);
-  }
-  return newRects;
-}
-
-Range.prototype.getClientRects = getClientRects;
-
-function getAdjustedBoundingClientRect() {
-  const rect = this.getBoundingClientRect() || new MutableClientRect();
-  return _Util.adjustRect(rect);
-}
-
-function getAdjustedClientRects() {
-  const rects = this.getClientRects() || [];
-  return _Util.adjustRects(rects);
-}
-
-Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
-
-HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;

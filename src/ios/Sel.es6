@@ -2,15 +2,15 @@ import _Sel from '../common/_Sel';
 
 export default class Sel extends _Sel {
   /**
-   * @returns {number}
+   * @returns {Number}
    */
   getUpperBound() {
-    return app.pageWidthUnit * (app.doublePageMode ? 2 : 1);
+    return this.reader.context.pageWidthUnit * (this.reader.context.isDoublePageMode ? 2 : 1);
   }
 
   /**
-   * @param {TextRange} range
-   * @returns {number}
+   * @param {Range} range
+   * @returns {Number}
    * @private
    */
   _clientLeftOfRangeForCheckingNextPageContinuable(range) {
@@ -18,7 +18,7 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @returns {string}
+   * @returns {String}
    */
   expandSelectionIntoNextPage() {
     if (super.expandSelectionIntoNextPage()) {
@@ -28,9 +28,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @returns {string}
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {String}
    */
   startSelectionMode(x, y) {
     if (super.startSelectionMode(x, y)) {
@@ -40,9 +40,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @returns {string}
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {String}
    */
   changeInitialSelection(x, y) {
     if (super.changeInitialSelection(x, y, 'character')) {
@@ -52,9 +52,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @returns {string}
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {String}
    */
   expandUpperSelection(x, y) {
     if (super.expandUpperSelection(x, y)) {
@@ -64,9 +64,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @returns {string}
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {String}
    */
   expandLowerSelection(x, y) {
     if (super.expandLowerSelection(x, y)) {
