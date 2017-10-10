@@ -36,7 +36,6 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.0",
     "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-qunit": "^1.0.0",
     "grunt-contrib-uglify": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "gruntify-eslint": "^4.0.0",
