@@ -156,7 +156,7 @@ export default class _TTS {
       throw new Error('TTS: range is invalid.');
     }
 
-    const nodes = this.nodes;
+    const { nodes } = this;
     let nodeIndex = -1;
     let wordIndex = 0;
     if (nodes) {
@@ -269,7 +269,7 @@ export default class _TTS {
 
     this.playChunksByNodeLocation(nodeIndex, wordIndex);
 
-    const nodes = this.nodes;
+    const { nodes } = this;
     if (!nodes) {
       return;
     }
@@ -318,7 +318,7 @@ export default class _TTS {
    * @returns {Number}
    */
   makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
-    const nodes = this.nodes;
+    const { nodes } = this;
     if (nodes === null) {
       return 0;
     }
@@ -403,7 +403,7 @@ export default class _TTS {
    * @returns {Boolean}
    */
   makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
-    const nodes = this.nodes;
+    const { nodes } = this;
     if (nodes === null) {
       return 0;
     }

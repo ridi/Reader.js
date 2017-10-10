@@ -32,7 +32,7 @@ export default class Handler extends _Handler {
           (text.trim().match(Util.getFootnoteRegex()) !== null || footnoteType >= 3.0);
 
         if (canUseFootnote) {
-          const src = href.replace(location.href, '');
+          const src = href.replace(window.location.href, '');
           if (src[0] === '#' || src.match(this.content.src) !== null) {
             const anchor = src.substring(src.lastIndexOf('#') + 1);
             const offset = this.reader.getOffsetFromAnchor(anchor);

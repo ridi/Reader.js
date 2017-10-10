@@ -27,15 +27,15 @@ export default class Content extends _Content {
         // * 보정된 스타일 반영.
         //
         results.forEach((result) => {
-          const el = result.el;
-          if (result.width.length) {
-            el.style.width = result.width;
+          const { el, width, height, position } = result;
+          if (width.length) {
+            el.style.width = width;
           }
-          if (result.height.length) {
-            el.style.height = result.height;
+          if (height.length) {
+            el.style.height = height;
           }
-          if (result.position.length) {
-            el.style.position = result.position;
+          if (position.length) {
+            el.style.position = position;
           }
         });
         this.isImagesRevised = true;

@@ -5,7 +5,7 @@ export default class Util extends _Util {
    * @param {string} message
    */
   static toast(message = '') {
-    location.href = `ridi+epub://invocation/toast?${encodeURIComponent(message)}`;
+    window.location.href = `ridi+epub://invocation/toast?${encodeURIComponent(message)}`;
   }
 }
 

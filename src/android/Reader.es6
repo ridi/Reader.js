@@ -44,8 +44,8 @@ export default class Reader extends _Reader {
         // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함.
         // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌.
         const _curPage = this.curPage;
-        const prevPage = this.curse.prevPage;
-        let pageWeight = this.curse.pageWeight;
+        const { prevPage } = this.curse;
+        let { pageWeight } = this.curse;
         if (_curPage > prevPage) { // next
           pageWeight = Math.min(pageWeight + (_curPage - prevPage), this.curse.magic);
           if (!this.curse.pageOverflow) {
@@ -84,8 +84,7 @@ export default class Reader extends _Reader {
    * @returns {{x: Number, y: Number}}
    */
   adjustPoint(x, y) {
-    const context = this.context;
-    const curse = this.curse;
+    const { context, curse } = this;
     const point = { x, y };
     const version = context.chromeMajorVersion;
     if (context.isScrollMode) {
@@ -109,8 +108,7 @@ export default class Reader extends _Reader {
    * @returns {MutableClientRect}
    */
   adjustRect(rect) {
-    const context = this.context;
-    const curse = this.curse;
+    const { context, curse } = this;
     const adjustRect = new MutableClientRect(rect);
     if (context.isCursedChrome && !context.isScrollMode) {
       adjustRect.left -= (context.pageWidthUnit * curse.pageWeight);
@@ -168,7 +166,7 @@ export default class Reader extends _Reader {
     // - 보기 설정 미리보기를 보여주는 중에 마지막 페이지보다 뒤로 이동해 빈 페이지가 보이는 것을 방지
     // 네이티브에서 보정하지 않는 것은 WebView.getContentHeight 값을 신뢰할 수 없기 때문이다.
     let adjustOffset = offset;
-    const body = this.content.body;
+    const { body } = this.content;
     if (this.context.isScrollMode) {
       const height = this.context.pageHeightUnit;
       const paddingTop = Util.getStylePropertyIntValue(body, 'padding-top');
@@ -225,8 +223,7 @@ export default class Reader extends _Reader {
     }
 
     const columnWidth = this.context.pageWidthUnit - this.context.pageGap;
-    const totalWidth = this.totalWidth;
-    if (totalWidth < columnWidth) {
+    if (this.totalWidth < columnWidth) {
       // 가끔 total width가 0으로 넘어오는 경우가 있다. (커버 페이지에서 이미지가 그려지기 전에 호출된다거나)
       // 젤리빈에서는 0이 아닌 getWidth()보다 작은 값이 나오는 경우가 확인되었으며 재요청시 정상값 들어옴.
       // (-1을 리턴하면 재요청을 진행하게됨)
@@ -243,7 +240,7 @@ export default class Reader extends _Reader {
       }
       return Math.max(Math.ceil(pageCount), 1);
     }
-    return Math.ceil(totalWidth / this.context.pageWidthUnit);
+    return Math.ceil(this.totalWidth / this.context.pageWidthUnit);
   }
 
   /**

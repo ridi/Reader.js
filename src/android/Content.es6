@@ -30,15 +30,15 @@ export default class Content extends _Content {
     }
 
     results.forEach((result) => {
-      const el = result.el;
-      if (result.width.length) {
-        el.style.width = result.width;
+      const { el, width, height, position } = result;
+      if (width.length) {
+        el.style.width = width;
       }
-      if (result.height.length) {
-        el.style.height = result.height;
+      if (height.length) {
+        el.style.height = height;
       }
-      if (result.position.length) {
-        el.style.position = result.position;
+      if (position.length) {
+        el.style.position = position;
       }
     });
   }
@@ -52,7 +52,6 @@ export default class Content extends _Content {
    */
   reviseImage(imgEl, screenWidth, screenHeight) {
     const result = super.reviseImage(imgEl, screenWidth, screenHeight);
-    const size = result.size;
 
     //
     // * 부모에 의한 크기 소멸 보정.
@@ -61,11 +60,10 @@ export default class Content extends _Content {
     //    (해당 증상이 발생하는 bookId=852000033, 커버 이미지)
     //
 
-    if (size.dWidth === 0 || size.dHeight === 0) {
+    if (result.size.dWidth === 0 || result.size.dHeight === 0) {
       let el = imgEl.parentElement;
       do {
-        const nodeName = el.nodeName;
-        if (nodeName.match(/H[0-9]/)) {
+        if (el.nodeName.match(/H[0-9]/)) {
           result.position = 'absolute';
           break;
         }

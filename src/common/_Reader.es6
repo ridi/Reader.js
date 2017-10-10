@@ -143,9 +143,9 @@ export default class _Reader extends _Object {
    */
   scrollTo(offset) {
     if (this.context.isScrollMode) {
-      scroll(0, offset);
+      window.scroll(0, offset);
     } else {
-      scroll(offset, 0);
+      window.scroll(offset, 0);
     }
   }
 
@@ -182,7 +182,7 @@ export default class _Reader extends _Object {
         const range = document.createRange();
         range.selectNodeContents(node);
 
-        const display = window.getComputedStyle(el).display;
+        const { display } = window.getComputedStyle(el);
         const rects = range.getAdjustedClientRects();
         if (rects.length) {
           return block(rects[0], el);
@@ -283,7 +283,7 @@ export default class _Reader extends _Object {
     // 디버깅용으로 NodeLocation을 화면에 표시할 때 사용한다.
     this._latestNodeRect = null;
 
-    const nodes = this.content.nodes;
+    const { nodes } = this.content;
     if (!nodes) {
       return null;
     }
@@ -407,11 +407,10 @@ export default class _Reader extends _Object {
     const parts = location.split(posSeparator);
     const nodeIndex = parts[0];
     const wordIndex = parts[1];
-    const pageUnit = this.context.pageUnit;
-    const totalSize = this.totalSize;
-    const isScrollMode = this.context.isScrollMode;
+    const { pageUnit, isScrollMode } = this.context;
+    const { totalSize } = this;
 
-    const nodes = this.content.nodes;
+    const { nodes } = this.content;
     if (nodeIndex === -1 || wordIndex === -1 || nodes === null) {
       return null;
     }
@@ -485,7 +484,7 @@ export default class _Reader extends _Object {
    * @returns {String}
    */
   searchText(keyword) {
-    if (find(keyword, 0)) { // Case insensitive
+    if (window.find(keyword, 0)) { // Case insensitive
       return rangy.serializeRange(getSelection().getRangeAt(0), true, this.content.body);
     }
     return 'null';
@@ -499,18 +498,18 @@ export default class _Reader extends _Object {
   textAroundSearchResult(pre, post) {
     const range = getSelection().getRangeAt(0);
 
-    const startOffset = range.startOffset;
+    const start = range.startOffset;
     const newStart = Math.max(range.startOffset - pre, 0);
 
-    const endOffset = range.endOffset;
+    const end = range.endOffset;
     const newEnd = Math.min(newStart + post, range.endContainer.length);
 
     range.setStart(range.startContainer, newStart);
     range.setEnd(range.endContainer, newEnd);
 
     const result = range.toString();
-    range.setStart(range.startContainer, startOffset);
-    range.setEnd(range.endContainer, endOffset);
+    range.setStart(range.startContainer, start);
+    range.setEnd(range.endContainer, end);
 
     return result;
   }

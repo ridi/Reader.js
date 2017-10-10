@@ -58,7 +58,7 @@ export default class _Sel extends _Object {
    * @private
    */
   _expandRangeByWord(range) {
-    const startContainer = range.startContainer;
+    const { startContainer } = range;
     if (startContainer.nodeValue === null) {
       return;
     }
@@ -70,25 +70,25 @@ export default class _Sel extends _Object {
     }
 
     const containerValueLength = startContainer.nodeValue.length;
-    let startOffset = range.startOffset;
-    let originalOffset = startOffset;
+    let start = range.startOffset;
+    let origin = start;
 
-    while (startOffset > 0) {
+    while (start > 0) {
       if (/^\s/.test(range.toString())) {
-        range.setStart(startContainer, startOffset += 1);
+        range.setStart(startContainer, start += 1);
         break;
       }
-      startOffset -= 1;
-      range.setStart(startContainer, startOffset);
+      start -= 1;
+      range.setStart(startContainer, start);
     }
 
-    while (originalOffset < containerValueLength) {
+    while (origin < containerValueLength) {
       if (/\s$/.test(range.toString())) {
-        range.setEnd(startContainer, originalOffset -= 1);
+        range.setEnd(startContainer, origin -= 1);
         break;
       }
-      originalOffset += 1;
-      range.setEnd(startContainer, originalOffset);
+      origin += 1;
+      range.setEnd(startContainer, origin);
     }
   }
 
@@ -263,14 +263,14 @@ export default class _Sel extends _Object {
       const upperBound = this.getUpperBound();
       const clonedRange = range.cloneRange();
       let node = clonedRange.endContainer;
-      let endOffset = clonedRange.endOffset;
+      let end = clonedRange.endOffset;
       do {
-        const length = node.textContent.length;
-        while (length > endOffset) {
-          clonedRange.setStart(node, endOffset);
-          clonedRange.setEnd(node, endOffset + 1);
+        const { length } = node.textContent;
+        while (length > end) {
+          clonedRange.setStart(node, end);
+          clonedRange.setEnd(node, end + 1);
           if (/\s/.test(clonedRange.toString())) {
-            endOffset += 1;
+            end += 1;
           } else if (this._clientLeftOfRangeForCheckingNextPageContinuable(clonedRange) < upperBound) {
             this._nextPageContinuable = false;
             return this._nextPageContinuable;
@@ -282,7 +282,7 @@ export default class _Sel extends _Object {
             return this._nextPageContinuable;
           }
         }
-        endOffset = 0;
+        end = 0;
         this._nextPageContinuable = false;
       } while ((node = this._getNextTextNode(clonedRange)));
     }
@@ -295,17 +295,17 @@ export default class _Sel extends _Object {
    * @private
    */
   _expandRangeBySentenceInPage(range, upperBound) {
-    const originalOffset = range.endOffset;
+    const origin = range.endOffset;
     range.expand('sentence');
 
-    let endOffset = range.endOffset;
-    while (endOffset > originalOffset) {
+    let end = range.endOffset;
+    while (end > origin) {
       if (/\s$/.test(range.toString())) {
-        range.setEnd(range.endContainer, endOffset -= 1);
+        range.setEnd(range.endContainer, end -= 1);
       } else if (range.getAdjustedBoundingClientRect().right <= upperBound) {
         break;
       } else {
-        range.setEnd(range.endContainer, endOffset -= 1);
+        range.setEnd(range.endContainer, end -= 1);
       }
     }
   }
@@ -464,7 +464,7 @@ export default class _Sel extends _Object {
    */
   static getOnlyTextNodeRectsFromRange(range) {
     if (range.startContainer === range.endContainer) {
-      const innerText = range.startContainer.innerText;
+      const { innerText } = range.startContainer;
       if (innerText !== undefined && innerText.length === 0) {
         return [];
       }

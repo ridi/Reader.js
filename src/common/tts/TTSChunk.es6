@@ -227,25 +227,25 @@ export default class TTSChunk {
     const pieces = this._pieces;
     const startPiece = this.getPiece(chunkRange.startOffset);
     let rects = [];
-    let startOffset = 0;
-    let endOffset = 0;
-    let offset = 0;
-    let length = 0;
+    let start = 0;
+    let end = 0;
+    let current = 0;
+    let totalLength = 0;
 
-    for (let i = 0; i < pieces.length; i += 1, offset += length) {
+    for (let i = 0; i < pieces.length; i += 1, current += totalLength) {
       const piece = pieces[i];
-      const node = piece.node;
+      const { node } = piece;
       let string = null;
 
       const range = document.createRange();
       range.selectNodeContents(node);
       if (piece.isInvalid()) {
-        length = 0;
+        totalLength = 0;
         rects.push(range.getAdjustedBoundingClientRect());
       } else {
-        length = piece.length;
+        totalLength = piece.length;
 
-        const pieceRange = new TTSRange(offset, offset + piece.length);
+        const pieceRange = new TTSRange(current, current + piece.length);
         if (chunkRange.startOffset <= pieceRange.startOffset) {
           if (pieceRange.endOffset <= chunkRange.endOffset) {
             // Case 1
@@ -253,8 +253,8 @@ export default class TTSChunk {
             //   Piece |   |
             //   Piece   |   |
             //   Piece     |    |
-            startOffset = pieceRange.startOffset;
-            endOffset = pieceRange.endOffset;
+            start = pieceRange.startOffset;
+            end = pieceRange.endOffset;
           } else if (chunkRange.endOffset <= pieceRange.startOffset) {
             // Case 2
             //   Chunk |   |
@@ -264,16 +264,16 @@ export default class TTSChunk {
             // Case 3
             //   Chunk |     |
             //   Piece    |       |
-            startOffset = pieceRange.startOffset;
-            endOffset = chunkRange.endOffset;
+            start = pieceRange.startOffset;
+            end = chunkRange.endOffset;
           }
         } else if (chunkRange.endOffset <= pieceRange.endOffset) {
           // Case 4
           //   Chunk    |   |
           //   Piece |          |
           //   Piece   |    |
-          startOffset = chunkRange.startOffset;
-          endOffset = chunkRange.endOffset;
+          start = chunkRange.startOffset;
+          end = chunkRange.endOffset;
         } else if (pieceRange.endOffset <= chunkRange.startOffset) {
           // Case 5
           //   Chunk         |   |
@@ -283,27 +283,27 @@ export default class TTSChunk {
           // Case 6
           //   Chunk     |       |
           //   Piece |      |
-          startOffset = chunkRange.startOffset;
-          endOffset = pieceRange.endOffset;
+          start = chunkRange.startOffset;
+          end = pieceRange.endOffset;
         }
 
-        startOffset = Math.max((startOffset - offset) + piece.paddingLeft, 0);
-        endOffset = Math.max((endOffset - offset) + piece.paddingLeft, 0);
-        if (endOffset === 0) {
-          endOffset = length;
+        start = Math.max((start - current) + piece.paddingLeft, 0);
+        end = Math.max((end - current) + piece.paddingLeft, 0);
+        if (end === 0) {
+          end = totalLength;
         }
         for (;;) {
           try {
-            range.setStart(node, startOffset);
-            range.setEnd(node, endOffset);
+            range.setStart(node, start);
+            range.setEnd(node, end);
             range.expand('character');
           } catch (e) {
             /* eslint-disable no-console */
             console.error(
               `TSChunk:getClientRects() Error!! ${e.toString()}\n`
-            + ` => {startOffset: ${startOffset}`
-            + `, endOffset: ${endOffset}`
-            + `, offset: ${offset}`
+            + ` => {startOffset: ${start}`
+            + `, endOffset: ${end}`
+            + `, offset: ${current}`
             + `, nodeIndex: ${piece.nodeIndex}`
             + `, startWordIndex: ${piece.startWordIndex}`
             + `, endWordIndex: ${piece.endWordIndex}}`);
@@ -314,15 +314,15 @@ export default class TTSChunk {
           if (startPiece.nodeIndex === piece.nodeIndex &&
             (string.match(TTSUtil.getWhitespaceAndNewLineRegex('^', null, 'g')) !== null ||
             string.match(TTSUtil.getSentenceRegex('^', null, 'g')) !== null)) {
-            if (length < startOffset + 1) {
+            if (totalLength < start + 1) {
               break;
             }
-            startOffset += 1;
+            start += 1;
           } else if (string.match(TTSUtil.getWhitespaceAndNewLineRegex(null, '$', 'g')) !== null) {
-            if (endOffset - 1 < 0) {
+            if (end - 1 < 0) {
               break;
             }
-            endOffset -= 1;
+            end -= 1;
           } else {
             break;
           }

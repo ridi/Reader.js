@@ -6,9 +6,7 @@ export default class _Util extends _Object {
    * @returns {NodeIterator}
    */
   static createTextNodeIterator(node) {
-    return document.createNodeIterator(
-      node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true,
-    );
+    return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true);
   }
 
   /**

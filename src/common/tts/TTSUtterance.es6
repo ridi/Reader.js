@@ -31,7 +31,7 @@ export default class TTSUtterance {
   /**
    * 읽지 말아야할 특수문자를 제거한다.
    * (사용자 사전으로 처리할 수 없기 때문에 코드로)
-   * 
+   *
    * @param {String[]} characters
    * @returns {TTSUtterance}
    */
@@ -47,7 +47,7 @@ export default class TTSUtterance {
    * @returns {TTSUtterance}
    */
   removeHanja() {
-    let text = this.text;
+    let { text } = this;
     for (let i = 0; i < this.length; i++) {
       if (TTSUtil.isChineseCharCode(text.charCodeAt(i))) {
         text = text.replace(text.substr(i, 1), ' ');
@@ -63,8 +63,7 @@ export default class TTSUtterance {
    */
   removeLatin() {
     const removeList = [];
-    const text = this.text;
-    const length = this.length;
+    const { text, length } = this;
     let startOffset = -1;
     let i;
     let j;
@@ -169,7 +168,7 @@ export default class TTSUtterance {
       '에', '이', '우', '으', '으', '이',
     ];
     const textLength = this.length;
-    let text = this.text;
+    let { text } = this;
     let offset = -1;
     let i;
     let j;
@@ -240,7 +239,7 @@ export default class TTSUtterance {
    * @returns {TTSUtterance}
    */
   removeAllRepeatedCharacter(strs) {
-    let text = this.text;
+    let { text } = this;
     for (let i = 0; i < strs.length; i++) {
       const regex = new RegExp(`${strs[i]}{2,}`, 'gm');
       text = text.replace(regex, '');
@@ -259,7 +258,7 @@ export default class TTSUtterance {
       HangulOrdinal: 2,
       Time: 3,
     };
-    let text = this.text;
+    let { text } = this;
 
     // 천단위 ','를 지워버린다.
     text = text.replace(/([\d]{0,})[,]([\d]{3,})/gm, '$1$2');
@@ -300,7 +299,7 @@ export default class TTSUtterance {
       endOffset = pattern.lastIndex;
       const origin = text.substring(startOffset, endOffset);
       const numeric = parseInt(origin, 10);
-      if (!isFinite(numeric)) {
+      if (!Number.isFinite(numeric)) {
         continue;
       }
       let type = (startOffset === 0 ? Type.HangulNotation : Type.None);
@@ -378,7 +377,7 @@ export default class TTSUtterance {
    */
   replaceBracket() {
     const pattern = /\([\d]{1,2}\)/gm;
-    let text = this.text;
+    let { text } = this;
     let match;
     while ((match = pattern.exec(text)) !== null) {
       const startOffset = match.index;
@@ -423,7 +422,7 @@ export default class TTSUtterance {
    * @returns {TTSUtterance}
    */
   insertPauseTag() {
-    let text = this.text;
+    let { text } = this;
     text = text.replace(/([\D])([·]{2,})([\D])/gm, '$1<pause=\'200ms\'>$2$3');
     text = text.replace(/([|_]{1})/gm, '<pause=\'400ms\'>$1');
     text = text.replace(/([…]{1,})/gm, '<pause=\'400ms\'>$1');

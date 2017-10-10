@@ -56,7 +56,7 @@ export default class TTSPiece {
     this._node = node;
     this._nodeIndex = nodeIndex;
 
-    const nodeValue = this._node.nodeValue;
+    const { nodeValue } = this._node;
     this._paddingLeft = 0;
     this._paddingRight = 0;
     this._text = '';
@@ -148,9 +148,9 @@ export default class TTSPiece {
           return true;
         }
 
-        const childNodes = sibling.childNodes;
-        if (childNodes.length > 0) {
-          sibling = childNodes[checkNextSibling ? 0 : (childNodes.length - 1)];
+        const nodes = sibling.childNodes;
+        if (nodes.length > 0) {
+          sibling = nodes[checkNextSibling ? 0 : (nodes.length - 1)];
         } else {
           return false;
         }

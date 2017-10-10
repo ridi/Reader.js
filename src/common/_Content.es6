@@ -97,18 +97,18 @@ export default class _Content extends _Object {
       if (el.nodeName === 'SVG') {
         let prefix = '<svg';
 
-        const attributes = el.attributes;
-        for (let i = 0; i < attributes.length; i++) {
-          const attribute = attributes[i];
-          prefix += ` ${attribute.nodeName}="${attribute.nodeValue}"`;
+        const attrs = el.attributes;
+        for (let i = 0; i < attrs.length; i++) {
+          const attr = attrs[i];
+          prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
         }
         prefix += '>';
 
         // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
         const svgEl = document.createElement('svgElement');
-        const childNodes = el.childNodes;
-        for (let j = 0; j < childNodes.length; j++) {
-          svgEl.appendChild(childNodes[j].cloneNode(true));
+        const nodes = el.childNodes;
+        for (let j = 0; j < nodes.length; j++) {
+          svgEl.appendChild(nodes[j].cloneNode(true));
         }
 
         return `${prefix}${svgEl.innerHTML}</svg>`;
@@ -153,7 +153,7 @@ export default class _Content extends _Object {
 
     const compareSize = (size1, size2) => {
       const intVal = parseInt(size1, 10);
-      if (!isNaN(intVal)) {
+      if (!Number.isNaN(intVal)) {
         if (isPercentValue(size1) !== -1) {
           if (intVal > 100) {
             return 1;
