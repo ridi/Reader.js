@@ -15,3 +15,12 @@ export default {
   TTSUtil,
   TTSUtterance,
 };
+
+export default {
+  Context,
+  Reader,
+  Util,
+  TTS,
+  TTSUtil,
+  TTSUtterance,
+};
