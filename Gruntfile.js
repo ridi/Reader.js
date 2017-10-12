@@ -101,8 +101,11 @@ module.exports = (grunt) => {
       build: {
         files: [{
           expand: true,
-          src: '<%= variants.distPath %>/*/*.js',
+          src: '<%= variants.distPath %>/*.js',
           dest: '<%= variants.distPath %>',
+          rename(dest, src) {
+            return src.replace('.js', '.min.js');
+          },
         }],
         options: {
           banner: '<%= variants.banner %>',
