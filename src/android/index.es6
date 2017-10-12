@@ -7,7 +7,7 @@ import TTS from './TTS';
 import TTSUtil from '../common/tts/TTSUtil';
 import TTSUtterance from '../common/tts/TTSUtterance';
 
-export default {
+export {
   Context,
   Reader,
   Util,
