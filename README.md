@@ -28,7 +28,7 @@ $ npm install @ridi/reader.js
 - Chrome 30~61
 - Safari 10~11
 
-## Useage
+## Usage
 
 ```js
 import { Reader, Context, Util } from '@ridi/reader.js/web'; 
