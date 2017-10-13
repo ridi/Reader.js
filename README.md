@@ -31,8 +31,9 @@ $ npm install @ridi/reader.js
 ## Usage
 
 ```js
-import { Reader, Context, Util } from '@ridi/reader.js/web'; 
+import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 ```
+ 
 
 ## Development
 
