@@ -11,15 +11,15 @@ $ npm install @ridi/reader.js
 ## Structure
 ```
 └─┬ root
-  ├──  LICENSE
-  ├──  package.json
-  ├──  README.md
-  ├─┬  android
-  | └── index.js
-  ├─┬  ios
-  | └── index.js
-  └─┬  web
-    └── index.js
+  ├── LICENSE
+  ├── package.json
+  ├── README.md
+  ├─┬ android
+  | └─ index.js
+  ├─┬ ios
+  | └─ index.js
+  └─┬ web
+    └─ index.js
 ```
 
 ## Compatbility
