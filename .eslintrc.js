@@ -6,6 +6,7 @@ module.exports = {
     'import/no-unresolved': 0,
     'no-continue': 0,
     'no-bitwise': 0,
+    'no-restricted-globals': 0,
     'object-curly-newline': ['error', { 'multiline': true }]
   },
   'env': {

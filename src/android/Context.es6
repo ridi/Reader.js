@@ -28,7 +28,7 @@ export default class Context extends _Context {
 
     const chrome = ((navigator.userAgent || '').match(/chrome\/[\d]+/gi) || [''])[0];
     const version = parseInt((chrome.match(/[\d]+/g) || [''])[0], 10);
-    if (!Number.isNaN(version)) {
+    if (!isNaN(version)) {
       this._chromeMajorVersion = version;
     }
   }

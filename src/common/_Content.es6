@@ -153,7 +153,7 @@ export default class _Content extends _Object {
 
     const compareSize = (size1, size2) => {
       const intVal = parseInt(size1, 10);
-      if (!Number.isNaN(intVal)) {
+      if (!isNaN(intVal)) {
         if (isPercentValue(size1) !== -1) {
           if (intVal > 100) {
             return 1;

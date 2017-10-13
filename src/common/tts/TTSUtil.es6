@@ -185,7 +185,7 @@ export default class TTSUtil {
    * @private
    */
   static _containCharCode(code, table) {
-    if (!Number.isNaN(code)) {
+    if (!isNaN(code)) {
       for (let i = 0; i < table.length; i += 2) {
         if (table[i] <= code && code <= table[i + 1]) {
           return true;
@@ -262,7 +262,7 @@ export default class TTSUtil {
    * @returns {Boolean}
    */
   static isLatinCharCode(code, flag) {
-    if (Number.isNaN(code)) {
+    if (isNaN(code)) {
       return false;
     }
 
