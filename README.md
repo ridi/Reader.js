@@ -11,9 +11,9 @@ $ npm install @ridi/reader.js
 ## Structure
 ```
 └─┬ root
-  ├─   LICENSE
-  ├─   package.json
-  ├─   README.md
+  ├──  LICENSE
+  ├──  package.json
+  ├──  README.md
   ├─┬  android
   | └── index.js
   ├─┬  ios
