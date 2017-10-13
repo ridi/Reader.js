@@ -125,10 +125,15 @@ module.exports = (grunt) => {
     copy: {
       main: {
         files: [
-          { expand: true, src: ['package.json', 'LICENSE', 'README.md'], dest: '<%= variants.distPath %>/', filter: 'isFile' },
+          {
+            expand: true,
+            src: ['package.json', 'LICENSE', 'README.md'],
+            dest: '<%= variants.distPath %>/',
+            filter: 'isFile',
+          },
         ],
       },
-    }
+    },
   });
 
   grunt.loadNpmTasks('grunt-babel');
