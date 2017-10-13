@@ -327,7 +327,7 @@ export default class Reader extends _Reader {
     const styleElements = document.getElementsByTagName('style');
     const styleElement = styleElements[styleElements.length - 1];
     styleElement.innerHTML = style;
-    this.scrollTo(prevPage * this.pageUnit);
+    this.scrollTo(prevPage * this.context.pageUnit);
 
     this._updateClientWidth();
   }

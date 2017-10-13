@@ -133,6 +133,6 @@ export default class Reader extends _Reader {
     const bodyStyle = this.content.body.style;
     bodyStyle['font-size'] = `${fontSize}%`;
 
-    this.scrollTo(prevPage * this.pageUnit);
+    this.scrollTo(prevPage * this.context.pageUnit);
   }
 }
