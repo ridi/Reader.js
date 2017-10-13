@@ -11,16 +11,15 @@ $ npm install @ridi/reader.js
 ## Structure
 ```
 └─┬ root
-  ├─ LICENSE
-  ├─ package.json
-  ├─ README.md
-  └─┬ dist
-    ├─ reader.android.js
-    ├─ reader.android.min.js
-    ├─ reader.ios.js
-    ├─ reader.ios.min.js
-    ├─ reader.web.js
-    └─ reader.web.min.js
+  ├──  LICENSE
+  ├──  package.json
+  ├──  README.md
+  ├─┬  android
+  | └── index.js
+  ├─┬  ios
+  | └── index.js
+  └─┬  web
+    └── index.js
 ```
 
 ## Compatbility
@@ -28,6 +27,13 @@ $ npm install @ridi/reader.js
 - Android 4-8 (API Level 14-26)
 - Chrome 30~61
 - Safari 10~11
+
+## Usage
+
+```js
+import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
+```
+ 
 
 ## Development
 
