@@ -250,7 +250,7 @@ export default class _Sel extends _Object {
    * @returns {Number}
    */
   getUpperBound() {
-    return this.reader.context.pageWidthUnit;
+    return this.reader.context.pageWidthUnit * (this.reader.context.isDoublePageMode ? 2 : 1);
   }
 
   /**
