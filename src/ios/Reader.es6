@@ -19,7 +19,6 @@ export default class Reader extends _Reader {
     this._content = new Content(wrapper);
     this._handler = new Handler(this);
     this._sel = new Sel(this);
-    this._setViewport();
   }
 
   setCustomMethod() {
@@ -101,19 +100,6 @@ export default class Reader extends _Reader {
     return location;
   }
 
-  _setViewport() {
-    const value = `width=${window.innerWidth}, height=${window.innerHeight}, ` +
-      'initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
-    let viewport = document.querySelector('meta[name=viewport]');
-    if (viewport === null) {
-      viewport = document.createElement('meta');
-      viewport.id = 'viewport';
-      viewport.name = 'viewport';
-      document.getElementsByTagName('head')[0].appendChild(viewport);
-    }
-    viewport.content = value;
-  }
-
   /**
    * @param {Number} width
    * @param {Number} height
@@ -134,5 +120,7 @@ export default class Reader extends _Reader {
     bodyStyle['font-size'] = `${fontSize}%`;
 
     this.scrollTo(prevPage * this.context.pageUnit);
+
+    this.setViewport();
   }
 }

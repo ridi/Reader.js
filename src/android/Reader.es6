@@ -329,6 +329,7 @@ export default class Reader extends _Reader {
     styleElement.innerHTML = style;
     this.scrollTo(prevPage * this.context.pageUnit);
 
+    this.setViewport();
     this._updateClientWidth();
   }
 

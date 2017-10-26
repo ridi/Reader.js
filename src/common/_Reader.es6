@@ -69,6 +69,7 @@ export default class _Reader extends _Object {
     this.debugNodeLocation = false;
     this.setCustomMethod();
     this.setPolyfill();
+    this.setViewport();
   }
 
   setCustomMethod() {
@@ -132,6 +133,19 @@ export default class _Reader extends _Object {
       };
       /* eslint-enable no-loop-func */
     }
+  }
+
+  setViewport() {
+    const value = `width=${window.innerWidth}, height=${window.innerHeight}, ` +
+      'initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
+    let viewport = document.querySelector('meta[name=viewport]');
+    if (viewport === null) {
+      viewport = document.createElement('meta');
+      viewport.id = 'viewport';
+      viewport.name = 'viewport';
+      document.getElementsByTagName('head')[0].appendChild(viewport);
+    }
+    viewport.content = value;
   }
 
   /**
