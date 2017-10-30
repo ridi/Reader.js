@@ -33,7 +33,7 @@ export default class Handler extends _Handler {
 
         if (canUseFootnote) {
           const src = href.replace(window.location.href, '');
-          if (src[0] === '#' || src.match(this.content.src) !== null) {
+          if (src[0] === '#' || src.match(this.reader.content.src) !== null) {
             const anchor = src.substring(src.lastIndexOf('#') + 1);
             const offset = this.reader.getOffsetFromAnchor(anchor);
             if (this.reader.context.isScrollMode) {
