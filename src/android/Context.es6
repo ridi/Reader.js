@@ -15,6 +15,11 @@ export default class Context extends _Context {
   }
 
   /**
+   * @returns {Number}
+   */
+  get pageWidthUnit() { return (this._width + this.pageGap) * (this.isDoublePageMode ? 2 : 1); }
+
+  /**
    * @param {Boolean} width
    * @param {Boolean} height
    * @param {Boolean} gap

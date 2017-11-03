@@ -231,19 +231,16 @@ export default class Reader extends _Reader {
     }
 
     const version = this.context.chromeMajorVersion;
-    let pageCount = 0;
     if (version >= 45 && version < 60) {
       // Chrome 45 버전부터 epub.totalWidth() 값을 신뢰할 수 없게 되어 다단으로 나뉘어진 body의 높이로 페이지를 계산한다.
       const bodyHeight = parseFloat(window.getComputedStyle(this.content.body).height, 10);
-      pageCount = bodyHeight / this.context.pageHeightUnit;
-    } else {
-      pageCount = Math.ceil(this.totalWidth / this.context.pageWidthUnit);
+      let pageCount = bodyHeight / this.context.pageHeightUnit;
+      if (this.context.isDoublePageMode) {
+        pageCount /= 2;
+      }
+      return Math.max(Math.ceil(pageCount), 1);
     }
-
-    if (this.context.isDoublePageMode) {
-      pageCount /= 2;
-    }
-    return Math.max(Math.ceil(pageCount), 1);
+    return Math.ceil(this.totalWidth / this.context.pageWidthUnit);
   }
 
   /**

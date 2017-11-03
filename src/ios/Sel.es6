@@ -11,6 +11,13 @@ export default class Sel extends _Sel {
   }
 
   /**
+   * @returns {Number}
+   */
+  getUpperBound() {
+    return this.reader.context.pageWidthUnit * (this.reader.context.isDoublePageMode ? 2 : 1);
+  }
+
+  /**
    * @returns {String}
    */
   expandSelectionIntoNextPage() {

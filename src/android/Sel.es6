@@ -27,6 +27,13 @@ export default class Sel extends _Sel {
     return Math.floor(rect.left + rect.width);
   }
 
+  /**
+   * @returns {Number}
+   */
+  getUpperBound() {
+    return this.reader.context.pageWidthUnit;
+  }
+
   expandSelectionIntoNextPage() {
     if (super.expandSelectionIntoNextPage()) {
       const coord = this.getSelectedRectsCoord();
