@@ -487,7 +487,7 @@ export default class _Sel extends _Object {
       }
 
       workRange = document.createRange();
-      workRange.selectNodeContents(node);
+      workRange.selectNode(node);
       if (this._isWhiteSpaceRange(workRange)) {
         continue;
       }

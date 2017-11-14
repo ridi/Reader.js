@@ -222,7 +222,7 @@ export default class _Reader extends _Object {
       if (node) {
         // 첫번째 텍스트만 확인
         const range = document.createRange();
-        range.selectNodeContents(node);
+        range.selectNode(node);
 
         const { display } = window.getComputedStyle(el);
         const rects = range.getAdjustedClientRects();
@@ -335,7 +335,7 @@ export default class _Reader extends _Object {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       const range = document.createRange();
-      range.selectNodeContents(node);
+      range.selectNode(node);
 
       const rect = range.getAdjustedBoundingClientRect();
       if (!rect) {
@@ -463,7 +463,7 @@ export default class _Reader extends _Object {
     }
 
     const range = document.createRange();
-    range.selectNodeContents(node);
+    range.selectNode(node);
 
     let rect = range.getAdjustedBoundingClientRect();
     if (rect.left === 0 && rect.top === 0 && rect.right === 0 && rect.bottom === 0) {
