@@ -238,7 +238,7 @@ export default class TTSChunk {
       let string = null;
 
       const range = document.createRange();
-      range.selectNode(node);
+      range.selectNodeContents(node);
       if (piece.isInvalid()) {
         totalLength = 0;
         rects.push(range.getAdjustedBoundingClientRect());
