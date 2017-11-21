@@ -455,8 +455,8 @@ export default class _Reader extends _Object {
    */
   getOffsetFromNodeLocation(location, type = 'top', posSeparator = '#') {
     const parts = location.split(posSeparator);
-    const nodeIndex = parts[0];
-    const wordIndex = parts[1];
+    const nodeIndex = parseInt(parts[0], 10);
+    const wordIndex = parseInt(parts[1], 10);
     const { pageUnit, isScrollMode } = this.context;
     const { totalSize } = this;
 
