@@ -337,9 +337,17 @@ export default class _Reader extends _Object {
       const range = document.createRange();
       range.selectNodeContents(node);
 
-      const rect = range.getAdjustedBoundingClientRect();
-      if (!rect) {
-        return null;
+      let rect = range.getAdjustedBoundingClientRect();
+      if (rect.isEmpty) {
+        if (node.nodeName === 'IMG') {
+          range.expand('word');
+          rect = range.getAdjustedBoundingClientRect();
+          if (rect.isEmpty) {
+            continue;
+          }
+        } else {
+          continue;
+        }
       }
 
       // node가 여러 페이지에 걸쳐있을 때 현재 페이지도 포함하고 있는지.
@@ -466,8 +474,16 @@ export default class _Reader extends _Object {
     range.selectNodeContents(node);
 
     let rect = range.getAdjustedBoundingClientRect();
-    if (rect.left === 0 && rect.top === 0 && rect.right === 0 && rect.bottom === 0) {
-      return null;
+    if (rect.isEmpty) {
+      if (node.nodeName === 'IMG') {
+        range.expand('word');
+        rect = range.getAdjustedBoundingClientRect();
+        if (rect.isEmpty) {
+          return null;
+        }
+      } else {
+        return null;
+      }
     }
 
     let page = this.getPageFromRect(rect);

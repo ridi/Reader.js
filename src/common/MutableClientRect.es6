@@ -1,4 +1,6 @@
 export default class MutableClientRect {
+  get isEmpty() { return this.left === 0 && this.top === 0 && this.right === 0 && this.bottom === 0; }
+
   /**
    * @param {ClientRect} rect
    */
