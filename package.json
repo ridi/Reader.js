@@ -1,6 +1,6 @@
 {
   "name": "@ridi/reader.js",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Javascript library for RIDI ePub Viewer written in ECMAScript 6",
   "author": "Ridibooks Viewer Team <viewer.team@ridi.com>",
   "keywords": [
@@ -20,7 +20,7 @@
     "lint": "eslint --ext .js,.es6,.jsx ./src/**",
     "build": "grunt",
     "watch": "grunt watch",
-    "publish": "cd dist && npm publish --access=public"
+    "publish": "cd ./dist/ && npm publish --access=public"
   },
   "devDependencies": {
     "@ridi/eslint-config": "^3.0.0",
