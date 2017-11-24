@@ -106,16 +106,14 @@ export default class _TTS {
   get chunks() { return this._chunks; }
 
   /**
-   * 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
-   *
    * @returns {Number}
    */
-  get reserveNodesCountMagic() { return 40; }
+  get reserveNodesCountMagic() { return this._reserveNodesCountMagic; }
 
   /**
    * @returns {Number}
    */
-  get makeChunksInterval() { return 100; }
+  get makeChunksInterval() { return this._makeChunksInterval; }
 
   /**
    * @returns {Number}
@@ -138,6 +136,8 @@ export default class _TTS {
   constructor(reader) {
     this._reader = reader;
     this.debug = false;
+    this._reserveNodesCountMagic = 40; // 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
+    this._makeChunksInterval = 100;
     this._processedNodeMinIndex = -1;
     this._processedNodeMaxIndex = -1;
     this._generateMoreChunksTimeoutId = 0;
