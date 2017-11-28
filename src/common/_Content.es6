@@ -33,14 +33,14 @@ export default class _Content extends _Object {
   }
 
   updateNodes() {
-    this._nodes = this._fetchNodes();
+    this._nodes = this.fetchNodes();
   }
 
   /**
+   * @param {Boolean} shouldManualFilter
    * @returns {Node[]}
-   * @private
    */
-  _fetchNodes() {
+  fetchNodes(shouldManualFilter = false) {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
     const filter = node =>
       node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
@@ -48,8 +48,8 @@ export default class _Content extends _Object {
     let calledFilter = false;
     const walk = document.createTreeWalker(
       this.body,
-      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
-        acceptNode(node) {
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, shouldManualFilter ? null : {
+        acceptNode: (node) => {
           calledFilter = true;
           if (filter(node)) {
             return NodeFilter.FILTER_ACCEPT;
