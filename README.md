@@ -41,7 +41,7 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 ### Install
 You can install it with the following command:
 ```
-$ git clone https://github.com/ridibooks/Reader.js.git
+$ git clone git@github.com:ridi/Reader.js.git
 $ make setup
 ```
 
