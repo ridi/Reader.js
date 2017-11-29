@@ -26,7 +26,8 @@ $ npm install @ridi/reader.js
 - iOS 8-11
 - Android 4-8 (API Level 14-26)
 - Chrome 30~61
-- Safari 10~11
+- Safari 9~11
+- IE 11
 
 ## Usage
 
