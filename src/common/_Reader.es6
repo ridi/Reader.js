@@ -340,7 +340,7 @@ export default class _Reader extends _Object {
       let rect = range.getAdjustedBoundingClientRect();
       if (rect.isEmpty) {
         if (node.nodeName === 'IMG') {
-          range.expand('word');
+          range.selectNode(node);
           rect = range.getAdjustedBoundingClientRect();
           if (rect.isEmpty) {
             continue;
@@ -476,7 +476,7 @@ export default class _Reader extends _Object {
     let rect = range.getAdjustedBoundingClientRect();
     if (rect.isEmpty) {
       if (node.nodeName === 'IMG') {
-        range.expand('word');
+        range.selectNode(node);
         rect = range.getAdjustedBoundingClientRect();
         if (rect.isEmpty) {
           return null;
