@@ -11,7 +11,9 @@ export default class Reader extends _Reader {
     this._content = new Content(wrapper);
   }
 
-  setViewport() { }
+  setViewport() {
+    // 웹은 앱과 달리 콘텐츠(HTML)를 그대로 로드하는게 아니라 한번 감싸고 있기 때문에 viewport를 관여해선 안된다.
+  }
 
   /**
    * @param {MutableClientRect} rect
