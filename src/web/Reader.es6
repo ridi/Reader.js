@@ -11,6 +11,8 @@ export default class Reader extends _Reader {
     this._content = new Content(wrapper);
   }
 
+  setViewport() { }
+
   /**
    * @param {MutableClientRect} rect
    * @param {Node} el
