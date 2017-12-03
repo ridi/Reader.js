@@ -1,16 +1,15 @@
 import _Reader from '../common/_Reader';
-import MutableClientRect from '../common/MutableClientRect';
 import Content from './Content';
-import Curse from './Curse';
+import Chrome from '../common/Chrome';
 import Handler from './Handler';
 import Sel from './Sel';
 import Util from './Util';
 
 export default class Reader extends _Reader {
   /**
-   * @returns {Curse}
+   * @returns {Chrome}
    */
-  get curse() { return this._curse; }
+  get chrome() { return this._chrome; }
 
   /**
    * @returns {Number}
@@ -34,48 +33,10 @@ export default class Reader extends _Reader {
     this._content = new Content(wrapper, contentSrc);
     this._handler = new Handler(this);
     this._sel = new Sel(this);
-    if (context.isCursedChrome) {
-      // curPage는 Reader의 computed-property로 구하는게 가능하지만 Reader가 초기화되는 시점에는 정확한 위치 정보가 아니라 쓰면 안된다.
-      this._curse = new Curse(curPage);
-      this._scrollListener = () => {
-        // * Chrome 47, 49+ 대응
-        // viewport의 범위와 curPage의 clientLeft 기준이 변경됨에 따라 아래와 같이 대응함. (adjustPoint, adjustRect 참고)
-        // - 페이지 이동에 따라 0~3의 가중치(pageWeight)를 부여.
-        // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함.
-        // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌.
-        const _curPage = this.curPage;
-        const { prevPage } = this.curse;
-        let { pageWeight } = this.curse;
-        if (_curPage > prevPage) { // next
-          pageWeight = Math.min(pageWeight + (_curPage - prevPage), this.curse.magic);
-          if (!this.curse.pageOverflow) {
-            this.curse.pageOverflow = pageWeight === this.curse.magic;
-          }
-        } else if (_curPage < prevPage) { // prev
-          pageWeight = Math.max(pageWeight - (prevPage - _curPage), 0);
-          if (pageWeight === 0) {
-            this.curse.pageOverflow = false;
-          }
-        }
-        this.curse.prevPage = _curPage;
-        this.curse.pageWeight = pageWeight;
-      };
-      this.addScrollListenerIfNeeded();
-    }
+    this._chrome = new Chrome(this, curPage);
+    this.chrome.addScrollListenerIfNeeded();
     this.calcPageForDoublePageMode = false;
     this._updateClientWidth();
-  }
-
-  addScrollListenerIfNeeded() {
-    if (this._scrollListener && !this.context.isScrollMode) {
-      window.addEventListener('scroll', this._scrollListener, false);
-    }
-  }
-
-  removeScrollListenerIfNeeded() {
-    if (this._scrollListener) {
-      window.removeEventListener('scroll', this._scrollListener, false);
-    }
   }
 
   /**
@@ -84,23 +45,7 @@ export default class Reader extends _Reader {
    * @returns {{x: Number, y: Number}}
    */
   adjustPoint(x, y) {
-    const { context, curse } = this;
-    const point = { x, y };
-    const version = context.chromeMajorVersion;
-    if (context.isScrollMode) {
-      return point;
-    } else if (context.isCursedChrome) {
-      point.x += (context.pageWidthUnit * curse.pageWeight);
-      if (curse.pageOverflow) {
-        point.x -= context.pageGap * curse.magic;
-        if (this.htmlClientWidth - this.bodyClientWidth === 1) {
-          point.x += curse.magic;
-        }
-      }
-    } else if (version === 41 || version === 40) {
-      point.x += this.pageXOffset;
-    }
-    return point;
+    return this.chrome.adjustPoint(this, x, y);
   }
 
   /**
@@ -108,21 +53,7 @@ export default class Reader extends _Reader {
    * @returns {MutableClientRect}
    */
   adjustRect(rect) {
-    const { context, curse } = this;
-    const adjustRect = new MutableClientRect(rect);
-    if (context.isCursedChrome && !context.isScrollMode) {
-      adjustRect.left -= (context.pageWidthUnit * curse.pageWeight);
-      adjustRect.right -= (context.pageWidthUnit * curse.pageWeight);
-      if (curse.pageOverflow) {
-        adjustRect.left += context.pageGap * curse.magic;
-        adjustRect.right += context.pageGap * curse.magic;
-        if (this.htmlClientWidth - this.bodyClientWidth === 1) {
-          adjustRect.left -= curse.magic;
-          adjustRect.right -= curse.magic;
-        }
-      }
-    }
-    return adjustRect;
+    return this.chrome.adjustRect(this, rect);
   }
 
   /**
@@ -131,10 +62,10 @@ export default class Reader extends _Reader {
    */
   changeContext(context, curPage) {
     super.changeContext(context);
-    if (context.isCursedChrome) {
-      this._curse = new Curse(curPage);
-      this.removeScrollListenerIfNeeded();
-      this.addScrollListenerIfNeeded();
+    if (this.chrome.isCursed) {
+      this.chrome.removeScrollListenerIfNeeded();
+      this._chrome = new Chrome(this, curPage);
+      this.chrome.addScrollListenerIfNeeded();
     }
   }
 
