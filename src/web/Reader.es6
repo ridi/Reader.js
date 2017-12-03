@@ -1,18 +1,59 @@
 import _Reader from '../common/_Reader';
 import Content from './Content';
+import Chrome from '../common/Chrome';
 
 export default class Reader extends _Reader {
   /**
+   * @returns {Chrome}
+   */
+  get chrome() { return this._chrome; }
+
+  /**
+   * @returns {Number}
+   */
+  get htmlClientWidth() { return document.documentElement.clientWidth; }
+
+  /**
+   * @returns {Number}
+   */
+  get bodyClientWidth() { return this.content.wrapper.clientWidth; }
+
+  /**
    * @param {HTMLElement} wrapper
    * @param {Context} context
+   * @param {Number} curPage (zero-base)
    */
-  constructor(wrapper, context) {
+  constructor(wrapper, context, curPage = 0) {
     super(wrapper, context);
     this._content = new Content(wrapper);
+    const chrome = new Chrome(this, curPage);
+    if (chrome.version) {
+      this._chrome = chrome;
+      this.chrome.addScrollListenerIfNeeded();
+    }
   }
 
   setViewport() {
     // 웹은 앱과 달리 콘텐츠(HTML)를 그대로 로드하는게 아니라 한번 감싸고 있기 때문에 viewport를 관여해선 안된다.
+  }
+
+  unmount() {
+    if (this.chrome) {
+      this.chrome.removeScrollListenerIfNeeded();
+    }
+  }
+
+  /**
+   * @param {Context} context
+   * @param {Number} curPage (zero-base)
+   */
+  changeContext(context, curPage) {
+    super.changeContext(context);
+    if (this.chrome && this.chrome.isCursed) {
+      this.chrome.removeScrollListenerIfNeeded();
+      this._chrome = new Chrome(this, curPage);
+      this.chrome.addScrollListenerIfNeeded();
+    }
   }
 
   /**
