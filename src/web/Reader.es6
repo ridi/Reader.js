@@ -33,6 +33,29 @@ export default class Reader extends _Reader {
     }
   }
 
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {{x: Number, y: Number}}
+   */
+  adjustPoint(x, y) {
+    if (this.chrome) {
+      return this.chrome.adjustPoint(this, x, y);
+    }
+    return super.adjustPoint(x, y);
+  }
+
+  /**
+   * @param {ClientRect} rect
+   * @returns {MutableClientRect}
+   */
+  adjustRect(rect) {
+    if (this.chrome) {
+      return this.chrome.adjustRect(this, rect);
+    }
+    return super.adjustRect(rect);
+  }
+
   setViewport() {
     // 웹은 앱과 달리 콘텐츠(HTML)를 그대로 로드하는게 아니라 한번 감싸고 있기 때문에 viewport를 관여해선 안된다.
   }
