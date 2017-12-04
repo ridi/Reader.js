@@ -18,7 +18,7 @@ export default class Chrome extends _Object {
    * @param {Reader} reader
    * @param {Number} curPage
    */
-  constructor(reader, curPage) {
+  constructor(reader, curPage = 0) {
     super();
     const chrome = ((navigator.userAgent || '').match(/chrome\/[\d]+/gi) || [''])[0];
     const version = parseInt((chrome.match(/[\d]+/g) || [''])[0], 10);
