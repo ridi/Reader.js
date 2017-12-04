@@ -67,16 +67,6 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @param {Context} context
-   */
-  changeContext(context) {
-    super.changeContext(context);
-    if (this.chrome && this.chrome.isCursed) {
-      // this.chrome.changedPage(this.curPage);
-    }
-  }
-
-  /**
    * @param {MutableClientRect} rect
    * @param {Node} el
    * @returns {Number|null} (zero-base)
