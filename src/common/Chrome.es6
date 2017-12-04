@@ -11,8 +11,45 @@ export default class Chrome extends _Object {
    * @returns {Boolean}
    */
   get isCursed() {
-    return this.version === 47 || (this.version >= 49 && this.version < 61);
+    return this.isAndroid && (this.version === 47 || (this.version >= 49 && this.version < 61));
   }
+
+  /**
+   * @returns {Boolean}
+   */
+  get isAndroid() {
+    return (navigator.userAgent || '').match(/android/gi) !== null;
+  }
+
+  /**
+   * @returns {Number}
+   */
+  get pageWeight() { return this._pageWeight; }
+
+  /**
+   * @param {Number} pageWeight
+   */
+  set pageWeight(pageWeight) { this._pageWeight = pageWeight; }
+
+  /**
+   * @returns {Boolean}
+   */
+  get pageOverflow() { return this._pageOverflow; }
+
+  /**
+   * @param {Boolean} pageOverflow
+   */
+  set pageOverflow(pageOverflow) { this._pageOverflow = pageOverflow; }
+
+  /**
+   * @returns {Number}
+   */
+  get prevPage() { return this._prevPage; }
+
+  /**
+   * @param {Number} prevPage
+   */
+  set prevPage(prevPage) { this._prevPage = prevPage; }
 
   /**
    * @param {Reader} reader
@@ -26,9 +63,7 @@ export default class Chrome extends _Object {
       this._version = version;
     }
     this._magic = 3; // Chrome 47, 49~60 대응용 매직넘버.
-    this._pageWeight = Math.min(curPage, this._magic);
-    this._pageOverflow = this._pageWeight === this._magic;
-    this._prevPage = curPage;
+    this.changedPage(curPage);
     this._scrollTracked = false;
     this._scrollListener = () => {
       if (!this.isCursed || reader.context.isScrollMode) {
@@ -40,21 +75,31 @@ export default class Chrome extends _Object {
       // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함.
       // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌.
       const page = reader.curPage;
-      let pageWeight = this._pageWeight;
-      if (page > this._prevPage) { // next
-        pageWeight = Math.min(pageWeight + (page - this._prevPage), this._magic);
-        if (!this._pageOverflow) {
-          this._pageOverflow = pageWeight === this._magic;
+      const { prevPage, pageOverflow } = this;
+      let { pageWeight } = this;
+      if (page > prevPage) { // next
+        pageWeight = Math.min(pageWeight + (page - prevPage), this._magic);
+        if (!pageOverflow) {
+          this.pageOverflow = pageWeight === this._magic;
         }
-      } else if (page < this._prevPage) { // prev
-        pageWeight = Math.max(pageWeight - (this._prevPage - page), 0);
+      } else if (page < prevPage) { // prev
+        pageWeight = Math.max(pageWeight - (prevPage - page), 0);
         if (pageWeight === 0) {
-          this._pageOverflow = false;
+          this.pageOverflow = false;
         }
       }
-      this._prevPage = page;
-      this._pageWeight = pageWeight;
+      this.prevPage = page;
+      this.pageWeight = pageWeight;
     };
+  }
+
+  /**
+   * @param {Number} page
+   */
+  changedPage(page) {
+    this.pageWeight = Math.min(page, this._magic);
+    this.pageOverflow = this.pageWeight === this._magic;
+    this.prevPage = page;
   }
 
   addScrollListenerIfNeeded() {
@@ -83,8 +128,8 @@ export default class Chrome extends _Object {
     if (context.isScrollMode) {
       return point;
     } else if (this.isCursed) {
-      point.x += (context.pageWidthUnit * this._pageWeight);
-      if (this._pageOverflow) {
+      point.x += (context.pageWidthUnit * this.pageWeight);
+      if (this.pageOverflow) {
         point.x -= context.pageGap * this._magic;
         if (htmlClientWidth - bodyClientWidth === 1) {
           point.x += this._magic;
@@ -105,8 +150,8 @@ export default class Chrome extends _Object {
     const { htmlClientWidth, bodyClientWidth, context } = reader;
     const adjustRect = new MutableClientRect(rect);
     if (this.isCursed && !context.isScrollMode) {
-      adjustRect.left -= (context.pageWidthUnit * this._pageWeight);
-      adjustRect.right -= (context.pageWidthUnit * this._pageWeight);
+      adjustRect.left -= (context.pageWidthUnit * this.pageWeight);
+      adjustRect.right -= (context.pageWidthUnit * this.pageWeight);
       if (this._pageOverflow) {
         adjustRect.left += context.pageGap * this._magic;
         adjustRect.right += context.pageGap * this._magic;

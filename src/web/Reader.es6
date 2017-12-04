@@ -68,14 +68,11 @@ export default class Reader extends _Reader {
 
   /**
    * @param {Context} context
-   * @param {Number} curPage (zero-base)
    */
-  changeContext(context, curPage) {
+  changeContext(context) {
     super.changeContext(context);
     if (this.chrome && this.chrome.isCursed) {
-      this.chrome.removeScrollListenerIfNeeded();
-      this._chrome = new Chrome(this, curPage);
-      this.chrome.addScrollListenerIfNeeded();
+      // this.chrome.changedPage(this.curPage);
     }
   }
 
