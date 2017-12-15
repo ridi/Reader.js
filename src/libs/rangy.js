@@ -1,4 +1,3 @@
-/* eslint-disable */
 // rangy.js (v1.3alpha.804 Base)
 
 // Checksum for checking whether range can be serialized

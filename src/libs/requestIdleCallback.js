@@ -1,4 +1,3 @@
-/* eslint-disable */
 // requestIdleCallback.js (v0.3.0 Base)
 
 (function (factory) {
