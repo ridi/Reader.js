@@ -68,7 +68,6 @@ export default class _Reader extends _Object {
     this._context = context;
     this.debugNodeLocation = false;
     this.setCustomMethod();
-    this.setPolyfill();
     this.setViewport();
   }
 
@@ -106,33 +105,6 @@ export default class _Reader extends _Object {
 
     HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
     HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;
-  }
-
-  setPolyfill() {
-    if (!Object.assign) {
-      /* eslint-disable no-loop-func */
-      Object.assign = (...args) => {
-        let symbols;
-        let from;
-        const to = Object(args[0]);
-        for (let i = 1; i < args.length; i++) {
-          from = Object(args[i]);
-          Object.keys(from)
-            .filter(key => Object.hasOwnProperty.call(from, key))
-            .forEach((key) => { to[key] = from[key]; });
-          if (Object.getOwnPropertySymbols) {
-            symbols = Object.getOwnPropertySymbols(from);
-            for (let j = 0; j < symbols.length; j++) {
-              if (Object.propertyIsEnumerable.call(from, symbols[j])) {
-                to[symbols[j]] = from[symbols[j]];
-              }
-            }
-          }
-        }
-        return to;
-      };
-      /* eslint-enable no-loop-func */
-    }
   }
 
   setViewport() {
