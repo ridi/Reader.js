@@ -9,7 +9,8 @@ module.exports = (grunt) => {
       object[platform] = {
         src: [
           `${options.src}/${platform}/*index.js`,
-          '<%= variants.libPath %>/*.js',
+          `<%= variants.srcPath %>/${platform}/libs/*.js`,
+          '<%= variants.srcPath %>/common/libs/*.js',
         ],
         dest: `${options.dest}/${platform}/index.js`,
         options: { banner: '<%= variants.banner %><%= variants.strict %>' },
@@ -25,7 +26,6 @@ module.exports = (grunt) => {
       banner: '/*! <%= pkg.name %> v<%= pkg.version %> */\n',
       strict: '\"use strict\";\n',
       srcPath: 'src',
-      libPath: '<%= variants.srcPath %>/libs',
       buildPath: 'build',
       intermediatePath: '<%= variants.buildPath %>',
       distPath: 'dist',
