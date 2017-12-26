@@ -70,7 +70,7 @@ export default class TTSChunk {
       .removeSpecialCharacters(['≪', '≫'])
       .removeHanja()
       .removeLatin()
-      .removeAllRepeatedCharacter(['<', '>', '_'])
+      .removeAllRepeatedCharacter(['<', '>', '_', '×'])
       .replaceTilde()
       .replaceNumeric()
       .replaceBracket()
