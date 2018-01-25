@@ -25,7 +25,7 @@ $ npm install @ridi/reader.js
 ## Compatbility
 - iOS 8-11
 - Android 4-8 (API Level 14-26)
-- Chrome 30~61
+- Chrome 30~64
 - Safari 9~11
 - IE 11
 
