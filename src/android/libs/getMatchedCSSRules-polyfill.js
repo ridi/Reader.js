@@ -120,7 +120,10 @@ if ( typeof window.getMatchedCSSRules !== 'function' ) {
           // insert the contained rules of this media rule to the beginning of this stylesheet's rules
           rules = getSheetRules(rule).concat(rules);
           // and skip it
-          continue
+          continue;
+        }
+        else if ( !rule.selectorText || rule.selectorText.length === 0 ) {
+          continue;
         }
         //TODO: for now only polyfilling Gecko
         // check if this element matches this rule's selector
