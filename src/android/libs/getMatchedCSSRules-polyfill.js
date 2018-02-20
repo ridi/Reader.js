@@ -13,7 +13,7 @@ if ( typeof window.getMatchedCSSRules !== 'function' ) {
     PSEUDO_ELEMENTS_RE = /\:\:?(after|before|first-letter|first-line|selection)/g;
   // convert an array-like object to array
   function toArray (list) {
-    return [].slice.call(list);
+    return [].slice.call(list || []);
   }
 
   // handles extraction of `cssRules` as an `Array` from a stylesheet or something that behaves the same
