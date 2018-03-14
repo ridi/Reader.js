@@ -110,7 +110,7 @@ export default class TTSPiece {
     if (this.length === 0 || readable === 'no') {
       valid = false;
     } else if (readable !== 'yes') {
-      if (_Util.getMatchedCSSValue(el, 'display') === 'none') {
+      if (_Util.getMatchedCSSValue(el, 'display') === 'none' || _Util.getMatchedCSSValue(el, 'visibility') === 'hidden') {
         // 눈에 보이지 않는 것은 읽지 않는다
         valid = false;
       } else {

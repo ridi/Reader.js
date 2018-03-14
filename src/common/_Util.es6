@@ -108,7 +108,7 @@ export default class _Util extends _Object {
       const important = rule.style.getPropertyPriority(property);
 
       // if set, only reset if important
-      if (val === null || important) {
+      if (val === null || val.length === 0 || important) {
         val = rule.style.getPropertyValue(property);
 
         // done if important
