@@ -13,7 +13,6 @@ module.exports = (grunt) => {
           '<%= variants.srcPath %>/common/libs/*.js',
         ],
         dest: `${options.dest}/${platform}/index.js`,
-        options: { banner: '<%= variants.banner %><%= variants.strict %>' },
       };
     });
     return object;

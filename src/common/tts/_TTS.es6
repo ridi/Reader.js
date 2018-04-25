@@ -164,7 +164,7 @@ export default class _TTS {
         if (nodes[i] === range.startContainer) {
           nodeIndex = i;
           const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
-          for (; wordIndex < words.length; wordIndex++) {
+          for (; wordIndex < words.length; wordIndex += 1) {
             if (range.startOffset <= offset + words[wordIndex].length) {
               break;
             } else {
@@ -214,7 +214,7 @@ export default class _TTS {
     this.makeChunksByNodeLocationReverse(-1, -1, true);
     const emptyChunkRegex = TTSUtil.getWhitespaceAndNewLineRegex('^', '$', null);
     let lastSentenceChunk = null;
-    for (let i = this.chunks.length - 1; i >= 0; i--) {
+    for (let i = this.chunks.length - 1; i >= 0; i -= 1) {
       lastSentenceChunk = this.chunks[i];
       if (lastSentenceChunk.getUtterance().text.match(emptyChunkRegex)) {
         lastSentenceChunk = null;
@@ -568,7 +568,7 @@ export default class _TTS {
       let offset = 0;
       let startOffset = 0;
       let subText = '';
-      for (let i = 0; i < tokens.length; i++) {
+      for (let i = 0; i < tokens.length; i += 1) {
         const token = tokens[i];
         subText += token;
         offset += token.length;

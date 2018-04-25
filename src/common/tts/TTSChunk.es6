@@ -145,7 +145,7 @@ export default class TTSChunk {
     const piece = this.getStartWordPiece();
     let offsetBeforeNode = 0;
 
-    for (let i = 0; i < this._pieces.length; i++) {
+    for (let i = 0; i < this._pieces.length; i += 1) {
       const currentPiece = this._pieces[i];
       if (currentPiece.nodeIndex >= piece.nodeIndex) {
         break;
@@ -165,7 +165,7 @@ export default class TTSChunk {
 
     const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
     let currentWordStartOffset = 0;
-    for (let j = 0; j < words.length; j++) {
+    for (let j = 0; j < words.length; j += 1) {
       if (currentWordStartOffset >= offsetBeforeWordInNode) {
         return j;
       }
@@ -182,7 +182,7 @@ export default class TTSChunk {
     const firstPaddingLeft = this._pieces[0].paddingLeft;
     let offsetBeforeNode = 0;
 
-    for (let i = 0; i < this._pieces.length; i++) {
+    for (let i = 0; i < this._pieces.length; i += 1) {
       const currentPiece = this._pieces[i];
       if (currentPiece.nodeIndex >= piece.nodeIndex) {
         break;
@@ -209,7 +209,7 @@ export default class TTSChunk {
 
     const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
     let currentWordEndOffset = 0;
-    for (let j = 0; j < words.length; j++) {
+    for (let j = 0; j < words.length; j += 1) {
       currentWordEndOffset += (words[j].length + 1);
       if (currentWordEndOffset >= offsetAfterEndWordInNode) {
         return j;

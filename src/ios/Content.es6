@@ -44,7 +44,7 @@ export default class Content extends _Content {
 
     this.isImagesRevised = false;
 
-    for (let i = 0; i < els.length; i++) {
+    for (let i = 0; i < els.length; i += 1) {
       const el = els[i];
       if (el.complete) {
         elList.push(el);

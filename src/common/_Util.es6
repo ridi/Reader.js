@@ -6,7 +6,11 @@ export default class _Util extends _Object {
    * @returns {NodeIterator}
    */
   static createTextNodeIterator(node) {
-    return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, { acceptNode() { return NodeFilter.FILTER_ACCEPT; } }, true);
+    return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, {
+      acceptNode() {
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    }, true);
   }
 
   /**
@@ -27,7 +31,8 @@ export default class _Util extends _Object {
 
   /**
    * @param {Node} imgEl
-   * @returns {{dWidth: *, dHeight: *, nWidth: number, nHeight: number, sWidth: *, sHeight: *, aWidth: string, aHeight: string}}
+   * @returns {{dWidth: *, dHeight: *, nWidth: number, nHeight: number,
+   * sWidth: *, sHeight: *, aWidth: string, aHeight: string}}
    */
   static getImageSize(imgEl) {
     const attrs = imgEl.attributes;
@@ -74,7 +79,7 @@ export default class _Util extends _Object {
       style = window.getComputedStyle(target);
     }
     let value = 0;
-    for (let i = 0; i < properties.length; i++) {
+    for (let i = 0; i < properties.length; i += 1) {
       value += (parseInt(style[properties[i]], 10) || 0);
     }
     return value;
@@ -103,7 +108,7 @@ export default class _Util extends _Object {
 
     // iterate the rules backwards
     // rules are ordered by priority, highest last
-    for (let i = rules.length - 1; i >= 0; i--) {
+    for (let i = rules.length - 1; i >= 0; i -= 1) {
       const rule = rules[i];
       const important = rule.style.getPropertyPriority(property);
 
@@ -147,7 +152,7 @@ export default class _Util extends _Object {
    * @returns {MutableClientRect[]}
    */
   static concatArray(array, rects, adjust = rect => rect) {
-    for (let i = 0; i < rects.length; i++) {
+    for (let i = 0; i < rects.length; i += 1) {
       array.push(adjust(rects[i]));
     }
     return array;

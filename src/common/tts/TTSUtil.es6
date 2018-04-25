@@ -7,7 +7,7 @@ export default class TTSUtil {
    * @returns {TTSPiece|null}
    */
   static find(list, callback) {
-    for (let i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i += 1) {
       const item = list[i];
       if (callback(item)) {
         return item;

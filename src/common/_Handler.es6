@@ -34,8 +34,8 @@ export default class _Handler extends _Object {
   getLinkFromPoint(x, y) {
     const point = this.reader.adjustPoint(x, y);
     const tolerance = 10;
-    for (let _x = point.x - tolerance; _x <= point.x + tolerance; _x++) {
-      for (let _y = point.y - tolerance; _y <= point.y + tolerance; _y++) {
+    for (let _x = point.x - tolerance; _x <= point.x + tolerance; _x += 1) {
+      for (let _y = point.y - tolerance; _y <= point.y + tolerance; _y += 1) {
         if (this.isInViewportWidth(x)) {
           const el = document.elementFromPoint(x, y);
           if (el) {

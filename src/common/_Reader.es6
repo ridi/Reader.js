@@ -87,7 +87,7 @@ export default class _Reader extends _Object {
     function getAdjustedClientRects() {
       const rects = this.getClientRects() || [];
       const newRects = [];
-      for (let i = 0; i < rects.length; i++) {
+      for (let i = 0; i < rects.length; i += 1) {
         const rect = rects[i];
         if (rect.width <= 1) {
           // Webkit, Chrome 버전에 따라 다음 페이지의 첫 글자를 선택했을 때
@@ -270,7 +270,7 @@ export default class _Reader extends _Object {
    */
   _findRectIndex(rects, startOffset, endOffset, type = 'top') {
     const origin = this.context.isScrollMode ? 'top' : 'left';
-    for (let j = 0; j < rects.length; j++) {
+    for (let j = 0; j < rects.length; j += 1) {
       const rect = rects[j];
       if (type === 'bottom') {
         if (endOffset <= rect[origin] && rect.width > 0) {
@@ -304,7 +304,7 @@ export default class _Reader extends _Object {
 
     // 현재 페이지에 위치한 노드 정보를 임시로 저장한 것으로 BottomNodeLocation을 구할 때 사용한다.
     let prev = null;
-    for (let i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < nodes.length; i += 1) {
       const node = nodes[i];
       const range = document.createRange();
       range.selectNodeContents(node);
@@ -337,7 +337,7 @@ export default class _Reader extends _Object {
 
         const words = string.split(_Util.getSplitWordRegex());
         let offset = range.startOffset;
-        for (let j = 0; j < words.length; j++) {
+        for (let j = 0; j < words.length; j += 1) {
           const word = words[j];
           if (word.trim().length) {
             try {
@@ -355,7 +355,7 @@ export default class _Reader extends _Object {
               this._latestNodeRect = rects[rectIndex];
               return (i + posSeparator + Math.min(j + rectIndex, words.length - 1));
             }
-            for (let k = rects.length - 1; k >= 0; k--) {
+            for (let k = rects.length - 1; k >= 0; k -= 1) {
               if (rects[k].left < endOffset) {
                 prev = { location: `${i}${posSeparator}${j}`, rect: rects[k] };
               }
@@ -374,7 +374,7 @@ export default class _Reader extends _Object {
           // imageNode는 wordIndex를 구할 수 없기 때문에 0을 넣는다.
           return `${i}${posSeparator}0`;
         }
-        for (let k = rects.length - 1; k >= 0; k--) {
+        for (let k = rects.length - 1; k >= 0; k -= 1) {
           if (rects[k].left < endOffset) {
             prev = { location: `${i}${posSeparator}0`, rect: rects[k] };
           }
@@ -478,7 +478,7 @@ export default class _Reader extends _Object {
     const words = string.split(_Util.getSplitWordRegex());
     let word;
     let offset = 0;
-    for (let i = 0; i <= Math.min(wordIndex, words.length - 1); i++) {
+    for (let i = 0; i <= Math.min(wordIndex, words.length - 1); i += 1) {
       word = words[i];
       offset += (word.length + 1);
     }
@@ -598,7 +598,7 @@ export default class _Reader extends _Object {
     }
 
     let result = '';
-    for (let i = 0; i < rects.length; i++) {
+    for (let i = 0; i < rects.length; i += 1) {
       const rect = rects[i];
       result += `${(rect.left + insets.left)},`;
       result += `${(rect.top + insets.top)},`;

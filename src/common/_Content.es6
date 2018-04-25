@@ -98,7 +98,7 @@ export default class _Content extends _Object {
         let prefix = '<svg';
 
         const attrs = el.attributes;
-        for (let i = 0; i < attrs.length; i++) {
+        for (let i = 0; i < attrs.length; i += 1) {
           const attr = attrs[i];
           prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
         }
@@ -107,7 +107,7 @@ export default class _Content extends _Object {
         // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
         const svgEl = document.createElement('svgElement');
         const nodes = el.childNodes;
-        for (let j = 0; j < nodes.length; j++) {
+        for (let j = 0; j < nodes.length; j += 1) {
           svgEl.appendChild(nodes[j].cloneNode(true));
         }
 

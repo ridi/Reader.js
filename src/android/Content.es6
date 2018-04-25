@@ -16,7 +16,7 @@ export default class Content extends _Content {
     const results = [];
 
     const els = this.images;
-    for (let i = 0; i < els.length; i++) {
+    for (let i = 0; i < els.length; i += 1) {
       const el = els[i];
       const result = this.reviseImage(el, screenWidth, screenHeight);
       if (result.width.length || result.height.length || result.position.length) {

@@ -48,7 +48,7 @@ export default class TTSUtterance {
    */
   removeHanja() {
     let { text } = this;
-    for (let i = 0; i < this.length; i++) {
+    for (let i = 0; i < this.length; i += 1) {
       if (TTSUtil.isChineseCharCode(text.charCodeAt(i))) {
         text = text.replace(text.substr(i, 1), ' ');
       }
@@ -81,7 +81,7 @@ export default class TTSUtterance {
       startOffset = -1;
     };
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; i += 1) {
       code = text.charCodeAt(i);
       if (i > 0 && TTSUtil.isLatinCharCode(code)) {
         let isAbbr = false;
@@ -96,7 +96,7 @@ export default class TTSUtterance {
           startOffset = i;
         }
         if (startOffset > 0) {
-          for (j = i + 1; j < length; j++) {
+          for (j = i + 1; j < length; j += 1) {
             code = text.charCodeAt(j);
             ch = text.charAt(j);
             if (TTSUtil.isSpaceCharCode(code) || TTSUtil.isLastCharOfSentence(ch) ||
@@ -104,7 +104,7 @@ export default class TTSUtterance {
               // 공백, 문장의 끝을 의미하는 문자일 때는 좀 더 이후 글자를 확인한다.
               if (j + 1 < length) {
                 let ignoreCount = 1;
-                for (k = j + 1; k < length; k++) {
+                for (k = j + 1; k < length; k += 1) {
                   nextCode = text.charCodeAt(k);
                   nextCh = text.charAt(k);
                   if (TTSUtil.isSpaceCharCode(nextCode) || nextCh === ':' || nextCh === ',') {
@@ -145,7 +145,7 @@ export default class TTSUtterance {
 
     let result = '';
     let endOffset = 0;
-    for (i = 0, startOffset = 0; i < removeList.length; i++) {
+    for (i = 0, startOffset = 0; i < removeList.length; i += 1) {
       endOffset = removeList[i].startOffset;
       result += text.substring(startOffset, endOffset);
       startOffset = removeList[i].endOffset;
@@ -173,12 +173,12 @@ export default class TTSUtterance {
     let i;
     let j;
     let k;
-    for (i = 0; i < textLength; i++) {
+    for (i = 0; i < textLength; i += 1) {
       const code = text.charCodeAt(i);
       if (TTSUtil.isTildeCharCode(code)) {
         if (i > 0) {
           let isRangeTilde = false;// 범위를 의미하는 틸드일 때는 바꾸지 않는다. (3억~5억)
-          for (j = i + 1; j < textLength; j++) {
+          for (j = i + 1; j < textLength; j += 1) {
             const nextCode = text.charCodeAt(j);
             if (TTSUtil.isSpaceCharCode(nextCode)) {
               continue;
@@ -211,7 +211,7 @@ export default class TTSUtterance {
     // 쉼표를 줘서 다음 문장 또는 단어와 바로 이어지지 않도록 한다.
     if (offset !== -1) {
       let insertRest = true;
-      for (k = offset + 1; k < textLength; k++) {
+      for (k = offset + 1; k < textLength; k += 1) {
         if (TTSUtil.isHangulCharCode(text.charCodeAt(k))) {
           insertRest = false;
           break;
@@ -240,7 +240,7 @@ export default class TTSUtterance {
    */
   removeAllRepeatedCharacter(strs) {
     let { text } = this;
-    for (let i = 0; i < strs.length; i++) {
+    for (let i = 0; i < strs.length; i += 1) {
       const regex = new RegExp(`${strs[i]}{2,}`, 'gm');
       text = text.replace(regex, '');
     }
@@ -304,7 +304,7 @@ export default class TTSUtterance {
       }
       let type = (startOffset === 0 ? Type.HangulNotation : Type.None);
       let spaceCount = 0;
-      for (i = startOffset - 1; i >= 0; i--) {
+      for (i = startOffset - 1; i >= 0; i -= 1) {
         code = text.charCodeAt(i);
         if (TTSUtil.isSpaceCharCode(code)) {
           spaceCount += 1;
@@ -324,7 +324,7 @@ export default class TTSUtterance {
         type = Type.HangulNotation;
       }
 
-      for (i = endOffset; i < text.length; i++) {
+      for (i = endOffset; i < text.length; i += 1) {
         code = text.charCodeAt(i);
         ch = text.charAt(i);
         const nextCh = text.charAt(i + 1);
