@@ -1,6 +1,5 @@
 import _Object from './_Object';
 import _Util from './_Util';
-import TTSUtil from './tts/TTSUtil';
 
 export default class _Sel extends _Object {
   /**
@@ -63,8 +62,7 @@ export default class _Sel extends _Object {
       return;
     }
 
-    const tables = [TTSUtil.chineseCodeTable(), TTSUtil.japaneseCodeTable()];
-    if (TTSUtil.getContainCharRegex(tables).test(range.toString())) {
+    if (range.toString().isFilled('chinese', 'japanese')) {
       range.expand('character');
       return;
     }
