@@ -108,8 +108,8 @@ export default class _Reader extends _Object {
   }
 
   setViewport() {
-    const value = `width=${window.innerWidth}, height=${window.innerHeight}, ` +
-      'initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
+    const value = `width=${this.context.pageWidthUnit - this.context.pageGap}, height=${this.context.pageHeightUnit},` +
+      ' initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
     let viewport = document.querySelector('meta[name=viewport]');
     if (viewport === null) {
       viewport = document.createElement('meta');
