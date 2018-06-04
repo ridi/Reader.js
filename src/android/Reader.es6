@@ -113,7 +113,7 @@ export default class Reader extends _Reader {
       const height = this.context.pageHeightUnit;
       const marginBottom = Util.getStylePropertyIntValue(body, 'margin-bottom');
       const extraPages = marginBottom / (this.context.isDoublePageMode ? height * 2 : height);
-      const maxPage = Math.max(Math.ceil(this.totalWidth / width) - 1 - extraPages, 0);
+      const maxPage = Math.max(Math.ceil(this.totalWidth / width) - extraPages, 0);
       adjustOffset = Math.min(adjustOffset, maxPage * width);
     }
 
