@@ -225,7 +225,6 @@ export default class TTSChunk {
   getClientRects(removeBlank) {
     const chunkRange = this.range;
     const pieces = this._pieces;
-    const startPiece = this.getPiece(chunkRange.startOffset);
     let rects = [];
     let start = 0;
     let end = 0;
@@ -235,7 +234,6 @@ export default class TTSChunk {
     for (let i = 0; i < pieces.length; i += 1, current += totalLength) {
       const piece = pieces[i];
       const { node } = piece;
-      let string = null;
 
       const range = document.createRange();
       range.selectNodeContents(node);
@@ -292,43 +290,23 @@ export default class TTSChunk {
         if (end === 0) {
           end = totalLength;
         }
-        for (;;) {
-          try {
-            range.setStart(node, start);
-            range.setEnd(node, end);
-            range.expand('character');
-          } catch (e) {
-            /* eslint-disable no-console */
-            console.error(
-              `TSChunk:getClientRects() Error!! ${e.toString()}\n`
+        try {
+          range.setStart(node, start);
+          range.setEnd(node, end);
+          range.expand('character');
+        } catch (e) {
+          /* eslint-disable no-console */
+          console.error(
+            `TSChunk:getClientRects() Error!! ${e.toString()}\n`
             + ` => {startOffset: ${start}`
             + `, endOffset: ${end}`
             + `, offset: ${current}`
             + `, nodeIndex: ${piece.nodeIndex}`
             + `, startWordIndex: ${piece.startWordIndex}`
             + `, endWordIndex: ${piece.endWordIndex}}`);
-          }
+        }
 
-          // 앞뒤 여백을 없애서 하이라이트를 이쁘게 만들어보자.
-          string = range.toString();
-          if (startPiece.nodeIndex === piece.nodeIndex &&
-            (string.match(TTSUtil.getWhitespaceAndNewLineRegex('^', null, 'g')) !== null ||
-            string.match(TTSUtil.getSentenceRegex('^', null, 'g')) !== null)) {
-            if (totalLength < start + 1) {
-              break;
-            }
-            start += 1;
-          } else if (string.match(TTSUtil.getWhitespaceAndNewLineRegex(null, '$', 'g')) !== null) {
-            if (end - 1 < 0) {
-              break;
-            }
-            end -= 1;
-          } else {
-            break;
-          }
-        } // end while
-
-        if (removeBlank === true && string.length === 0) {
+        if (removeBlank === true && range.toString().length === 0) {
           continue;
         }
 

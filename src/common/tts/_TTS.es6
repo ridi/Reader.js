@@ -552,6 +552,12 @@ export default class _TTS {
       }
     };
 
+    const makeTrimmedRange = (startOffset, text) => {
+      const paddingLeft = (text.match(/^([\s]+)/g) || [''])[0].length;
+      const paddingRight = (text.match(/([\s]+)$/g) || [''])[0].length;
+      return new TTSRange(startOffset + paddingLeft, (startOffset + text.length) - paddingRight);
+    };
+
     const buffer = [];
     const pushToChunks = (chunk) => {
       if (addAtFirst) {
@@ -577,18 +583,18 @@ export default class _TTS {
           continue;
         }
         if (subText.length) {
-          debug(2, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
+          debug(1, pushToChunks(chunk.copy(makeTrimmedRange(startOffset, subText))));
           subText = '';
         }
         startOffset = offset;
       }
       if (subText.length) {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
-        debug(3, pushToChunks(chunk.copy(new TTSRange(startOffset, startOffset + subText.length))));
+        debug(2, pushToChunks(chunk.copy(makeTrimmedRange(startOffset, subText))));
       }
     } else if (tokens.length === 1) {
       // 문장(token)이 하나 뿐이라 바로 추가한다
-      debug(4, pushToChunks(chunk));
+      debug(3, pushToChunks(chunk.copy(makeTrimmedRange(0, tokens[0]))));
     }
 
     if (addAtFirst) {
