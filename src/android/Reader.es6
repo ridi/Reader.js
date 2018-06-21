@@ -146,9 +146,15 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @returns {Number}
+   * @returns {Number}, -1은 재요청이 필요함을 의미
    */
   calcPageCount() {
+    if (document.fonts && document.fonts.status) {
+      if (document.fonts.status !== 'loaded') {
+        return -1;
+      }
+    }
+
     if (this.context.isScrollMode) {
       return Math.round(this.totalHeight / this.context.pageHeightUnit);
     }
@@ -157,7 +163,6 @@ export default class Reader extends _Reader {
     if (this.totalWidth < columnWidth) {
       // 가끔 total width가 0으로 넘어오는 경우가 있다. (커버 페이지에서 이미지가 그려지기 전에 호출된다거나)
       // 젤리빈에서는 0이 아닌 getWidth()보다 작은 값이 나오는 경우가 확인되었으며 재요청시 정상값 들어옴.
-      // (-1을 리턴하면 재요청을 진행하게됨)
       return -1;
     }
 
