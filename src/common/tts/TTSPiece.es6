@@ -170,8 +170,11 @@ export default class TTSPiece {
     const pNode = this._node.previousSibling;
     const regex = TTSUtil.getWhitespaceAndNewLineRegex(null, `{${this.length},}`);
     let only = this.text.match(regex) !== null;
-    if (only && pNode !== null) {
-      only = pNode.nodeName !== 'SPAN';
+    if (only) {
+      only = this._node.parentElement.nodeName !== 'SPAN';
+      if (pNode !== null) {
+        only = pNode.nodeName !== 'SPAN';
+      }
     }
     return only;
   }
