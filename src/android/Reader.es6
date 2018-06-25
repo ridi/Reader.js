@@ -146,9 +146,23 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @returns {Number}
+   * @returns {Number}, -1은 재요청이 필요함을 의미
    */
   calcPageCount() {
+    if (document.fonts) {
+      // https://drafts.csswg.org/css-font-loading/#dom-fontfaceloadstatus-loading
+      // 사용된 적이 없는 Font : unloaded
+      // 로딩중인 Font : loading
+      // 로딩된 Font : loaded
+      // 로딩 실패한 Font : error
+      // document.fonts.status, ready는 신뢰할 수 없으므로 아래와 같은 방법으로 체크
+      const fontFaceLoadingStatusList = [];
+      document.fonts.forEach(fontFace => fontFaceLoadingStatusList.push(fontFace.status));
+      if (fontFaceLoadingStatusList.indexOf('loading') >= 0) {
+        return -1;
+      }
+    }
+
     if (this.context.isScrollMode) {
       return Math.round(this.totalHeight / this.context.pageHeightUnit);
     }
@@ -157,7 +171,6 @@ export default class Reader extends _Reader {
     if (this.totalWidth < columnWidth) {
       // 가끔 total width가 0으로 넘어오는 경우가 있다. (커버 페이지에서 이미지가 그려지기 전에 호출된다거나)
       // 젤리빈에서는 0이 아닌 getWidth()보다 작은 값이 나오는 경우가 확인되었으며 재요청시 정상값 들어옴.
-      // (-1을 리턴하면 재요청을 진행하게됨)
       return -1;
     }
 
