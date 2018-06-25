@@ -156,8 +156,8 @@ export default class Reader extends _Reader {
       // 로딩된 Font : loaded
       // 로딩 실패한 Font : error
       // document.fonts.status, ready는 신뢰할 수 없으므로 아래와 같은 방법으로 체크
-      const fontFaceLoadingStatusList =
-        Array.from(document.fonts.values()).map(fontFace => fontFace.status);
+      const fontFaceLoadingStatusList = [];
+      document.fonts.forEach(fontFace => fontFaceLoadingStatusList.push(fontFace.status));
       if (fontFaceLoadingStatusList.indexOf('loading') >= 0) {
         return -1;
       }
