@@ -110,10 +110,7 @@ export default class Reader extends _Reader {
       adjustOffset = Math.min(adjustOffset, maxOffset);
     } else {
       const width = this.context.pageWidthUnit;
-      const height = this.context.pageHeightUnit;
-      const marginBottom = Util.getStylePropertyIntValue(body, 'margin-bottom');
-      const extraPages = marginBottom / (this.context.isDoublePageMode ? height * 2 : height);
-      const maxPage = Math.max(Math.ceil(this.totalWidth / width) - extraPages, 0);
+      const maxPage = Math.max(this.calcPageCount() - this.getExtraPageCount(), 0);
       adjustOffset = Math.min(adjustOffset, maxPage * width);
     }
 
@@ -143,6 +140,15 @@ export default class Reader extends _Reader {
     } else {
       super.scrollTo(adjustOffset);
     }
+  }
+
+  /**
+   * @returns {number}
+   */
+  getExtraPageCount() {
+    const height = this.context.pageHeightUnit;
+    const marginBottom = Util.getStylePropertyIntValue(this.content.body, 'margin-bottom');
+    return marginBottom / (this.context.isDoublePageMode ? height * 2 : height);
   }
 
   /**
@@ -264,17 +270,24 @@ export default class Reader extends _Reader {
    * @param {String} style
    */
   changePageSizeWithStyle(width, height, gap, style) {
-    const prevPage = this.curPage;
+    let prevPage = this.curPage;
 
     this.changeContext(Object.assign(this.context, { _width: width, _height: height, _gap: gap }));
 
     const styleElements = document.getElementsByTagName('style');
     const styleElement = styleElements[styleElements.length - 1];
     styleElement.innerHTML = style;
-    this.scrollTo(prevPage * this.context.pageUnit);
 
     this.setViewport();
     this._updateClientWidth();
+
+    setTimeout(() => {
+      const maxPage = this.calcPageCount();
+      if (maxPage > -1) {
+        prevPage = Math.min(prevPage, Math.max(maxPage - 1 - this.getExtraPageCount(), 0));
+      }
+      this.scrollTo(prevPage * this.context.pageUnit);
+    }, 0);
   }
 
   _updateClientWidth() {
