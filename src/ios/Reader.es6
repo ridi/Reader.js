@@ -70,9 +70,13 @@ export default class Reader extends _Reader {
     }
 
     const direction = this.getOffsetDirectionFromElement(el);
-    const origin = rect[direction] + this.pageOffset;
     const pageUnit = direction === 'left' ? this.context.pageWidthUnit : this.context.pageHeightUnit;
-    return Math.floor(origin / pageUnit);
+    let page = Math.floor((rect[direction] + this.pageOffset) / pageUnit);
+
+    if (!this.context.isScrollMode && rect.top < 0) {
+      page += Math.floor(rect.top / this.context.pageHeightUnit);
+    }
+    return page;
   }
 
   /**
