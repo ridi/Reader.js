@@ -22,7 +22,7 @@ $ npm install @ridi/reader.js
     └─ index.js
 ```
 
-## Compatbility
+## Compatibility
 - iOS 8-11
 - Android 4-8 (API Level 14-26)
 - Chrome 30~64
@@ -41,7 +41,7 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 - `rect`: 화면 내 범위를 나타내는 [DOMRect](https://developer.mozilla.org/en-US/docs/Web/API/DOMRect)를 변형한 `MutableClientRect`(`x`, `y`, `width`, `height`, top, `left`, `right`, `bottom` 값을 가지고 있음)
 - `range`: [Range](https://developer.mozilla.org/ko/docs/Web/API/Range) 객체
 - `node location`: (스파인 내) 위치를 나타내는 자체 포맷 (예: `31#0`)
-- `serialized range`: (스파인 내) 범위를 나타내는 자체 포맷 (예: `0/171:0,0/171:30`)
+- `serialized range`: (스파인 내) 범위를 나타내는 포맷, [Range 라이브러리에서 제공하는 serialization format](https://github.com/timdown/rangy/wiki/Serializer-Module#serialization-format) 사용 (예: `0/171:0,0/171:30`)
 - `anchor`: HTML anchor 링크의 `id` 애트리뷰트 값
 
 ### APIs
@@ -85,17 +85,19 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 
 - `content.getLinkFromElement(el)`
 	- 특정 엘리먼트가 `<a>` 태그(이거나 그 부모가 `<a>` 태그)일 경우 그 정보(`node`, `href`, `type`)를 반환
-	- 팝업 주석 링크일 경우 `type: 'epub:type'` 반환
+	- `type`으로 `epub:type` 애트리뷰트의 값 반환 (예: 팝업 주석 링크일 경우 `type: 'noteref'`)
 
 #### 이미지
 
 - `content.reviseImage(imgEl, screenWidth, screenHeight)`
     - 이미지 크기를 조정해 이미지가 페이지를 벗어나는 일이 없도록 함
-    - 사용 후 페이지 재계산 필요
+    - 사용 후 페이지 계산 필요
 - `content.getSvgElementFromPoint(x, y)`
-	- 특정 (마우스) 포인트에 `<svg>` 태그가 존재하는 경우 태그의 전체 내용을 문자열로 반환
+	- `mouseup`, `touch` 이벤트 등 발생 시 해당 포인트에 `<svg>` 태그 존재 여부 확인
+	- `<svg>` 태그가 존재하는 경우 태그의 전체 내용을 문자열로 반환
 - `content.getImagePathFromPoint(x, y)`
-	- 특정 (마우스) 포인트에 `<img>` 태그가 존재하는 경우 `src` 애트리뷰트 값 반환
+	- `mouseup`, `touch` 이벤트 등 발생 시 해당 포인트에 `<img>` 태그 존재 여부 확인
+	- `<img>` 태그가 존재하는 경우 `src` 애트리뷰트 값 반환
 
 #### TTS
 
