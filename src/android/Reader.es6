@@ -194,6 +194,58 @@ export default class Reader extends _Reader {
   }
 
   /**
+   * @returns {Number}
+   */
+  calcSpineWordCount() {
+    return document.body.textContent.split(Util.getSplitWordRegex()).length;
+  }
+
+  calcRemainingWordCount(nodeIndex, wordIndex) {
+    const nodes = this._content._nodes;
+    const _nodeIndex = Math.max(nodeIndex, 0);
+    let wordCount = 0;
+    for (let i = _nodeIndex; i < nodes.length; i++) {
+      const node = nodes[i];
+      if (!node || !(node.nodeValue)) {
+        continue;
+      }
+      wordCount += node.nodeValue.split(Util.getSplitWordRegex()).length;
+    }
+    wordCount -= wordIndex;
+    android.calcRemainingWordCount(wordCount);
+  }
+
+  calcPrevPageWordCount(type = 'top', posSeparator = '#') {
+    const startOffset = 0;
+    const endOffset = this.context.pageUnit;
+
+    const prevPageLocation = this.findNodeLocation(startOffset - endOffset, startOffset, type, posSeparator);
+    const currentPageLocation = this.findNodeLocation(startOffset, endOffset, type, posSeparator);
+
+    let wordCount = 0;
+
+    const nodes = this._content._nodes;
+
+    const prevPageParts = prevPageLocation.split(posSeparator);
+    const startNodeIndex = parseInt(prevPageParts[0], 10);
+    const startWordIndex = parseInt(prevPageParts[1], 10);
+    const currentPageParts = currentPageLocation.split(posSeparator);
+    const endNodeIndex = parseInt(currentPageParts[0], 10);
+    const endWordIndex = parseInt(currentPageParts[1], 10);
+
+    for (let i = startNodeIndex; i < endNodeIndex; i++) {
+      const node = nodes[i];
+      if (!node || !(node.nodeValue)) {
+        continue;
+      }
+      wordCount += node.nodeValue.split(Util.getSplitWordRegex()).length;
+    }
+    wordCount -= startWordIndex;
+    wordCount += endWordIndex;
+    android.calcPrevPageWordCount(wordCount);
+  }
+
+  /**
    * @param {MutableClientRect} rect
    * @param {Node} el
    * @returns {Number|null} (zero-base)
@@ -242,6 +294,11 @@ export default class Reader extends _Reader {
       return;
     }
 
+    this.calcPrevPageWordCount();
+    const parts = location.split(posSeparator);
+    const nodeIndex = parseInt(parts[0], 10);
+    const wordIndex = parseInt(parts[1], 10);
+    this.calcRemainingWordCount(nodeIndex, wordIndex);
     android.onNodeLocationOfCurrentPageFound(location);
   }
 
