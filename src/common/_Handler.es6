@@ -32,17 +32,17 @@ export default class _Handler extends _Object {
    * @returns {{node: Node, href: String, type: String}|null}
    */
   getLinkFromPoint(x, y) {
-    const point = this.reader.adjustPoint(x, y);
     const tolerance = 10;
-    for (let _x = point.x - tolerance; _x <= point.x + tolerance; _x += 1) {
-      for (let _y = point.y - tolerance; _y <= point.y + tolerance; _y += 1) {
-        if (this.isInViewportWidth(x)) {
-          const el = document.elementFromPoint(x, y);
-          if (el) {
-            const link = this.reader.content.getLinkFromElement(el);
-            if (link !== null) {
-              return link;
-            }
+    const anchors = document.links;
+
+    for (let i = 0; i < anchors.length; i++) {
+      const rects = anchors[i].getClientRects();
+      for (let j = 0; j < rects.length; j++) {
+        if ((x >= rects[j].left - tolerance) && (x <= rects[j].right + tolerance) &&
+          (y >= rects[j].top - tolerance) && (y <= rects[j].bottom + tolerance)) {
+          const link = this.reader.content.getLinkFromElement(anchors[i]);
+          if (link !== null) {
+            return link;
           }
         }
       }
