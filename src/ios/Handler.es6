@@ -4,16 +4,6 @@ import Util from './Util';
 export default class Handler extends _Handler {
   /**
    * @param {Number} x
-   * @returns {Boolean}
-   */
-  isInViewportWidth(x) {
-    const startViewportWidth = 0;
-    const endViewportWidth = startViewportWidth + document.body.clientWidth;
-    return x >= startViewportWidth && x <= endViewportWidth;
-  }
-
-  /**
-   * @param {Number} x
    * @param {Number} y
    * @param {Number} rawX
    * @param {Number} rawY

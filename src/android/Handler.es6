@@ -4,15 +4,6 @@ import Util from './Util';
 export default class Handler extends _Handler {
   /**
    * @param {Number} x
-   * @returns {Boolean}
-   */
-  isInViewportWidth(x) {
-    const point = this.reader.adjustPoint(0, 0);
-    return x >= point.x && x <= point.x + this.reader.content.wrapper.clientWidth;
-  }
-
-  /**
-   * @param {Number} x
    * @param {Number} y
    * @param {String} nativePoints
    */
