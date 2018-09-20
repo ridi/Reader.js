@@ -29,9 +29,10 @@ export default class _Handler extends _Object {
       return (point.x >= rect.left - tolerance) && (point.x <= rect.right + tolerance) &&
         (point.y >= rect.top - tolerance) && (point.y <= rect.bottom + tolerance);
     };
-    return this.reader.content.getLinkFromElement(links.find((link) => {
-      const rects = link.getAdjustedClientRects();
-      return rects.find(predicate) !== undefined;
-    }));
+    const element = links.find(link => link.getAdjustedClientRects().find(predicate) !== undefined);
+    if (element === undefined) {
+      return null;
+    }
+    return this.reader.content.getLinkFromElement(element);
   }
 }
