@@ -120,12 +120,26 @@ module.exports = (grunt) => {
         options: { spawn: false },
       },
     },
+
+    copy: {
+      main: {
+        files: [
+          {
+            expand: true,
+            src: ['package.json', 'LICENSE', 'README.md'],
+            dest: '<%= variants.distPath %>/',
+            filter: 'isFile',
+          },
+        ],
+      },
+    },
   });
 
   grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
@@ -134,7 +148,7 @@ module.exports = (grunt) => {
   grunt.registerTask('default', ['clean', 'prepublish']);
   grunt.registerTask('lint', ['jshint', 'eslint']);
   grunt.registerTask('bundle', ['babel', 'browserify', 'concat', 'uglify']);
-  grunt.registerTask('prepublish', ['lint', 'bundle']);
+  grunt.registerTask('prepublish', ['lint', 'bundle', 'copy']);
   grunt.registerTask('show-config', () => {
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
