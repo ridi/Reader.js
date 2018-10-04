@@ -14,13 +14,12 @@ $ npm install @ridi/reader.js
   ├── LICENSE
   ├── package.json
   ├── README.md
-  └─┬ dist
-    ├─┬ android
-    | └─ index.js
-    ├─┬ ios
-    | └─ index.js
-    └─┬ web
-      └─ index.js
+  ├─┬ android
+  | └─ index.js
+  ├─┬ ios
+  | └─ index.js
+  └─┬ web
+    └─ index.js
 ```
 
 ## Compatibility
