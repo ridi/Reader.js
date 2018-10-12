@@ -1,14 +1,18 @@
 # Reader.js
+
+> Javascript library for RIDI EPUB Viewer written in ECMAScript 6
+
+[![npm version](https://badge.fury.io/js/%40ridi%2Freader.js.svg)](https://badge.fury.io/js/%40ridi%2Freader.js)
 [![Build Status](https://travis-ci.org/ridi/Reader.js.svg?branch=master)](https://travis-ci.org/ridi/Reader.js)
 
-Javascript library for RIDI EPUB Viewer written in ECMAScript 6
-
 ## Install
+
 ```
 $ npm install @ridi/reader.js
 ```
 
 ## Structure
+
 ```
 └─┬ root
   ├── LICENSE
@@ -23,7 +27,8 @@ $ npm install @ridi/reader.js
 ```
 
 ## Compatibility
-- iOS 8-11
+
+- iOS 8-12
 - Android 4-8 (API Level 14-26)
 - Chrome 30~64
 - Safari 9~11
@@ -41,7 +46,7 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 - **`rect`**: 화면 내 범위를 나타내는 [DOMRect](https://developer.mozilla.org/en-US/docs/Web/API/DOMRect)를 변형한 `MutableClientRect`(`x`, `y`, `width`, `height`, `top`, `left`, `right`, `bottom` 값을 가지고 있음)
 - **`range`**: [Range](https://developer.mozilla.org/ko/docs/Web/API/Range) 객체
 - **`node location`**: (스파인 내) 위치를 나타내는 자체 포맷 (예: `31#0`)
-- **`serialized range`**: (스파인 내) 범위를 나타내는 포맷, [Range 라이브러리에서 제공하는 serialization format](https://github.com/timdown/rangy/wiki/Serializer-Module#serialization-format) 사용 (예: `0/171:0,0/171:30`)
+- **`serialized range`**: (스파인 내) 범위를 나타내는 포맷, [Rangy 라이브러리에서 제공하는 serialization format](https://github.com/timdown/rangy/wiki/Serializer-Module#serialization-format) 사용 (예: `0/171:0,0/171:30`)
 - **`anchor`**: HTML anchor 링크의 `id` 애트리뷰트 값
 
 ### APIs
@@ -104,10 +109,10 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 - `/common/tts/` 디렉토리 참조
 - *`node location`* 기반으로 구현됨
 
-
 ## Development
 
 ### Install
+
 You can install it with the following command:
 ```
 $ git clone git@github.com:ridi/Reader.js.git
@@ -115,6 +120,7 @@ $ make setup
 ```
 
 ### Build
+
 You can build it with the following command in Reader.js folder:
 ```
 $ npm run [build|watch]
