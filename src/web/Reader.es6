@@ -1,6 +1,7 @@
 import _Reader from '../common/_Reader';
 import Content from './Content';
 import Chrome from '../common/Chrome';
+import Sel from './Sel';
 
 export default class Reader extends _Reader {
   /**
@@ -31,6 +32,7 @@ export default class Reader extends _Reader {
       this._chrome = chrome;
       this.chrome.addScrollListenerIfNeeded();
     }
+    this._sel = new Sel(this);
   }
 
   /**
