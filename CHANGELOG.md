@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.32 (2018-10-17)]
+
+### Changed
+
+- [Web] 네이티브 편의를 위해 작성한 셀렉션을 웹 친화적으로 수정
+
 ## [1.0.31 (2018-10-17)]
 
 ### Changed
@@ -214,7 +220,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.31...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.32...HEAD
+[1.0.31 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.31...1.0.32
 [1.0.31 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.30...1.0.31
 [1.0.30 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.29...1.0.30
 [1.0.29 (2018-10-02)]: https://github.com/ridi/Reader.js/compare/1.0.28...1.0.29
