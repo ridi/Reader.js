@@ -1,10 +1,17 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.0.30 (2018-10-17)]
+
+### Added
+
+- [Web] 셀렉션 기능 추가
 
 ## [1.0.29 (2018-10-02)]
 
@@ -200,7 +207,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.29...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.30...HEAD
+[1.0.30 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.29...1.0.30
 [1.0.29 (2018-10-02)]: https://github.com/ridi/Reader.js/compare/1.0.28...1.0.29
 [1.0.28 (2018-09-19)]: https://github.com/ridi/Reader.js/compare/1.0.27...1.0.28
 [1.0.27 (2018-09-19)]: https://github.com/ridi/Reader.js/compare/1.0.26...1.0.27
