@@ -47,17 +47,17 @@ export default class _Context extends _Object {
    * @param {Number} gap
    * @param {Boolean} doublePageMode
    * @param {Boolean} scrollMode
-   * @param {Number} systemMajorVersion
    * @param {Number} maxSelectionLength
+   * @param {Number} systemMajorVersion
    */
-  constructor(width, height, gap, doublePageMode, scrollMode, systemMajorVersion = 0, maxSelectionLength = 0) {
+  constructor(width, height, gap, doublePageMode, scrollMode, maxSelectionLength = 0, systemMajorVersion = 0) {
     super();
     this._width = width;
     this._height = height;
     this._gap = gap;
     this._doublePageMode = doublePageMode;
     this._scrollMode = scrollMode;
-    this._systemMajorVersion = systemMajorVersion;
     this._maxSelectionLength = maxSelectionLength;
+    this._systemMajorVersion = systemMajorVersion;
   }
 }
