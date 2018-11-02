@@ -45,7 +45,7 @@ export default class Sel extends _Sel {
    * @returns {String}
    */
   changeInitialSelection(x, y) {
-    if (super.changeInitialSelection(x, y, 'character')) {
+    if (super.changeInitialSelection(x, y, null, 'character')) {
       return this.getSelectedRectsCoord();
     }
     return '';

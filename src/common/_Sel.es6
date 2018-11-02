@@ -33,14 +33,15 @@ export default class _Sel extends _Object {
   /**
    * @param {Number} x
    * @param {Number} y
+   * @param {Node} rootNode
    * @param {String} unit (character or word)
    * @param {Boolean} allowCollapsed
    * @returns {TextRange|null}
    * @private
    */
-  _caretRangeFromPoint(x, y, unit = 'word', allowCollapsed = false) {
+  _caretRangeFromPoint(x, y, rootNode, unit = 'word', allowCollapsed = false) {
     const point = this.reader.adjustPoint(x, y);
-    const range = document.caretRangeFromPoint(point.x, point.y);
+    const range = _Util.caretRangeFromPoint(point.x, point.y, rootNode, unit);
     if (range === null) {
       return null;
     }
@@ -58,10 +59,7 @@ export default class _Sel extends _Object {
    * @private
    */
   _expandRangeByWord(range) {
-    const { startContainer } = range;
-    if (startContainer.nodeValue === null) {
-      return;
-    }
+    const { startContainer, endContainer } = range;
 
     const tables = [TTSUtil.chineseCodeTable(), TTSUtil.japaneseCodeTable()];
     if (TTSUtil.getContainCharRegex(tables).test(range.toString())) {
@@ -84,11 +82,11 @@ export default class _Sel extends _Object {
 
     while (origin < containerValueLength) {
       if (/\s$/.test(range.toString())) {
-        range.setEnd(startContainer, origin -= 1);
+        range.setEnd(endContainer, origin -= 1);
         break;
       }
       origin += 1;
-      range.setEnd(startContainer, origin);
+      range.setEnd(endContainer, origin);
     }
   }
 
@@ -103,11 +101,12 @@ export default class _Sel extends _Object {
   /**
    * @param {Number} x
    * @param {Number} y
+   * @param {Node} rootNode
    * @param {String} unit (character or word)
    * @returns {Boolean}
    */
-  startSelectionMode(x, y, unit) {
-    const range = this._caretRangeFromPoint(x, y, unit);
+  startSelectionMode(x, y, rootNode, unit) {
+    const range = this._caretRangeFromPoint(x, y, rootNode, unit);
     if (range === null) {
       return false;
     }
@@ -126,11 +125,12 @@ export default class _Sel extends _Object {
   /**
    * @param {Number} x
    * @param {Number} y
+   * @param {Node} rootNode
    * @param {String} unit (character or word)
    * @returns {Boolean}
    */
-  changeInitialSelection(x, y, unit) {
-    const range = this._caretRangeFromPoint(x, y, unit);
+  changeInitialSelection(x, y, rootNode, unit) {
+    const range = this._caretRangeFromPoint(x, y, rootNode, unit);
     if (range === null) {
       return false;
     }
@@ -146,11 +146,12 @@ export default class _Sel extends _Object {
   /**
    * @param {Number} x
    * @param {Number} y
+   * @param {Node} rootNode
    * @param {String} unit (character or word)
    * @returns {Boolean}
    */
-  expandUpperSelection(x, y, unit = 'character') {
-    const exRange = this._caretRangeFromPoint(x, y, unit, true);
+  expandUpperSelection(x, y, rootNode, unit = 'character') {
+    const exRange = this._caretRangeFromPoint(x, y, rootNode, unit, true);
     if (exRange === null) {
       return false;
     }
@@ -196,11 +197,12 @@ export default class _Sel extends _Object {
   /**
    * @param {Number} x
    * @param {Number} y
+   * @param {Node} rootNode
    * @param {String} unit (character or word)
    * @returns {Boolean}
    */
-  expandLowerSelection(x, y, unit = 'character') {
-    const exRange = this._caretRangeFromPoint(x, y, unit, true);
+  expandLowerSelection(x, y, rootNode, unit = 'character') {
+    const exRange = this._caretRangeFromPoint(x, y, rootNode, unit, true);
     if (exRange === null) {
       return false;
     }

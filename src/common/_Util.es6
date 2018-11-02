@@ -1,16 +1,70 @@
 import _Object from './_Object';
 
+let caretIterator = null;
+
 export default class _Util extends _Object {
   /**
-   * @param {Node} node
+   * @param {Node} rootNode
+   * @param {Function} filter
    * @returns {NodeIterator}
    */
-  static createTextNodeIterator(node) {
-    return document.createNodeIterator(node, NodeFilter.SHOW_TEXT, {
-      acceptNode() {
-        return NodeFilter.FILTER_ACCEPT;
+  static createTextNodeIterator(rootNode, filter = () => true) {
+    return document.createNodeIterator(rootNode, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        return filter(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
       },
     }, true);
+  }
+
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @param {Node} rootNode
+   * @param {String} unit (character or word)
+   * @returns {TextRange|null}
+   */
+  static caretRangeFromPoint(x, y, rootNode, unit = 'word') {
+    if (rootNode) {
+      const isPointIn =
+          rect => rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom;
+
+      if (caretIterator) {
+        caretIterator.previousNode();
+      } else {
+        caretIterator = this.createTextNodeIterator(rootNode, (textNode) => {
+          if (/^\s*$/.test(textNode.nodeValue)) {
+            return false;
+          }
+          const rects = textNode.parentElement.getAdjustedClientRects();
+          for (let i = 0; i < rects.length; i++) {
+            if (isPointIn(rects[i])) {
+              return true;
+            }
+          }
+          return false;
+        });
+      }
+
+      let node;
+      while ((node = caretIterator.nextNode())) {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+
+        const { length } = range.toString();
+        for (let i = 0; i < length - 1; i++) {
+          range.setStart(range.startContainer, i);
+          range.setEnd(range.endContainer, i + 1);
+          const rect = range.getAdjustedBoundingClientRect();
+          if (isPointIn(rect)) {
+            range.expand(unit);
+            return range;
+          }
+        }
+      }
+      caretIterator = null;
+      return null;
+    }
+    return document.caretRangeFromPoint(x, y);
   }
 
   /**
