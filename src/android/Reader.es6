@@ -224,7 +224,7 @@ export default class Reader extends _Reader {
    */
   getRectsFromSerializedRange(index, serializedRange) {
     const rects = super.getRectsFromSerializedRange(serializedRange);
-    android.onRectsOfSerializedRange(index, serializedRange, this.rectsToAbsoluteCoord(rects));
+    android.onRectsOfSerializedRange(index, serializedRange, rects.toAbsolute().toString());
   }
 
   /**

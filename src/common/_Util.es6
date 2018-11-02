@@ -200,15 +200,15 @@ export default class _Util extends _Object {
   }
 
   /**
-   * @param {MutableClientRect[]} array
-   * @param {MutableClientRect[]} rects
+   * @param {Array|MutableClientRectList} array1
+   * @param {Array|MutableClientRectList} array2
    * @param {function} adjust
-   * @returns {MutableClientRect[]}
+   * @returns {Array|MutableClientRectList}
    */
-  static concatArray(array, rects, adjust = rect => rect) {
-    for (let i = 0; i < rects.length; i += 1) {
-      array.push(adjust(rects[i]));
+  static concatArray(array1, array2, adjust = rect => rect) {
+    for (let i = 0; i < array2.length; i += 1) {
+      array1.push(adjust(array2[i]));
     }
-    return array;
+    return array1;
   }
 }

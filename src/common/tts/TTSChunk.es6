@@ -2,6 +2,7 @@ import TTSRange from './TTSRange';
 import TTSUtterance from './TTSUtterance';
 import TTSUtil from './TTSUtil';
 import _Util from '../_Util';
+import MutableClientRectList from '../MutableClientRectList';
 
 export default class TTSChunk {
   /**
@@ -30,15 +31,14 @@ export default class TTSChunk {
   }
 
   /**
-   * @param {Reader} reader
    * @returns {{nodeIndex: Number, wordIndex: Number, text: (String), rects: String}}
    */
-  toJSONForNative(reader) {
+  toObject() {
     return {
       nodeIndex: this.getStartNodeIndex(),
       wordIndex: this.getStartWordIndex(),
       text: this.getUtterance().text,
-      rects: reader.rectsToAbsoluteCoord(this.getClientRects(true)),
+      rects: this.getClientRects(true).toAbsolute().toString(),
     };
   }
 
@@ -220,12 +220,12 @@ export default class TTSChunk {
 
   /**
    * @param {Boolean} removeBlank
-   * @returns {MutableClientRect[]}
+   * @returns {MutableClientRectList}
    */
   getClientRects(removeBlank) {
     const chunkRange = this.range;
     const pieces = this._pieces;
-    let rects = [];
+    let rects = new MutableClientRectList();
     let start = 0;
     let end = 0;
     let current = 0;

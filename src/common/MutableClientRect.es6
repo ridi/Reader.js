@@ -21,4 +21,11 @@ export default class MutableClientRect {
       this.height = 0;
     }
   }
+
+  /**
+   * @returns {String}
+   */
+  toString() {
+    return `${this.left},${this.top},${this.width},${this.height},`;
+  }
 }

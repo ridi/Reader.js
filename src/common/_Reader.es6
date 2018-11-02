@@ -1,7 +1,7 @@
 import _Object from './_Object';
-import _Sel from './_Sel';
 import _Util from './_Util';
 import MutableClientRect from './MutableClientRect';
+import MutableClientRectList from './MutableClientRectList';
 
 export default class _Reader extends _Object {
   /**
@@ -82,11 +82,11 @@ export default class _Reader extends _Object {
     }
 
     /**
-     * @returns {MutableClientRect[]}
+     * @returns {MutableClientRectList}
      */
     function getAdjustedClientRects() {
       const rects = this.getClientRects() || [];
-      const newRects = [];
+      const newRects = new MutableClientRectList();
       for (let i = 0; i < rects.length; i += 1) {
         const rect = rects[i];
         if (rect.width <= 1) {
@@ -100,11 +100,114 @@ export default class _Reader extends _Object {
       return reader.adjustRects(newRects);
     }
 
+    /**
+     * @param {Range} range
+     * @returns {MutableClientRectList}
+     */
+    function getAdjustedTextRects() {
+      if (this.startContainer === this.endContainer) {
+        const { innerText } = this.startContainer;
+        if (innerText !== undefined && innerText.length === 0) {
+          return [];
+        }
+        return this.getAdjustedClientRects();
+      }
+
+      const iterator = _Util.createTextNodeIterator(this.commonAncestorContainer);
+      let textNodeRects = [];
+
+      let newRange = document.createRange();
+      newRange.setStart(this.startContainer, this.startOffset);
+      newRange.setEnd(this.startContainer, this.startContainer.length);
+      textNodeRects = _Util.concatArray(textNodeRects, newRange.getAdjustedClientRects());
+
+      let node;
+      while ((node = iterator.nextNode())) {
+        // startContainer 노드보다 el이 앞에 있으면
+        if (this.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
+          this.startContainer === node) {
+          continue;
+        }
+
+        // endContainer 뒤로 넘어가면 멈춤
+        if (this.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
+          this.endContainer === node) {
+          break;
+        }
+
+        newRange = document.createRange();
+        newRange.selectNodeContents(node);
+        if (/^\s*$/.test(newRange.toString())) {
+          continue;
+        }
+
+        textNodeRects = _Util.concatArray(textNodeRects, newRange.getAdjustedClientRects());
+      }
+
+      newRange = document.createRange();
+      newRange.setStart(this.endContainer, 0);
+      newRange.setEnd(this.endContainer, this.endOffset);
+      if (!/^\s*$/.test(newRange.toString())) {
+        textNodeRects = _Util.concatArray(textNodeRects, newRange.getAdjustedClientRects());
+      }
+
+      return textNodeRects;
+    }
+
+    /**
+     * @returns {String}
+     */
+    function toSerializedString() {
+      return rangy.serializeRange(this, true, reader.content.wrapper);
+    }
+
+    /**
+     * @param {String} string
+     * @returns {Range}
+     */
+    function fromSerializedString(string) {
+      const range = rangy.deserializeRange(string, reader.content.wrapper);
+      const newRange = document.createRange();
+      newRange.setStart(range.startContainer, range.startOffset);
+      newRange.setEnd(range.endContainer, range.endOffset);
+      range.detach();
+      return newRange;
+    }
+
+    /**
+     * @param {HTMLElement} rootNode
+     * @returns {MutableClientRect}
+     */
+    function toAbsolute(rootNode) {
+      const { isScrollMode } = reader.context;
+      if (isScrollMode) {
+        this.top = reader.pageYOffset;
+      } else {
+        this.left = reader.pageXOffset;
+      }
+      if (rootNode) {
+        let node = rootNode;
+        do {
+          if (isScrollMode) {
+            this.top -= node.offsetTop;
+          } else {
+            this.left -= node.offsetLeft;
+          }
+        } while (node = rootNode.parentElement);
+      }
+      return this;
+    }
+
     Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
     Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
+    Range.prototype.getAdjustedTextRects = getAdjustedTextRects;
+    Range.prototype.toSerializedString = toSerializedString;
+    Range.fromSerializedString = fromSerializedString;
 
     HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
     HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;
+
+    MutableClientRect.prototype.toAbsolute = toAbsolute;
   }
 
   setViewport() {
@@ -139,7 +242,7 @@ export default class _Reader extends _Object {
 
   /**
    * @param {ClientRect[]} rects
-   * @returns {MutableClientRect[]}
+   * @returns {MutableClientRectList}
    */
   adjustRects(rects) {
     return _Util.concatArray([], rects, rect => this.adjustRect(rect));
@@ -243,7 +346,7 @@ export default class _Reader extends _Object {
    */
   getOffsetFromSerializedRange(serializedRange) {
     try {
-      const range = this.getRangeFromSerializedRange(serializedRange);
+      const range = Range.fromSerializedString(serializedRange);
       const rects = range.getAdjustedClientRects();
       if (rects.length > 0) {
         if (this.context.isScrollMode) {
@@ -261,7 +364,7 @@ export default class _Reader extends _Object {
    * rects 중에 startOffset~endOffset 사이에 위치한 rect의 index를 반환한다.
    * type이 bottom일 때 -1을 반환하는 경우가 있을 수 있는데 이전 rects에 마지막 rect를 의미한다.
    *
-   * @param {MutableClientRect[]} rects
+   * @param {MutableClientRectList} rects
    * @param {Number} startOffset
    * @param {Number} endOffset
    * @param {String} type (top or bottom)
@@ -545,7 +648,7 @@ export default class _Reader extends _Object {
   }
 
   /**
-   * @returns {MutableClientRect[]}
+   * @returns {MutableClientRectList}
    */
   getRectsOfSearchResult() {
     return getSelection().getRangeAt(0).getAdjustedClientRects();
@@ -561,66 +664,10 @@ export default class _Reader extends _Object {
 
   /**
    * @param {String} serializedRange
-   * @returns {Range}
-   */
-  getRangeFromSerializedRange(serializedRange) {
-    const tmpRange = rangy.deserializeRange(serializedRange, this.content.body);
-    const range = document.createRange();
-    range.setStart(tmpRange.startContainer, tmpRange.startOffset);
-    range.setEnd(tmpRange.endContainer, tmpRange.endOffset);
-    tmpRange.detach();
-    return range;
-  }
-
-  /**
-   * @param {String} serializedRange
-   * @returns {MutableClientRect[]}
+   * @returns {MutableClientRectList}
    */
   getRectsFromSerializedRange(serializedRange) {
-    const range = this.getRangeFromSerializedRange(serializedRange);
-    return _Sel.getOnlyTextNodeRects(range);
-  }
-
-  /**
-   * @param {MutableClientRect[]} rects
-   * @param {Boolean} absolute
-   * @returns {String}
-   * @private
-   */
-  _rectsToCoord(rects, absolute = false) {
-    const insets = { left: 0, top: 0 };
-    if (absolute) {
-      if (this.context.isScrollMode) {
-        insets.top = this.pageYOffset;
-      } else {
-        insets.left = this.pageXOffset;
-      }
-    }
-
-    let result = '';
-    for (let i = 0; i < rects.length; i += 1) {
-      const rect = rects[i];
-      result += `${(rect.left + insets.left)},`;
-      result += `${(rect.top + insets.top)},`;
-      result += `${rect.width},`;
-      result += `${rect.height},`;
-    }
-    return result;
-  }
-
-  /**
-   * @param {MutableClientRect[]} rects
-   * @returns {String}
-   */
-  rectsToAbsoluteCoord(rects) {
-    return this._rectsToCoord(rects, true);
-  }
-
-  /**
-   * @param {MutableClientRect[]} rects
-   * @returns {String}
-   */
-  rectsToRelativeCoord(rects) {
-    return this._rectsToCoord(rects);
+    const range = Range.fromSerializedString(serializedRange);
+    return range.getAdjustedTextRects();
   }
 }

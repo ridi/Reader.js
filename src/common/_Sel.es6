@@ -390,18 +390,10 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @param {Content} content
-   * @returns {String}
-   */
-  getSerializedRange() {
-    return rangy.serializeRange(this.getRange(), true, this.reader.content.body);
-  }
-
-  /**
-   * @returns {MutableClientRect[]}
+   * @returns {MutableClientRectList}
    */
   getRects() {
-    return _Sel.getOnlyTextNodeRects(this.getRange());
+    return this.getRange().getAdjustedTextRects();
   }
 
   /**
@@ -409,70 +401,5 @@ export default class _Sel extends _Object {
    */
   getText() {
     return this.getRange().toString();
-  }
-
-  /**
-   * @returns {String}
-   */
-  getRectsCoord() {
-    const rects = this.getRects();
-    if (rects.length) {
-      return this.reader.rectsToAbsoluteCoord(rects);
-    }
-    return '';
-  }
-
-  /**
-   * @param {Range} range
-   * @returns {MutableClientRect[]}
-   */
-  static getOnlyTextNodeRects(range) {
-    if (range.startContainer === range.endContainer) {
-      const { innerText } = range.startContainer;
-      if (innerText !== undefined && innerText.length === 0) {
-        return [];
-      }
-      return range.getAdjustedClientRects();
-    }
-
-    const iterator = _Util.createTextNodeIterator(range.commonAncestorContainer);
-    let textNodeRects = [];
-
-    let workRange = document.createRange();
-    workRange.setStart(range.startContainer, range.startOffset);
-    workRange.setEnd(range.startContainer, range.startContainer.length);
-    textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-
-    let node;
-    while ((node = iterator.nextNode())) {
-      // startContainer 노드보다 el이 앞에 있으면
-      if (range.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
-        range.startContainer === node) {
-        continue;
-      }
-
-      // endContainer 뒤로 넘어가면 멈춤
-      if (range.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
-        range.endContainer === node) {
-        break;
-      }
-
-      workRange = document.createRange();
-      workRange.selectNodeContents(node);
-      if (/^\s*$/.test(workRange.toString())) {
-        continue;
-      }
-
-      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
-
-    workRange = document.createRange();
-    workRange.setStart(range.endContainer, 0);
-    workRange.setEnd(range.endContainer, range.endOffset);
-    if (!/^\s*$/.test(workRange.toString())) {
-      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
-
-    return textNodeRects;
   }
 }

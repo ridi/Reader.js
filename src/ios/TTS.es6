@@ -39,10 +39,10 @@ export default class TTS extends _TTS {
     if (!isMakingTemporalChunk) {
       this._chunkSetsForPolling.push({
         addAtFirst,
-        chunks: this.chunks.map(chunk => chunk.toJSONForNative(this.reader)),
+        chunks: this.chunks.map(chunk => chunk.toObject()),
       });
     } else if (this.chunks.length > 0) {
-      this._temporalChunk = this.chunks.pop().toJSONForNative(this.reader);
+      this._temporalChunk = this.chunks.pop().toObject();
     }
     this._chunks = [];
   }

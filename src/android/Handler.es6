@@ -16,7 +16,7 @@ export default class Handler extends _Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = this.reader.rectsToAbsoluteCoord(range.getAdjustedClientRects());
+        const rects = range.getAdjustedClientRects().toAbsolute().toString();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
