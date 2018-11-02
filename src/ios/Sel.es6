@@ -20,9 +20,9 @@ export default class Sel extends _Sel {
   /**
    * @returns {String}
    */
-  expandSelectionIntoNextPage() {
-    if (super.expandSelectionIntoNextPage()) {
-      return this.getSelectedRectsCoord();
+  expandIntoNextPage() {
+    if (super.expandIntoNextPage()) {
+      return this.getRectsCoord();
     }
     return '';
   }
@@ -32,9 +32,9 @@ export default class Sel extends _Sel {
    * @param {Number} y
    * @returns {String}
    */
-  startSelectionMode(x, y) {
-    if (super.startSelectionMode(x, y)) {
-      return this.getSelectedRectsCoord();
+  start(x, y) {
+    if (super.start(x, y)) {
+      return this.getRectsCoord();
     }
     return '';
   }
@@ -44,9 +44,9 @@ export default class Sel extends _Sel {
    * @param {Number} y
    * @returns {String}
    */
-  changeInitialSelection(x, y) {
-    if (super.changeInitialSelection(x, y, null, 'character')) {
-      return this.getSelectedRectsCoord();
+  expandIntoUpper(x, y) {
+    if (super.expandIntoUpper(x, y)) {
+      return this.getRectsCoord();
     }
     return '';
   }
@@ -56,21 +56,9 @@ export default class Sel extends _Sel {
    * @param {Number} y
    * @returns {String}
    */
-  expandUpperSelection(x, y) {
-    if (super.expandUpperSelection(x, y)) {
-      return this.getSelectedRectsCoord();
-    }
-    return '';
-  }
-
-  /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {String}
-   */
-  expandLowerSelection(x, y) {
-    if (super.expandLowerSelection(x, y)) {
-      return this.getSelectedRectsCoord();
+  expandIntoLower(x, y) {
+    if (super.expandIntoLower(x, y)) {
+      return this.getRectsCoord();
     }
     return '';
   }

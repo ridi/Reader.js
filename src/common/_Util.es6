@@ -23,7 +23,7 @@ export default class _Util extends _Object {
    * @param {String} unit (character or word)
    * @returns {TextRange|null}
    */
-  static caretRangeFromPoint(x, y, rootNode, unit = 'word') {
+  static getCaretRange(x, y, rootNode, unit = 'word') {
     if (rootNode) {
       const isPointIn =
           rect => rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom;

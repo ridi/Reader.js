@@ -34,9 +34,9 @@ export default class Sel extends _Sel {
     return this.reader.context.pageWidthUnit;
   }
 
-  expandSelectionIntoNextPage() {
-    if (super.expandSelectionIntoNextPage()) {
-      const coord = this.getSelectedRectsCoord();
+  expandIntoNextPage() {
+    if (super.expandIntoNextPage()) {
+      const coord = this.getRectsCoord();
       if (coord.length) {
         android.onSelectionChangeIntoNextPage(coord);
       }
@@ -47,11 +47,11 @@ export default class Sel extends _Sel {
    * @param {Number} x
    * @param {Number} y
    */
-  startSelectionMode(x, y) {
-    if (super.startSelectionMode(x, y)) {
-      const coord = this.getSelectedRectsCoord();
+  start(x, y) {
+    if (super.start(x, y)) {
+      const coord = this.getRectsCoord();
       if (coord.length) {
-        android.onStartSelectionMode(coord);
+        android.onstart(coord);
       }
     }
   }
@@ -60,11 +60,11 @@ export default class Sel extends _Sel {
    * @param {Number} x
    * @param {Number} y
    */
-  changeInitialSelection(x, y) {
-    if (super.changeInitialSelection(x, y)) {
-      const coord = this.getSelectedRectsCoord();
+  expandIntoUpper(x, y) {
+    if (super.expandIntoUpper(x, y)) {
+      const coord = this.getRectsCoord();
       if (coord.length) {
-        android.onInitialSelectionChanged(coord);
+        android.onSelectionChanged(coord, this.getText());
       }
     }
   }
@@ -73,29 +73,16 @@ export default class Sel extends _Sel {
    * @param {Number} x
    * @param {Number} y
    */
-  expandUpperSelection(x, y) {
-    if (super.expandUpperSelection(x, y)) {
-      const coord = this.getSelectedRectsCoord();
+  expandIntoLower(x, y) {
+    if (super.expandIntoLower(x, y)) {
+      const coord = this.getRectsCoord();
       if (coord.length) {
-        android.onSelectionChanged(coord, this.getSelectedText());
-      }
-    }
-  }
-
-  /**
-   * @param {Number} x
-   * @param {Number} y
-   */
-  expandLowerSelection(x, y) {
-    if (super.expandLowerSelection(x, y)) {
-      const coord = this.getSelectedRectsCoord();
-      if (coord.length) {
-        android.onSelectionChanged(coord, this.getSelectedText());
+        android.onSelectionChanged(coord, this.getText());
       }
     }
   }
 
   requestSelectionInfo() {
-    android.onSelectionInfo(this.getSelectedSerializedRange(), this.getSelectedText(), this.nextPageContinuable);
+    android.onSelectionInfo(this.getSerializedRange(), this.getText(), this.isExpandContinuableIntoNextPage());
   }
 }

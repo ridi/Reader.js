@@ -55,17 +55,17 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 
 - 렌더링에는 관여하지 않고 선택 영역에 대한 관리만 담당
 
-- **`sel.startSelectionMode(x, y)`**
+- **`sel.start(x, y)`**
     - `mousedown`, `touch` 이벤트 등 발생 시 위 함수를 호출해 선택 모드로 진입
-- **`sel.expandUpperSelection(x, y)`** 또는 **`sel.expandLowerSelection(x, y)`**
+- **`sel.expandIntoUpper(x, y)`** 또는 **`sel.expandIntoLower(x, y)`**
 	- 선택 방향에 따라 호출
 	- 여기에서 `upper`, `lower`는 선택 영역 양 끝에 나타나는 핸들을 의미
-- **`sel.getSelectedRange()`**
+- **`sel.getRange()`**
 	- 선택 영역을 *`range`* 로 반환
 
 #### 독서노트 저장/이동
 
-- **`sel.getSelectedSerializedRange()`**
+- **`sel.getSerializedRange()`**
 	- 선택 영역을 *`serialized range`* 포맷으로 반환
 - **`getOffsetFromSerializedRange(serializedRange)`**
 	- *`serialized range`* 를 *`offset`* 으로 변환

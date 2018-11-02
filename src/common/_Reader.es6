@@ -578,7 +578,7 @@ export default class _Reader extends _Object {
    */
   getRectsFromSerializedRange(serializedRange) {
     const range = this.getRangeFromSerializedRange(serializedRange);
-    return _Sel.getOnlyTextNodeRectsFromRange(range);
+    return _Sel.getOnlyTextNodeRects(range);
   }
 
   /**
