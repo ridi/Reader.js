@@ -37,41 +37,23 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Boolean} shouldManualFilter
    * @returns {Node[]}
    */
-  fetchNodes(shouldManualFilter = false) {
+  fetchNodes() {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
     const filter = node =>
       node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
-
-    let calledFilter = false;
-    const walk = document.createTreeWalker(
-      this.body,
-      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, shouldManualFilter ? null : {
-        acceptNode: (node) => {
-          calledFilter = true;
-          if (filter(node)) {
-            return NodeFilter.FILTER_ACCEPT;
-          }
-          return NodeFilter.FILTER_SKIP;
-        },
+    const iterator = document.createNodeIterator(this.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+      acceptNode(node) {
+        return filter(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
       },
-      false,
-    );
+    }, false);
 
-    // 일부 Webkit에서 NodeFilter 기능이 동작하지 않는 경우가 있다.
-    // 동작하지 않을 경우 element에 붙어있는 모든 노드가 끌려옴으로 수동으로 필터링해야 한다.
     const nodes = [];
     let node;
-    while ((node = walk.nextNode())) {
-      if (calledFilter) {
-        nodes.push(node);
-      } else if (filter(node)) {
-        nodes.push(node);
-      }
+    while ((node = iterator.nextNode())) {
+      nodes.push(node);
     }
-
     return nodes;
   }
 
