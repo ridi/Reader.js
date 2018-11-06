@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.0.0-alpha.2 (2018-11-06)]
+
+### Fixed
+
+- [공통] Range.toAbsolute(node) 호출 시 무한 루프로 인해 멈추는 문제 수정
+
 ## [2.0.0-alpha.1 (2018-11-06)]
 
 ### Changed
