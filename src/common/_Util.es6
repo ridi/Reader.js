@@ -25,9 +25,6 @@ export default class _Util extends _Object {
    */
   static getCaretRange(x, y, rootNode, unit = 'word') {
     if (rootNode) {
-      const isPointIn =
-          rect => rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom;
-
       if (caretIterator) {
         caretIterator.previousNode();
       } else {
@@ -36,12 +33,7 @@ export default class _Util extends _Object {
             return false;
           }
           const rects = textNode.parentElement.getAdjustedClientRects();
-          for (let i = 0; i < rects.length; i++) {
-            if (isPointIn(rects[i])) {
-              return true;
-            }
-          }
-          return false;
+          return rects.find(rect => rect.contains(x, y)) !== undefined;
         });
       }
 
@@ -55,7 +47,7 @@ export default class _Util extends _Object {
           range.setStart(range.startContainer, i);
           range.setEnd(range.endContainer, i + 1);
           const rect = range.getAdjustedBoundingClientRect();
-          if (isPointIn(rect)) {
+          if (rect.contains(x, y)) {
             range.expand(unit);
             return range;
           }

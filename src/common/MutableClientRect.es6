@@ -23,6 +23,15 @@ export default class MutableClientRect {
   }
 
   /**
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {Boolean}
+   */
+  contains(x, y) {
+    return this.left <= x && x <= this.right && this.top <= y && y <= this.bottom;
+  }
+
+  /**
    * @returns {String}
    */
   toString() {
