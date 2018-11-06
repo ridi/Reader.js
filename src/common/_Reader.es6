@@ -193,7 +193,7 @@ export default class _Reader extends _Object {
           } else {
             this.left -= node.offsetLeft;
           }
-        } while (node = rootNode.parentElement);
+        } while (node = node.parentElement);
       }
       return this;
     }
