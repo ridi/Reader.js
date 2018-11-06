@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.0.0-alpha.1 (2018-11-06)]
+
+### Changed
+
+- [공통] 특정 Node 내에서만 셀렉션할 수 있도록 기능 확장
+- [공통] 특정 Node를 기준으로 AbsoluteRect를 구할 수 있도록 기능 확장
+- [공통] Range 관련 유틸 함수를 Range.prototype에 추가
+
 ## [1.0.32 (2018-10-17)]
 
 ### Changed
@@ -194,7 +202,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- [안드] 두쪽 보기에서 오른쪽 페이지 영역을 다음 페이지로 인식하여 이어서 선택하기가 동작하는 문제 수정 
+- [안드] 두쪽 보기에서 오른쪽 페이지 영역을 다음 페이지로 인식하여 이어서 선택하기가 동작하는 문제 수정
 - [안드] 일부 기기에서 다단이 잘려 보이는 문제 수정
 
 ## [1.0.3 (2017-10-13)]
