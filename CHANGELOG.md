@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.0.0-alpha.3 (2018-11-07)]
+
+### Fixed
+
+- [공통] Range.toAbsolute, 잘못된 계산식 수정
+
 ## [2.0.0-alpha.2 (2018-11-06)]
 
 ### Fixed
