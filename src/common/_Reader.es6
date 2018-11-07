@@ -180,20 +180,18 @@ export default class _Reader extends _Object {
      */
     function toAbsolute(rootNode) {
       const { isScrollMode } = reader.context;
-      if (isScrollMode) {
-        this.top = reader.pageYOffset;
-      } else {
-        this.left = reader.pageXOffset;
-      }
+      const inset = { top: reader.pageYOffset, left: reader.pageXOffset };
       if (rootNode) {
         let node = rootNode;
         do {
-          if (isScrollMode) {
-            this.top -= node.offsetTop;
-          } else {
-            this.left -= node.offsetLeft;
-          }
+          inset.top -= node.offsetTop;
+          inset.left -= node.offsetLeft;
         } while (node = node.parentElement);
+      }
+      if (isScrollMode) {
+        this.top += inset.top;
+      } else {
+        this.left += inset.left;
       }
       return this;
     }
