@@ -1,6 +1,6 @@
 {
   "name": "@ridi/reader.js",
-  "version": "2.0.0-alpha.4",
+  "version": "2.0.0-alpha.5",
   "description": "Javascript library for RIDI ePub Viewer written in ECMAScript 6",
   "author": "Ridibooks Viewer Team <viewer.team@ridi.com>",
   "keywords": [
