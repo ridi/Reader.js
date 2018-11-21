@@ -26,7 +26,7 @@ export default class _Handler extends _Object {
       return null;
     }
 
-    const point = this.reader.adjustPoint(x, y);
+    const point = this.reader.normalizePoint(x, y);
     const tolerance = 12;
     const stride = 6;
     for (let x = point.x - tolerance; x <= point.x + tolerance; x += stride) { // eslint-disable-line no-shadow

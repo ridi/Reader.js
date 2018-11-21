@@ -9,11 +9,12 @@ export default class TTS extends _TTS {
     while (this.chunks.length > 0) {
       // this.chunks에는 항상 chunk들이 본문에서의 순서대로 들어있다.
       const chunk = (addAtFirst ? this.chunks.pop() : this.chunks.shift());
+      const info = this.getChunkInfo(chunk);
       android.onUtteranceFound(
-        chunk.getStartNodeIndex(),
-        chunk.getStartWordIndex(),
-        chunk.getUtterance().text,
-        chunk.getClientRects(true).toAbsolute().toString(),
+        info.nodeIndex,
+        info.wordIndex,
+        info.text,
+        info.rectListCoord,
         isMakingTemporalChunk,
         addAtFirst,
       );

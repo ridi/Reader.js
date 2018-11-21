@@ -604,6 +604,19 @@ export default class _TTS {
     }
   }
 
+  /**
+   * @param {TTSChunk} chunk
+   * @returns {{nodeIndex: Number, wordIndex: Number, text: String, rectListCoord: String}}
+   */
+  getChunkInfo(chunk) {
+    return {
+      nodeIndex: chunk.getStartNodeIndex(),
+      wordIndex: chunk.getStartWordIndex(),
+      text: chunk.getUtterance().text,
+      rectListCoord: chunk.getRects(true).bind(this.reader).toNormalize().toAbsoluteCoord(),
+    };
+  }
+
   flush() {
     this._processedNodeMinIndex = -1;
     this._processedNodeMaxIndex = -1;

@@ -21,14 +21,15 @@ export default class Reader extends _Reader {
     this._sel = new Sel(this);
   }
 
-  setCustomMethod() {
-    super.setCustomMethod();
+  injectMethod() {
+    super.injectMethod();
 
     /* eslint-disable no-console */
     console.log = (log => (message) => {
       log.call(console, message);
       window.location.href = `ridi+epub://invocation/log?${encodeURIComponent(message)}`;
     })(console.log);
+    /* eslint-enable no-console */
   }
 
   didEnterBackground() {
@@ -60,7 +61,7 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @param {MutableClientRect} rect
+   * @param {Rect} rect
    * @param {Node} el
    * @returns {Number|null} (zero-base)
    */

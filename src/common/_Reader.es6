@@ -1,7 +1,7 @@
 import _Object from './_Object';
 import _Util from './_Util';
-import MutableClientRect from './MutableClientRect';
-import MutableClientRectList from './MutableClientRectList';
+import Rect from './Rect';
+import RectList from './RectList';
 
 export default class _Reader extends _Object {
   /**
@@ -67,145 +67,115 @@ export default class _Reader extends _Object {
     super();
     this._context = context;
     this.debugNodeLocation = false;
-    this.setCustomMethod();
+    this.injectMethod();
     this.setViewport();
   }
 
-  setCustomMethod() {
-    const reader = this;
-
-    /**
-     * @returns {MutableClientRect}
-     */
-    function getAdjustedBoundingClientRect() {
-      return reader.adjustRect(this.getBoundingClientRect() || new MutableClientRect());
-    }
-
-    /**
-     * @returns {MutableClientRectList}
-     */
-    function getAdjustedClientRects() {
-      const rects = this.getClientRects() || [];
-      const newRects = new MutableClientRectList();
-      for (let i = 0; i < rects.length; i += 1) {
-        const rect = rects[i];
-        if (rect.width <= 1) {
-          // Webkit, Chrome 버전에 따라 다음 페이지의 첫 글자를 선택했을 때
-          // 마지막 rect의 너비가 1 이하인 값이 들어오게 되는데 이게 오작동을
-          // 발생시키는 요인이 되기 때문에 버린다.
-          continue;
-        }
-        newRects.push(rect);
+  injectMethod() {
+    /* eslint-disable no-param-reassign */
+    const injectIfNeeded = (target, name, value) => {
+      if (!target[name]) {
+        target[name] = value;
       }
-      return reader.adjustRects(newRects);
-    }
+    };
+    /* eslint-enable no-param-reassign */
 
-    /**
-     * @param {Range} range
-     * @returns {MutableClientRectList}
-     */
-    function getAdjustedTextRects() {
-      if (this.startContainer === this.endContainer) {
-        const { innerText } = this.startContainer;
+    injectIfNeeded(Range.prototype, 'getTextRectsWithBind', function getTextRectsWithBind(reader) {
+      const {
+        startContainer,
+        startOffset,
+        endContainer,
+        endOffset,
+        commonAncestorContainer,
+      } = this;
+      if (startContainer === endContainer) {
+        const { innerText } = startContainer;
         if (innerText !== undefined && innerText.length === 0) {
           return [];
         }
-        return this.getAdjustedClientRects();
+        return this.getClientRects().bind(reader);
       }
 
-      const iterator = _Util.createTextNodeIterator(this.commonAncestorContainer);
-      let textNodeRects = [];
-
-      let newRange = document.createRange();
-      newRange.setStart(this.startContainer, this.startOffset);
-      newRange.setEnd(this.startContainer, this.startContainer.length);
-      textNodeRects = _Util.concatArray(textNodeRects, newRange.getAdjustedClientRects());
+      const iterator = _Util.createTextNodeIterator(commonAncestorContainer);
+      let range = document.createRange();
+      range.setStart(startContainer, startOffset);
+      range.setEnd(startContainer, startContainer.length);
+      let rects = range.getClientRects().bind(reader);
 
       let node;
       while ((node = iterator.nextNode())) {
         // startContainer 노드보다 el이 앞에 있으면
-        if (this.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
-          this.startContainer === node) {
+        if (startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
+          startContainer === node) {
           continue;
         }
 
         // endContainer 뒤로 넘어가면 멈춤
-        if (this.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
-          this.endContainer === node) {
+        if (endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
+          endContainer === node) {
           break;
         }
 
-        newRange = document.createRange();
-        newRange.selectNodeContents(node);
-        if (/^\s*$/.test(newRange.toString())) {
+        range = document.createRange();
+        range.selectNodeContents(node);
+        if (/^\s*$/.test(range.toString())) {
           continue;
         }
 
-        textNodeRects = _Util.concatArray(textNodeRects, newRange.getAdjustedClientRects());
+        rects = rects.concat(range.getClientRects().bind(reader));
       }
 
-      newRange = document.createRange();
-      newRange.setStart(this.endContainer, 0);
-      newRange.setEnd(this.endContainer, this.endOffset);
-      if (!/^\s*$/.test(newRange.toString())) {
-        textNodeRects = _Util.concatArray(textNodeRects, newRange.getAdjustedClientRects());
+      range = document.createRange();
+      range.setStart(endContainer, 0);
+      range.setEnd(endContainer, endOffset);
+      if (!/^\s*$/.test(range.toString())) {
+        rects = rects.concat(range.getClientRects().bind(reader));
       }
 
-      return textNodeRects;
-    }
+      return rects;
+    });
 
-    /**
-     * @returns {String}
-     */
-    function toSerializedString() {
-      return rangy.serializeRange(this, true, reader.content.wrapper);
-    }
+    injectIfNeeded(Range.prototype, 'toSerializedString', function toSerializedString(rootNode) {
+      return rangy.serializeRange(this, true, rootNode || this.reader.content.body || document.body);
+    });
 
-    /**
-     * @param {String} string
-     * @returns {Range}
-     */
-    function fromSerializedString(string) {
-      const range = rangy.deserializeRange(string, reader.content.wrapper);
+    injectIfNeeded(Range.prototype, 'bind', function bind(reader) {
+      this.reader = reader;
+      return this;
+    });
+
+    injectIfNeeded(Range, 'fromSerializedString', (string, rootNode) => {
+      const range = rangy.deserializeRange(string, rootNode);
       const newRange = document.createRange();
       newRange.setStart(range.startContainer, range.startOffset);
       newRange.setEnd(range.endContainer, range.endOffset);
       range.detach();
       return newRange;
-    }
+    });
 
-    /**
-     * @param {HTMLElement} rootNode
-     * @returns {MutableClientRect}
-     */
-    function toAbsolute(rootNode) {
-      const { isScrollMode } = reader.context;
-      const inset = { top: reader.pageYOffset, left: reader.pageXOffset };
-      if (rootNode) {
-        let node = rootNode;
-        do {
-          inset.top -= node.offsetTop;
-          inset.left -= node.offsetLeft;
-        } while (node = node.parentElement);
+    const rectCls = [];
+    try { rectCls.push(DOMRect) } catch (e) {} // eslint-disable-line
+    try { rectCls.push(ClientRect) } catch (e) {} // eslint-disable-line
+    rectCls.forEach((cls) => {
+      if (cls) {
+        injectIfNeeded(cls.prototype, 'bind', function bind(reader) {
+          const rect = new Rect(this);
+          rect.reader = reader;
+          return rect;
+        });
       }
-      if (isScrollMode) {
-        this.top += inset.top;
-      } else {
-        this.left += inset.left;
+    });
+
+    const rectListCls = [];
+    try { rectListCls.push(DOMRectList) } catch (e) {} // eslint-disable-line
+    try { rectListCls.push(ClientRectList) } catch (e) {} // eslint-disable-line
+    rectListCls.forEach((cls) => {
+      if (cls) {
+        injectIfNeeded(cls.prototype, 'bind', function bind(reader) {
+          return new RectList(...RectList.from(this, rect => rect.bind(reader)));
+        });
       }
-      return this;
-    }
-
-    Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-    Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
-    Range.prototype.getAdjustedTextRects = getAdjustedTextRects;
-    Range.prototype.toSerializedString = toSerializedString;
-    Range.fromSerializedString = fromSerializedString;
-
-    HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-    HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;
-
-    MutableClientRect.prototype.toAbsolute = toAbsolute;
+    });
   }
 
   setViewport() {
@@ -226,24 +196,33 @@ export default class _Reader extends _Object {
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
    */
-  adjustPoint(x, y) {
+  normalizePoint(x, y) {
     return { x, y };
   }
 
   /**
-   * @param {ClientRect} rect
-   * @returns {MutableClientRect}
+   * @param {Rect} rect
+   * @returns {Rect}
    */
-  adjustRect(rect) {
-    return new MutableClientRect(rect);
+  normalizeRect(rect) {
+    return rect;
   }
 
   /**
-   * @param {ClientRect[]} rects
-   * @returns {MutableClientRectList}
+   * @param {Rect} rect
+   * @returns {Rect}
    */
-  adjustRects(rects) {
-    return _Util.concatArray([], rects, rect => this.adjustRect(rect));
+  convertAbsoluteRect(rect) {
+    /* eslint-disable no-param-reassign */
+    const { isScrollMode } = this.context;
+    const inset = { top: this.pageYOffset, left: this.pageXOffset };
+    if (isScrollMode) {
+      rect.top += inset.top;
+    } else {
+      rect.left += inset.left;
+    }
+    return rect;
+    /* eslint-enable no-param-reassign */
   }
 
   /**
@@ -298,19 +277,19 @@ export default class _Reader extends _Object {
         range.selectNodeContents(node);
 
         const { display } = window.getComputedStyle(el);
-        const rects = range.getAdjustedClientRects();
+        const rects = range.getClientRects().bind(this).toNormalize();
         if (rects.length) {
           return block(rects[0], el);
         } else if (display === 'none') {
           el.style.display = 'block';
-          const rect = el.getAdjustedBoundingClientRect();
+          const rect = el.getBoundingClientRect().bind(this).toNormalize();
           el.style.display = 'none';
           return block(rect, el);
         }
       }
 
       // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
-      return block(el.getAdjustedBoundingClientRect(), el);
+      return block(el.getBoundingClientRect().bind(this).toNormalize(), el);
     }
     return block({ left: null, top: null }, null);
   }
@@ -340,12 +319,13 @@ export default class _Reader extends _Object {
    * 위치를 찾을 수 없을 경우 null을 반환한다.
    *
    * @param {String} serializedRange
+   * @param {HTMLElement} rootNode
    * @returns {Number|null}
    */
-  getOffsetFromSerializedRange(serializedRange) {
+  getOffsetFromSerializedRange(serializedRange, rootNode) {
     try {
-      const range = Range.fromSerializedString(serializedRange);
-      const rects = range.getAdjustedClientRects();
+      const range = Range.fromSerializedString(serializedRange, rootNode || this.content.body);
+      const rects = range.getClientRects().bind(this).toNormalize();
       if (rects.length > 0) {
         if (this.context.isScrollMode) {
           return rects[0].top + this.pageYOffset;
@@ -362,7 +342,7 @@ export default class _Reader extends _Object {
    * rects 중에 startOffset~endOffset 사이에 위치한 rect의 index를 반환한다.
    * type이 bottom일 때 -1을 반환하는 경우가 있을 수 있는데 이전 rects에 마지막 rect를 의미한다.
    *
-   * @param {MutableClientRectList} rects
+   * @param {RectList} rects
    * @param {Number} startOffset
    * @param {Number} endOffset
    * @param {String} type (top or bottom)
@@ -410,11 +390,11 @@ export default class _Reader extends _Object {
       const range = document.createRange();
       range.selectNodeContents(node);
 
-      let rect = range.getAdjustedBoundingClientRect();
+      let rect = range.getBoundingClientRect().bind(this).toNormalize();
       if (rect.isEmpty) {
         if (node.nodeName === 'IMG') {
           range.selectNode(node);
-          rect = range.getAdjustedBoundingClientRect();
+          rect = range.getBoundingClientRect().bind(this).toNormalize();
           if (rect.isEmpty) {
             continue;
           }
@@ -447,7 +427,7 @@ export default class _Reader extends _Object {
             } catch (e) {
               return null;
             }
-            const rects = range.getAdjustedClientRects();
+            const rects = range.getClientRects().bind(this).toNormalize();
             if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset, type)) !== null) {
               if (rectIndex < 0) {
                 this._latestNodeRect = prev.rect;
@@ -465,7 +445,7 @@ export default class _Reader extends _Object {
           offset += (word.length + 1);
         }
       } else if (node.nodeName === 'IMG') {
-        const rects = range.getAdjustedClientRects();
+        const rects = range.getClientRects().bind(this).toNormalize();
         if ((rectIndex = this._findRectIndex(rects, startOffset, endOffset, type)) !== null) {
           if (rectIndex < 0) {
             this._latestNodeRect = prev.rect;
@@ -546,11 +526,11 @@ export default class _Reader extends _Object {
     const range = document.createRange();
     range.selectNodeContents(node);
 
-    let rect = range.getAdjustedBoundingClientRect();
+    let rect = range.getBoundingClientRect().bind(this).toNormalize();
     if (rect.isEmpty) {
       if (node.nodeName === 'IMG') {
         range.selectNode(node);
-        rect = range.getAdjustedBoundingClientRect();
+        rect = range.getBoundingClientRect().bind(this).toNormalize();
         if (rect.isEmpty) {
           return null;
         }
@@ -590,7 +570,7 @@ export default class _Reader extends _Object {
       return null;
     }
 
-    rect = range.getAdjustedBoundingClientRect();
+    rect = range.getBoundingClientRect().bind(this).toNormalize();
     page = this.getPageFromRect(rect);
     if (page === null || totalSize <= pageUnit * page) {
       return null;
@@ -628,28 +608,38 @@ export default class _Reader extends _Object {
    */
   textAroundSearchResult(pre, post) {
     const range = getSelection().getRangeAt(0);
+    const {
+      startContainer,
+      startOffset,
+      endContainer,
+      endOffset,
+    } = range;
 
-    const start = range.startOffset;
-    const newStart = Math.max(range.startOffset - pre, 0);
+    const start = startOffset;
+    const newStart = Math.max(startOffset - pre, 0);
 
-    const end = range.endOffset;
-    const newEnd = Math.min(newStart + post, range.endContainer.length);
+    const end = endOffset;
+    const newEnd = Math.min(newStart + post, endContainer.length);
 
-    range.setStart(range.startContainer, newStart);
-    range.setEnd(range.endContainer, newEnd);
+    range.setStart(startContainer, newStart);
+    range.setEnd(endContainer, newEnd);
 
     const result = range.toString();
-    range.setStart(range.startContainer, start);
-    range.setEnd(range.endContainer, end);
+    range.setStart(startContainer, start);
+    range.setEnd(endContainer, end);
 
     return result;
   }
 
   /**
-   * @returns {MutableClientRectList}
+   * @returns {RectList}
    */
   getRectsOfSearchResult() {
-    return getSelection().getRangeAt(0).getAdjustedClientRects();
+    return getSelection()
+      .getRangeAt(0)
+      .getClientRects()
+      .bind(this)
+      .toNormalize();
   }
 
   /**
@@ -662,10 +652,11 @@ export default class _Reader extends _Object {
 
   /**
    * @param {String} serializedRange
-   * @returns {MutableClientRectList}
+   * @param {HTMLElement} rootNode
+   * @returns {RectList}
    */
-  getRectsFromSerializedRange(serializedRange) {
-    const range = Range.fromSerializedString(serializedRange);
-    return range.getAdjustedTextRects();
+  getRectsFromSerializedRange(serializedRange, rootNode) {
+    const range = Range.fromSerializedString(serializedRange, rootNode || this.content.body);
+    return range.getTextRectsWithBind(this).toNormalize();
   }
 }

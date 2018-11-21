@@ -16,7 +16,7 @@ export default class Handler extends _Handler {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rects = range.getAdjustedClientRects().toAbsolute().toString();
+        const rectListCoord = range.getClientRects().bind(this.reader).toNormalize().toAbsoluteCoord();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
@@ -35,7 +35,7 @@ export default class Handler extends _Handler {
           }
         }
 
-        android.onLinkPressed(href, rects, canUseFootnote, footnoteType >= 3.0 ? text : null);
+        android.onLinkPressed(href, rectListCoord, canUseFootnote, footnoteType >= 3.0 ? text : null);
         return;
       }
     }
@@ -47,7 +47,7 @@ export default class Handler extends _Handler {
    * @param {Number} y
    */
   processLongTapZoomEvent(x, y) {
-    const point = this.reader.adjustPoint(x, y);
+    const point = this.reader.normalizePoint(x, y);
 
     let src = this.reader.content.getImagePathFromPoint(point.x, point.y);
     if (src !== 'null') {

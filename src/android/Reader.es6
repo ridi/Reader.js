@@ -44,16 +44,16 @@ export default class Reader extends _Reader {
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
    */
-  adjustPoint(x, y) {
-    return this.chrome.adjustPoint(this, x, y);
+  normalizePoint(x, y) {
+    return this.chrome.normalizePoint(x, y);
   }
 
   /**
-   * @param {ClientRect} rect
-   * @returns {MutableClientRect}
+   * @param {DOMRect|ClientRect} rect
+   * @returns {Rect}
    */
-  adjustRect(rect) {
-    return this.chrome.adjustRect(this, rect);
+  normalizeRect(rect) {
+    return this.chrome.normalizeRect(rect);
   }
 
   /**
@@ -194,7 +194,7 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @param {MutableClientRect} rect
+   * @param {Rect} rect
    * @param {Node} el
    * @returns {Number|null} (zero-base)
    */
@@ -221,10 +221,11 @@ export default class Reader extends _Reader {
   /**
    * @param {Number} index
    * @param {String} serializedRange
+   * @param {HTMLElement} rootNode
    */
-  getRectsFromSerializedRange(index, serializedRange) {
-    const rects = super.getRectsFromSerializedRange(serializedRange);
-    android.onRectsOfSerializedRange(index, serializedRange, rects.toAbsolute().toString());
+  getRectsFromSerializedRange(index, serializedRange, rootNode) {
+    const rects = super.getRectsFromSerializedRange(serializedRange, rootNode);
+    android.onRectsOfSerializedRange(index, serializedRange, rects.toAbsoluteCoord());
   }
 
   /**

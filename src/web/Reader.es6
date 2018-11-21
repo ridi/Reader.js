@@ -40,22 +40,22 @@ export default class Reader extends _Reader {
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
    */
-  adjustPoint(x, y) {
+  normalizePoint(x, y) {
     if (this.chrome) {
-      return this.chrome.adjustPoint(this, x, y);
+      return this.chrome.normalizePoint(x, y);
     }
-    return super.adjustPoint(x, y);
+    return super.normalizePoint(x, y);
   }
 
   /**
-   * @param {ClientRect} rect
-   * @returns {MutableClientRect}
+   * @param {Rect} rect
+   * @returns {Rect}
    */
-  adjustRect(rect) {
+  normalizeRect(rect) {
     if (this.chrome) {
-      return this.chrome.adjustRect(this, rect);
+      return this.chrome.normalizeRect(rect);
     }
-    return super.adjustRect(rect);
+    return super.normalizeRect(rect);
   }
 
   setViewport() {
@@ -69,7 +69,7 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @param {MutableClientRect} rect
+   * @param {Rect} rect
    * @param {Node} el
    * @returns {Number|null} (zero-base)
    */

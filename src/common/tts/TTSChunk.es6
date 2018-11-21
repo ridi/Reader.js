@@ -1,8 +1,7 @@
 import TTSRange from './TTSRange';
 import TTSUtterance from './TTSUtterance';
 import TTSUtil from './TTSUtil';
-import _Util from '../_Util';
-import MutableClientRectList from '../MutableClientRectList';
+import RectList from '../RectList';
 
 export default class TTSChunk {
   /**
@@ -28,18 +27,6 @@ export default class TTSChunk {
   constructor(pieces, range = null) {
     this._pieces = pieces;
     this.range = range;
-  }
-
-  /**
-   * @returns {{nodeIndex: Number, wordIndex: Number, text: (String), rects: String}}
-   */
-  toObject() {
-    return {
-      nodeIndex: this.getStartNodeIndex(),
-      wordIndex: this.getStartWordIndex(),
-      text: this.getUtterance().text,
-      rects: this.getClientRects(true).toAbsolute().toString(),
-    };
   }
 
   /**
@@ -220,12 +207,12 @@ export default class TTSChunk {
 
   /**
    * @param {Boolean} removeBlank
-   * @returns {MutableClientRectList}
+   * @returns {RectList}
    */
-  getClientRects(removeBlank) {
+  getRects(removeBlank) {
     const chunkRange = this.range;
     const pieces = this._pieces;
-    let rects = new MutableClientRectList();
+    let rects = new RectList();
     let start = 0;
     let end = 0;
     let current = 0;
@@ -239,7 +226,7 @@ export default class TTSChunk {
       range.selectNodeContents(node);
       if (piece.isInvalid()) {
         totalLength = 0;
-        rects.push(range.getAdjustedBoundingClientRect());
+        rects.push(range.getBoundingClientRect());
       } else {
         totalLength = piece.length;
 
@@ -297,20 +284,21 @@ export default class TTSChunk {
         } catch (e) {
           /* eslint-disable no-console */
           console.error(
-            `TSChunk:getClientRects() Error!! ${e.toString()}\n`
+            `TSChunk:getRects() Error!! ${e.toString()}\n`
             + ` => {startOffset: ${start}`
             + `, endOffset: ${end}`
             + `, offset: ${current}`
             + `, nodeIndex: ${piece.nodeIndex}`
             + `, startWordIndex: ${piece.startWordIndex}`
             + `, endWordIndex: ${piece.endWordIndex}}`);
+          /* eslint-enable no-console */
         }
 
         if (removeBlank === true && range.toString().length === 0) {
           continue;
         }
 
-        rects = _Util.concatArray(rects, range.getAdjustedClientRects());
+        rects = rects.concat(range.getClientRects());
       }
     }// end for
     return rects;

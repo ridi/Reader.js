@@ -13,7 +13,7 @@ export default class Sel extends _Sel {
     const pageWidth = Util.getStylePropertyIntValue(this.reader.content.wrapper, 'width');
     const testRange = document.createRange();
     testRange.selectNode(range.endContainer);
-    const testRect = testRange.getAdjustedBoundingClientRect();
+    const testRect = testRange.getBoundingClientRect().bind(this.reader).toNormalize();
     return testRect.left > pageWidth;
   }
 
@@ -23,7 +23,7 @@ export default class Sel extends _Sel {
    * @private
    */
   _clientLeftOfRangeForCheckingNextPageContinuable(range) {
-    const rect = range.getAdjustedBoundingClientRect();
+    const rect = range.getBoundingClientRect().bind(this.reader).toNormalize();
     return Math.floor(rect.left + rect.width);
   }
 
@@ -36,7 +36,7 @@ export default class Sel extends _Sel {
 
   expandIntoNextPage() {
     if (super.expandIntoNextPage()) {
-      const coord = this.getRectsCoord();
+      const coord = this.getAbsoluteRectListCoord();
       if (coord.length) {
         android.onSelectionChangeIntoNextPage(coord);
       }
@@ -49,7 +49,7 @@ export default class Sel extends _Sel {
    */
   start(x, y) {
     if (super.start(x, y)) {
-      const coord = this.getRectsCoord();
+      const coord = this.getAbsoluteRectListCoord();
       if (coord.length) {
         android.onstart(coord);
       }
@@ -62,7 +62,7 @@ export default class Sel extends _Sel {
    */
   expandIntoUpper(x, y) {
     if (super.expandIntoUpper(x, y)) {
-      const coord = this.getRectsCoord();
+      const coord = this.getAbsoluteRectListCoord();
       if (coord.length) {
         android.onSelectionChanged(coord, this.getText());
       }
@@ -75,7 +75,7 @@ export default class Sel extends _Sel {
    */
   expandIntoLower(x, y) {
     if (super.expandIntoLower(x, y)) {
-      const coord = this.getRectsCoord();
+      const coord = this.getAbsoluteRectListCoord();
       if (coord.length) {
         android.onSelectionChanged(coord, this.getText());
       }
@@ -83,6 +83,10 @@ export default class Sel extends _Sel {
   }
 
   requestSelectionInfo() {
-    android.onSelectionInfo(this.getSerializedRange(), this.getText(), this.isExpandContinuableIntoNextPage());
+    android.onSelectionInfo(
+      this.getRange().toSerializedString(),
+      this.getText(),
+      this.isExpandContinuableIntoNextPage(),
+    );
   }
 }

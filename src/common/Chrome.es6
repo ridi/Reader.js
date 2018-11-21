@@ -1,5 +1,4 @@
 import _Object from './_Object';
-import MutableClientRect from './MutableClientRect';
 
 export default class Chrome extends _Object {
   /**
@@ -70,7 +69,7 @@ export default class Chrome extends _Object {
         return;
       }
       // * Chrome 47, 49~60 대응
-      // viewport의 범위와 curPage의 clientLeft 기준이 변경됨에 따라 아래와 같이 대응함. (adjustPoint, adjustRect 참고)
+      // viewport의 범위와 curPage의 clientLeft 기준이 변경됨에 따라 아래와 같이 대응함. (normalizePoint, normalizeRect 참고)
       // - 페이지 이동에 따라 0~3의 가중치(pageWeight)를 부여.
       // - rect.left 또는 touchPointX에 'pageWeight * pageUnit' 값을 빼거나 더함.
       // - 가중치가 3에 도달한 후 0이 되기 전까지는 'pageGap * 3' 값을 더하거나 뺌.
@@ -91,6 +90,7 @@ export default class Chrome extends _Object {
       this.prevPage = page;
       this.pageWeight = pageWeight;
     };
+    this._reader = reader;
   }
 
   /**
@@ -117,14 +117,13 @@ export default class Chrome extends _Object {
   }
 
   /**
-   * @param {Reader} reader
    * @param {Number} x
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
    */
-  adjustPoint(reader, x, y) {
+  normalizePoint(x, y) {
     const point = { x, y };
-    const { htmlClientWidth, bodyClientWidth, pageXOffset, context } = reader;
+    const { htmlClientWidth, bodyClientWidth, pageXOffset, context } = this._reader;
     if (context.isScrollMode) {
       return point;
     } else if (this.isCursed) {
@@ -142,25 +141,25 @@ export default class Chrome extends _Object {
   }
 
   /**
-   * @param {Reader} reader
-   * @param {ClientRect} rect
-   * @returns {MutableClientRect}
+   * @param {Rect} rect
+   * @returns {Rect}
    */
-  adjustRect(reader, rect) {
-    const { htmlClientWidth, bodyClientWidth, context } = reader;
-    const adjustRect = new MutableClientRect(rect);
+  normalizeRect(rect) {
+    /* eslint-disable no-param-reassign */
+    const { htmlClientWidth, bodyClientWidth, context } = this._reader;
     if (this.isCursed && !context.isScrollMode) {
-      adjustRect.left -= (context.pageWidthUnit * this.pageWeight);
-      adjustRect.right -= (context.pageWidthUnit * this.pageWeight);
+      rect.left -= (context.pageWidthUnit * this.pageWeight);
+      rect.right -= (context.pageWidthUnit * this.pageWeight);
       if (this._pageOverflow) {
-        adjustRect.left += context.pageGap * this._magic;
-        adjustRect.right += context.pageGap * this._magic;
+        rect.left += context.pageGap * this._magic;
+        rect.right += context.pageGap * this._magic;
         if (htmlClientWidth - bodyClientWidth === 1) {
-          adjustRect.left -= this._magic;
-          adjustRect.right -= this._magic;
+          rect.left -= this._magic;
+          rect.right -= this._magic;
         }
       }
     }
-    return adjustRect;
+    /* eslint-enable no-param-reassign */
+    return rect;
   }
 }

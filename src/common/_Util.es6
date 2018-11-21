@@ -1,7 +1,5 @@
 import _Object from './_Object';
 
-let caretIterator = null;
-
 export default class _Util extends _Object {
   /**
    * @param {Node} rootNode
@@ -14,49 +12,6 @@ export default class _Util extends _Object {
         return filter(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
       },
     }, true);
-  }
-
-  /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Node} rootNode
-   * @param {String} unit (character or word)
-   * @returns {TextRange|null}
-   */
-  static getCaretRange(x, y, rootNode, unit = 'word') {
-    if (rootNode) {
-      if (caretIterator) {
-        caretIterator.previousNode();
-      } else {
-        caretIterator = this.createTextNodeIterator(rootNode, (textNode) => {
-          if (/^\s*$/.test(textNode.nodeValue)) {
-            return false;
-          }
-          const rects = textNode.parentElement.getAdjustedClientRects();
-          return rects.find(rect => rect.contains(x, y)) !== undefined;
-        });
-      }
-
-      let node;
-      while ((node = caretIterator.nextNode())) {
-        const range = document.createRange();
-        range.selectNodeContents(node);
-
-        const { length } = range.toString();
-        for (let i = 0; i < length - 1; i++) {
-          range.setStart(range.startContainer, i);
-          range.setEnd(range.endContainer, i + 1);
-          const rect = range.getAdjustedBoundingClientRect();
-          if (rect.contains(x, y)) {
-            range.expand(unit);
-            return range;
-          }
-        }
-      }
-      caretIterator = null;
-      return null;
-    }
-    return document.caretRangeFromPoint(x, y);
   }
 
   /**
@@ -189,18 +144,5 @@ export default class _Util extends _Object {
     }
 
     return val;
-  }
-
-  /**
-   * @param {Array|MutableClientRectList} array1
-   * @param {Array|MutableClientRectList} array2
-   * @param {function} adjust
-   * @returns {Array|MutableClientRectList}
-   */
-  static concatArray(array1, array2, adjust = rect => rect) {
-    for (let i = 0; i < array2.length; i += 1) {
-      array1.push(adjust(array2[i]));
-    }
-    return array1;
   }
 }

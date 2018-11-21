@@ -14,10 +14,11 @@ module.exports = {
     'object-curly-newline': ['error', { 'multiline': true }],
   },
   'env': {
-    'browser': true,
+    'browser': true
   },
   'globals': {
     'rangy': true,
     'android': true,
+    'DOMRectList': true
   }
 };

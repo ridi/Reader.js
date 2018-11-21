@@ -2,6 +2,8 @@ import _Object from './_Object';
 import _Util from './_Util';
 import TTSUtil from './tts/TTSUtil';
 
+let caretIterator = null;
+
 export default class _Sel extends _Object {
   /**
    * @returns {Reader}
@@ -258,7 +260,7 @@ export default class _Sel extends _Object {
 
     let end = range.endOffset;
     while (end > origin) {
-      if (range.getAdjustedBoundingClientRect().right <= expandBound) {
+      if (range.getBoundingClientRect().bind(this.reader).toNormalize().right <= expandBound) {
         break;
       }
       range.setEnd(range.endContainer, end -= 1);
@@ -352,13 +354,56 @@ export default class _Sel extends _Object {
    * @param {Number} y
    * @param {Node} rootNode
    * @param {String} unit (character or word)
+   * @returns {Range|null}
+   */
+  _caretRangeFromPoint(x, y, rootNode, unit = 'word') {
+    if (rootNode) {
+      if (caretIterator) {
+        caretIterator.previousNode();
+      } else {
+        caretIterator = _Util.createTextNodeIterator(rootNode, (textNode) => {
+          if (/^\s*$/.test(textNode.nodeValue)) {
+            return false;
+          }
+          const rects = textNode.parentElement.getClientRects().bind(this.reader).toNormalize();
+          return rects.find(rect => rect.contains(x, y)) !== undefined;
+        });
+      }
+
+      let node;
+      while ((node = caretIterator.nextNode())) {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+
+        const { length } = range.toString();
+        for (let i = 0; i < length - 1; i++) {
+          range.setStart(range.startContainer, i);
+          range.setEnd(range.endContainer, i + 1);
+          const rect = range.getBoundingClientRect().bind(this.reader).toNormalize();
+          if (rect.contains(x, y)) {
+            range.expand(unit);
+            return range;
+          }
+        }
+      }
+      caretIterator = null;
+      return null;
+    }
+    return document.caretRangeFromPoint(x, y);
+  }
+
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @param {Node} rootNode
+   * @param {String} unit (character or word)
    * @param {Boolean} allowCollapsed
    * @returns {TextRange|null}
    * @private
    */
   _getCaretRange(x, y, rootNode, unit = 'word', allowCollapsed = false) {
-    const point = this.reader.adjustPoint(x, y);
-    const range = _Util.getCaretRange(point.x, point.y, rootNode, unit);
+    const point = this.reader.normalizePoint(x, y);
+    const range = this._caretRangeFromPoint(point.x, point.y, rootNode, unit);
     if (range === null) {
       return null;
     }
@@ -390,10 +435,10 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @returns {MutableClientRectList}
+   * @returns {RectList}
    */
   getRects() {
-    return this.getRange().getAdjustedTextRects();
+    return this.getRange().getTextRectsWithBind(this.reader).toNormalize();
   }
 
   /**
@@ -401,5 +446,12 @@ export default class _Sel extends _Object {
    */
   getText() {
     return this.getRange().toString();
+  }
+
+  /**
+   * @returns {String}
+   */
+  getAbsoluteRectListCoord() {
+    return this.getRects().bind(this.reader).toNormalize().toAbsoluteCoord();
   }
 }
