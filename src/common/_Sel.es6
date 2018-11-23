@@ -431,7 +431,7 @@ export default class _Sel extends _Object {
     const range = document.createRange();
     range.setStart(this._startContainer, this._startOffset);
     range.setEnd(this._endContainer, this._endOffset);
-    return range;
+    return range.bind(this.reader);
   }
 
   /**
