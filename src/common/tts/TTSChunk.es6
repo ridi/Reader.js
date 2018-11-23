@@ -1,6 +1,7 @@
 import TTSRange from './TTSRange';
 import TTSUtterance from './TTSUtterance';
 import TTSUtil from './TTSUtil';
+import Logger from '../Logger';
 import RectList from '../RectList';
 
 export default class TTSChunk {
@@ -282,8 +283,7 @@ export default class TTSChunk {
           range.setEnd(node, end);
           range.expand('character');
         } catch (e) {
-          /* eslint-disable no-console */
-          console.error(
+          Logger.error(
             `TSChunk:getRects() Error!! ${e.toString()}\n`
             + ` => {startOffset: ${start}`
             + `, endOffset: ${end}`
@@ -291,7 +291,6 @@ export default class TTSChunk {
             + `, nodeIndex: ${piece.nodeIndex}`
             + `, startWordIndex: ${piece.startWordIndex}`
             + `, endWordIndex: ${piece.endWordIndex}}`);
-          /* eslint-enable no-console */
         }
 
         if (removeBlank === true && range.toString().length === 0) {

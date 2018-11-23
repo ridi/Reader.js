@@ -88,6 +88,7 @@ import TTSPiece from './TTSPiece';
 import TTSChunk from './TTSChunk';
 import TTSRange from './TTSRange';
 import TTSUtil from './TTSUtil';
+import Logger from '../Logger';
 
 export default class _TTS {
   /**
@@ -135,7 +136,6 @@ export default class _TTS {
    */
   constructor(reader) {
     this._reader = reader;
-    this.debug = false;
     this._reserveNodesCountMagic = 40; // 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
     this._makeChunksInterval = 100;
     this._processedNodeMinIndex = -1;
@@ -346,8 +346,7 @@ export default class _TTS {
       try {
         piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, _wordIndex);
       } catch (e) {
-        /* eslint-disable no-console */
-        console.error(e);
+        Logger.error(e);
         break;
       }
 
@@ -436,8 +435,7 @@ export default class _TTS {
       try {
         piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
-        /* eslint-disable no-console */
-        console.error(e);
+        Logger.error(e);
         break;
       }
 
@@ -545,10 +543,9 @@ export default class _TTS {
                   nextText.match(TTSUtil.getSentenceRegex('^')) !== null;
 
     // Debug Info
-    const debug = (caseNum, chunk) => {
-      if (this.debug && chunk) {
-        /* eslint-disable no-console */
-        console.log(`Case: ${caseNum}, Text: ${chunk.getText()}`);
+    const log = (caseNum, chunk) => {
+      if (chunk) {
+        Logger.debug(`Case: ${caseNum}, Text: ${chunk.getText()}`);
       }
     };
 
@@ -583,18 +580,18 @@ export default class _TTS {
           continue;
         }
         if (subText.length) {
-          debug(1, pushToChunks(chunk.copy(makeTrimmedRange(startOffset, subText))));
+          log(1, pushToChunks(chunk.copy(makeTrimmedRange(startOffset, subText))));
           subText = '';
         }
         startOffset = offset;
       }
       if (subText.length) {
         // 루프가 끝나도록 추가되지 못한 애들을 추가한다
-        debug(2, pushToChunks(chunk.copy(makeTrimmedRange(startOffset, subText))));
+        log(2, pushToChunks(chunk.copy(makeTrimmedRange(startOffset, subText))));
       }
     } else if (tokens.length === 1) {
       // 문장(token)이 하나 뿐이라 바로 추가한다
-      debug(3, pushToChunks(chunk.copy(makeTrimmedRange(0, tokens[0]))));
+      log(3, pushToChunks(chunk.copy(makeTrimmedRange(0, tokens[0]))));
     }
 
     if (addAtFirst) {

@@ -2,6 +2,7 @@ import _Reader from '../common/_Reader';
 import Content from './Content';
 import Sel from './Sel';
 import Handler from './Handler';
+import Logger from '../common/Logger';
 
 export default class Reader extends _Reader {
   /**
@@ -24,12 +25,12 @@ export default class Reader extends _Reader {
   injectMethod() {
     super.injectMethod();
 
-    /* eslint-disable no-console */
-    console.log = (log => (message) => {
-      log.call(console, message);
-      window.location.href = `ridi+epub://invocation/log?${encodeURIComponent(message)}`;
-    })(console.log);
-    /* eslint-enable no-console */
+    ['info', 'debug', 'error'].forEach((funcName) => {
+      Logger[funcName] = (func => (message) => { // eslint-disable-line
+        func(message);
+        window.location.href = `ridi+epub://invocation/log?${encodeURIComponent(message)}`;
+      })(Logger[funcName]);
+    });
   }
 
   didEnterBackground() {

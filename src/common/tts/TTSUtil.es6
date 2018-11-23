@@ -1,4 +1,5 @@
 import _Util from '../_Util';
+import Logger from '../Logger';
 
 export default class TTSUtil {
   /**
@@ -169,9 +170,8 @@ export default class TTSUtil {
     });
 
     if (brackets.length > 0) {
-      /* eslint-disable no-console */
-      console.error('Brackets does not match.');
-      console.error({ sentences, brackets, resultSentences });
+      Logger.error('Brackets does not match.');
+      Logger.error({ sentences, brackets, resultSentences });
     }
     return resultSentences;
   }

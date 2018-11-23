@@ -19,6 +19,7 @@ module.exports = {
   'globals': {
     'rangy': true,
     'android': true,
-    'DOMRectList': true
+    'DOMRectList': true,
+    'DEBUG': true
   }
 };

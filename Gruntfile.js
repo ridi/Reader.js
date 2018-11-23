@@ -2,6 +2,7 @@ module.exports = (grunt) => {
   require('time-grunt')(grunt);
 
   const platforms = 'android,ios,web';
+  const debug = grunt.option('debug') || false;
 
   function libconcat(options) {
     const object = {};
@@ -117,6 +118,22 @@ module.exports = (grunt) => {
       },
     },
 
+    'string-replace': {
+      dist: {
+        files: [{
+          expand: true,
+          src: '<%= variants.distPath %>/*/*.js',
+          dest: '',
+        }],
+        options: {
+          replacements: [{
+            pattern: 'DEBUG',
+            replacement: debug ? 'true' : 'false'
+          }]
+        }
+      }
+    },
+
     watch: {
       scripts: {
         files: ['<%= variants.srcPath %>/**/*.{js,es6}'],
@@ -147,12 +164,18 @@ module.exports = (grunt) => {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-string-replace');
   grunt.loadNpmTasks('gruntify-eslint');
+
+  const bundleTasks = ['babel', 'browserify', 'concat'];
+  if (!debug) {
+    bundleTasks.push('uglify');
+  }
 
   grunt.registerTask('default', ['clean', 'prepublish']);
   grunt.registerTask('lint', ['jshint', 'eslint']);
-  grunt.registerTask('bundle', ['babel', 'browserify', 'concat', 'uglify']);
-  grunt.registerTask('prepublish', ['lint', 'bundle', 'copy']);
+  grunt.registerTask('bundle', bundleTasks);
+  grunt.registerTask('prepublish', ['lint', 'bundle', 'copy', 'string-replace']);
   grunt.registerTask('show-config', () => {
     grunt.log.writeln(JSON.stringify(grunt.config(), null, 2));
   });
