@@ -8,7 +8,7 @@ export default class Handler extends _Handler {
    * @param {String} nativePoints
    */
   processSingleTapEvent(x, y, nativePoints) {
-    const link = this.getLinkFromPoint(x, y);
+    const link = this.reader.content.linkFromPoint(x, y);
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';
@@ -49,12 +49,12 @@ export default class Handler extends _Handler {
   processLongTapZoomEvent(x, y) {
     const point = this.reader.normalizePoint(x, y);
 
-    let src = this.reader.content.getImagePathFromPoint(point.x, point.y);
+    let src = this.reader.content.imagePathFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onImageLongTapZoom(src);
     }
 
-    src = this.reader.content.getSvgElementFromPoint(point.x, point.y);
+    src = this.reader.content.svgHtmlFromPoint(point.x, point.y);
     if (src !== 'null') {
       android.onSvgElementLongTapZoom(src);
     }

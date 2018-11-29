@@ -3,6 +3,11 @@ import _Util from './_Util';
 
 export default class _Content extends _Object {
   /**
+   * @returns {Reader} reader
+   */
+  get reader() { return this._reader; }
+
+  /**
    * @returns {HTMLElement}
    */
   get wrapper() { return this._wrapper; }
@@ -22,12 +27,15 @@ export default class _Content extends _Object {
    */
   get images() { return this.wrapper.getElementsByTagName('IMG'); }
 
+  get customElementFromPointEnabled() { return false; }
+
   /**
+   * @param {Reader} reader
    * @param {HTMLElement} wrapper
    */
-  constructor(wrapper) {
+  constructor(reader, wrapper) {
     super();
-
+    this._reader = reader;
     this._wrapper = wrapper;
     this.updateNodes();
   }
@@ -60,50 +68,112 @@ export default class _Content extends _Object {
   /**
    * @param {Number} x
    * @param {Number} y
-   * @returns {String}
+   * @param {?String} tag
+   * @returns {HTMLElement|null}
    */
-  getImagePathFromPoint(x, y) {
-    const el = document.elementFromPoint(x, y);
-    return (el && el.nodeName === 'IMG') ? (el.src || 'null') : 'null';
+  elementFromPoint(x, y, tag) {
+    const point = this.reader.normalizePoint(x, y);
+    if (this.customElementFromPointEnabled) {
+      // z-index 같이 계층에 영향 주는 요소를 고려하지 않았기 때문에 레이아웃이 복잡할 경우 오작동할 수 있음.
+      // (참고: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index)
+      const find = (el) => {
+        const rects = el.getClientRects().bind(this.reader).normalizeRect();
+        return rects.find(rect => rect.contains(x, y)) !== undefined;
+      };
+      if (tag) {
+        const els = this.body.querySelectorAll(tag);
+        return els.find(find) || null;
+      }
+      const iterator = document.createNodeIterator(this.body, NodeFilter.SHOW_ELEMENT, {
+        acceptNode() {
+          return NodeFilter.FILTER_ACCEPT;
+        },
+      }, false);
+      let el;
+      while ((el = iterator.nextNode())) {
+        if (find(el)) {
+          return el;
+        }
+      }
+      return null;
+    }
+    const result = document.elementFromPoint(point.x, point.y);
+    if (result && tag) {
+      return result.nodeName === tag ? result : null;
+    }
+    return result;
   }
 
   /**
    * @param {Number} x
    * @param {Number} y
-   * @returns {String}
+   * @returns {String|null}
    */
-  getSvgElementFromPoint(x, y) {
-    let el = document.elementFromPoint(x, y);
-    while (el && el.nodeName !== 'HTML' && el.nodeName !== 'BODY') {
-      el = el.parentElement;
-      if (el.nodeName === 'SVG') {
-        let prefix = '<svg';
+  imagePathFromPoint(x, y) {
+    const el = this.elementFromPoint(x, y, 'IMG');
+    return el ? el.src : null;
+  }
 
-        const attrs = el.attributes;
-        for (let i = 0; i < attrs.length; i += 1) {
-          const attr = attrs[i];
-          prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {String|null}
+   */
+  svgHtmlFromPoint(x, y) {
+    const el = this.elementFromPoint(x, y, 'SVG');
+    if (el) {
+      let prefix = '<svg';
+      const attrs = el.attributes;
+      for (let i = 0; i < attrs.length; i += 1) {
+        const attr = attrs[i];
+        prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
+      }
+      prefix += '>';
+      // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
+      const svgEl = document.createElement('svgElement');
+      const nodes = el.childNodes;
+      for (let j = 0; j < nodes.length; j += 1) {
+        svgEl.appendChild(nodes[j].cloneNode(true));
+      }
+      return `${prefix}${svgEl.innerHTML}</svg>`;
+    }
+    return null;
+  }
+
+
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {{node: Node, href: String, type: String}|null}
+   */
+  linkFromPoint(x, y) {
+    if (document.links.length === 0) {
+      return null;
+    }
+
+    const point = this.reader.normalizePoint(x, y);
+    const tolerance = 12;
+    const stride = 6;
+    for (let x = point.x - tolerance; x <= point.x + tolerance; x += stride) { // eslint-disable-line no-shadow
+      for (let y = point.y - tolerance; y <= point.y + tolerance; y += stride) { // eslint-disable-line no-shadow
+        const el = this.elementFromPoint(x, y, 'A');
+        if (el) {
+          const link = this._getLinkFromElement(el);
+          if (link !== null) {
+            return link;
+          }
         }
-        prefix += '>';
-
-        // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
-        const svgEl = document.createElement('svgElement');
-        const nodes = el.childNodes;
-        for (let j = 0; j < nodes.length; j += 1) {
-          svgEl.appendChild(nodes[j].cloneNode(true));
-        }
-
-        return `${prefix}${svgEl.innerHTML}</svg>`;
       }
     }
-    return 'null';
+
+    return null;
   }
 
   /**
    * @param {Node} el
    * @returns {{node: Node, href: string, type: string}}
    */
-  getLinkFromElement(el) {
+  _getLinkFromElement(el) {
     let target = el;
     while (target) {
       if (target && target.nodeName === 'A') {

@@ -17,7 +17,7 @@ export default class Reader extends _Reader {
   constructor(wrapper, context) {
     super(wrapper, context);
     this._appInBackground = false;
-    this._content = new Content(wrapper);
+    this._content = new Content(this, wrapper);
     this._handler = new Handler(this);
     this._sel = new Sel(this);
   }

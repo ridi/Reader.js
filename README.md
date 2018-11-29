@@ -88,8 +88,9 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 
 #### 링크
 
-- **`reader.content.getLinkFromElement(el)`**
-	- 특정 엘리먼트가 `<a>` 태그(이거나 그 부모가 `<a>` 태그)일 경우 그 정보(`node`, `href`, `type`)를 반환
+- **`reader.content.linkFromPoint(x, y)`**
+  - `mouseup`, `touch` 이벤트 등 발생 시 해당 포인트에 `<a>` 태그 존재 여부 확인
+	- `<a>` 태그일 경우 그 정보(`node`, `href`, `type`)를 반환
 	- `type`으로 `epub:type` 애트리뷰트의 값 반환 (예: 팝업 주석 링크일 경우 `type: 'noteref'`)
 
 #### 이미지
@@ -97,10 +98,10 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 - **`reader.content.reviseImage(imgEl, screenWidth, screenHeight)`**
     - 이미지 크기를 조정해 이미지가 페이지를 벗어나는 일이 없도록 함
     - 사용 후 페이지 계산 필요
-- **`reader.content.getSvgElementFromPoint(x, y)`**
+- **`reader.content.svgHtmlFromPoint(x, y)`**
 	- `mouseup`, `touch` 이벤트 등 발생 시 해당 포인트에 `<svg>` 태그 존재 여부 확인
 	- `<svg>` 태그가 존재하는 경우 태그의 전체 내용을 문자열로 반환
-- **`reader.content.getImagePathFromPoint(x, y)`**
+- **`reader.content.iagePathFromPoint(x, y)`**
 	- `mouseup`, `touch` 이벤트 등 발생 시 해당 포인트에 `<img>` 태그 존재 여부 확인
 	- `<img>` 태그가 존재하는 경우 `src` 애트리뷰트 값 반환
 

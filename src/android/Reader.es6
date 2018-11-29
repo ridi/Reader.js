@@ -30,7 +30,7 @@ export default class Reader extends _Reader {
   constructor(wrapper, context, curPage, contentSrc) {
     super(wrapper, context);
 
-    this._content = new Content(wrapper, contentSrc);
+    this._content = new Content(this, wrapper, contentSrc);
     this._handler = new Handler(this);
     this._sel = new Sel(this);
     this._chrome = new Chrome(this, curPage);

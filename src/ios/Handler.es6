@@ -13,7 +13,7 @@ export default class Handler extends _Handler {
    */
   processSingleTapEvent(x, y, rawX, rawY, canvasWidth, canvasHeight, isVerticalPagingOn) {
     const { location } = window;
-    const link = this.getLinkFromPoint(x, y);
+    const link = this.reader.content.linkFromPoint(x, y);
     if (link !== null) {
       const href = link.href || '';
       const type = link.type || '';
