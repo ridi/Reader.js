@@ -166,15 +166,9 @@ export default class _Reader extends _Object {
       }
     });
 
-    const rectListCls = [];
-    try { rectListCls.push(DOMRectList) } catch (e) {} // eslint-disable-line
-    try { rectListCls.push(ClientRectList) } catch (e) {} // eslint-disable-line
-    rectListCls.forEach((cls) => {
-      if (cls) {
-        injectIfNeeded(cls.prototype, 'bind', function bind(reader) {
-          return new RectList(...RectList.from(this, rect => rect.bind(reader)));
-        });
-      }
+    const listCls = document.documentElement.getClientRects().constructor;
+    injectIfNeeded(listCls.prototype, 'bind', function bind(reader) {
+      return new RectList(...RectList.from(this, rect => rect.bind(reader)));
     });
   }
 
