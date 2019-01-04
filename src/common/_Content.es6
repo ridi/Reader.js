@@ -310,17 +310,16 @@ export default class _Content extends _Object {
     // * 이미지 잘림 보정
     //   - 보정된 이미지의 크기나 랜더링된 크기가 화면을 벗어날 경우 잘려보이기나 찌그러져 보이기 때문에 화면보다 작게 보정한다.
     //   - 이미지에 붙은 여백, 줄간 때문에 다음 페이지에 빈 페이지가 생길 수 있기 때문에 모든 여백을 뺀다.
-    //     --> TODO: 이미지의 부모들이 가진 여백 때문에 이전/다음 페이지에 빈 페이지가 생기는 문제에 대한 대응 필요 -> 계약직 아내
-    //   - 보정할 높이가 화면의 가장 작은 부분(vmin)보다 작아지지 않도록 한다. (이미지가 작아서 보기 힘들어지기 때문)
+    //   - 빼다보면 이미지가 너무 작아질 수 있는데 이를 막기 위해 vmin보다 작아지지 않도록 한다.
     //
 
     const width = parseInt(cssWidth, 10) || size.dWidth;
     const height = parseInt(cssHeight, 10) || size.dHeight;
     if (width > screenWidth || height > screenHeight) {
-      const margin = _Util.getStylePropertiesIntValue(imgEl,
-        ['line-height', 'margin-top', 'margin-bottom', 'padding-top', 'padding-bottom']);
-      const vmin = Math.min(screenWidth, screenHeight);
-      let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin * maxHeight);
+      const top = this.reader.context.isScrollMode ? 0 : imgEl.offsetTop;
+      const margin = top + _Util.getStylePropertiesIntValue(imgEl, ['line-height', 'margin-bottom', 'padding-bottom']);
+      const vmin = Math.min(screenWidth, screenHeight) / 2;
+      let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin);
       let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;
       if (adjustWidth > screenWidth) {
         adjustHeight *= screenWidth / adjustWidth;
