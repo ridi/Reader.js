@@ -81,7 +81,7 @@ export default class _Content extends _Object {
         return rects.find(rect => rect.contains(x, y)) !== undefined;
       };
       if (tag) {
-        const els = this.body.querySelectorAll(tag);
+        const els = Array.from(this.body.querySelectorAll(tag));
         return els.find(find) || null;
       }
       const iterator = document.createNodeIterator(this.body, NodeFilter.SHOW_ELEMENT, {
