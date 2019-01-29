@@ -77,7 +77,7 @@ export default class _Content extends _Object {
       // z-index 같이 계층에 영향 주는 요소를 고려하지 않았기 때문에 레이아웃이 복잡할 경우 오작동할 수 있음.
       // (참고: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index)
       const find = (el) => {
-        const rects = el.getClientRects().bind(this.reader).normalizeRect();
+        const rects = el.getClientRects().bind(this.reader).toNormalize();
         return rects.find(rect => rect.contains(x, y)) !== undefined;
       };
       if (tag) {
