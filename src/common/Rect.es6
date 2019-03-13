@@ -62,4 +62,20 @@ export default class Rect {
   toCoord() {
     return `${this.left},${this.top},${this.width},${this.height},`;
   }
+
+  /**
+   * @returns {Object}
+   */
+  toObject() {
+    return {
+      left: this.left,
+      top: this.top,
+      right: this.right,
+      bottom: this.bottom,
+      width: this.width,
+      height: this.height,
+      x: this.x,
+      y: this.y,
+    };
+  }
 }
