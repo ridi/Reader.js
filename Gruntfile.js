@@ -47,13 +47,13 @@ module.exports = (grunt) => {
         globals: { document: true },
       },
       files: [
-        '<%= variants.srcPath %>/**/*.js',
+        '<%= variants.srcPath %>/*/libs/*.js',
       ],
     },
 
     eslint: {
       files: [
-        '<%= variants.srcPath %>/**/*.es6',
+        '<%= variants.srcPath %>/**/*.js',
       ],
     },
 
@@ -61,7 +61,7 @@ module.exports = (grunt) => {
       build: {
         files: [{
           expand: true,
-          src: '<%= variants.srcPath %>/**/*.{js,es6}',
+          src: '<%= variants.srcPath %>/**/*.js',
           dest: '<%= variants.intermediatePath %>',
           ext: '.js',
           extDot: 'last',
@@ -136,7 +136,7 @@ module.exports = (grunt) => {
 
     watch: {
       scripts: {
-        files: ['<%= variants.srcPath %>/**/*.{js,es6}'],
+        files: ['<%= variants.srcPath %>/**/*.js'],
         tasks: ['default'],
         options: { spawn: false },
       },
