@@ -385,11 +385,11 @@ export default class _Reader extends _Object {
       range.selectNodeContents(node);
 
       let rect = range.getBoundingClientRect().bind(this).toNormalize();
-      if (rect.isEmpty) {
+      if (rect.isZero) {
         if (node.nodeName === 'IMG') {
           range.selectNode(node);
           rect = range.getBoundingClientRect().bind(this).toNormalize();
-          if (rect.isEmpty) {
+          if (rect.isZero) {
             continue;
           }
         } else {
@@ -521,11 +521,11 @@ export default class _Reader extends _Object {
     range.selectNodeContents(node);
 
     let rect = range.getBoundingClientRect().bind(this).toNormalize();
-    if (rect.isEmpty) {
+    if (rect.isZero) {
       if (node.nodeName === 'IMG') {
         range.selectNode(node);
         rect = range.getBoundingClientRect().bind(this).toNormalize();
-        if (rect.isEmpty) {
+        if (rect.isZero) {
           return null;
         }
       } else {
