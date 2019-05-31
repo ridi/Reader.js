@@ -46,17 +46,31 @@ export default class Handler extends _Handler {
    * @param {Number} x
    * @param {Number} y
    */
-  processLongTapZoomEvent(x, y) {
+  processImageZoomEvent(x, y) {
+    const { content, context, pageYOffset, pageXOffset } = this.reader;
+    const rectToAbsolute = (rect) => {
+      const mutableRect = rect;
+      if (context.isScrollMode) {
+        mutableRect.top += pageYOffset;
+      } else {
+        mutableRect.left += pageXOffset;
+      }
+      return mutableRect;
+    };
+
     const point = this.reader.adjustPoint(x, y);
-
-    let src = this.reader.content.getImagePathFromPoint(point.x, point.y);
-    if (src !== 'null') {
-      android.onImageLongTapZoom(src);
-    }
-
-    src = this.reader.content.getSvgElementFromPoint(point.x, point.y);
-    if (src !== 'null') {
-      android.onSvgElementLongTapZoom(src);
+    let result = content.getImageFromPoint(point.x, point.y);
+    if (result) {
+      const { left, top, width, height } = rectToAbsolute(result.rect);
+      const id = content.setHidden(true, result.element);
+      android.onImageFound(result.src, id, left, top, width, height);
+    } else {
+      result = content.getSvgFromPoint(point.x, point.y);
+      if (result) {
+        const { left, top, width, height } = rectToAbsolute(result.rect);
+        const id = content.setHidden(true, result.element);
+        android.onSvgFound(result.html, id, left, top, width, height);
+      }
     }
   }
 }
