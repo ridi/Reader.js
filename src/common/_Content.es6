@@ -76,37 +76,35 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Boolean} hidden
-   * @param {Node|String} any
+   * @param {HTMLElement} element
    * @returns {String}
    */
-  setHidden(hidden, any) {
-    const prefix = 'image-';
+  generateId(element) {
+    const prefix = 'element-';
     const makeId = (i => () => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
+    const id = element.classList.value.split(',').find(item => item.match(new RegExp(`${prefix}*`))) || makeId();
+    element.classList.remove(id);
+    element.classList.add(id);
+    return id;
+  }
 
+  /**
+   * @param {Boolean} hidden
+   * @param {HTMLElement|String} any
+   */
+  setHidden(hidden, any) {
     let el;
-    let id = any;
     if (typeof any === 'string') {
-      [el] = document.getElementsByClassName(id);
+      [el] = document.getElementsByClassName(any);
       if (!el) {
-        el = document.getElementById(id);
+        el = document.getElementById(any);
       }
     } else {
       el = any;
-      id = el.classList.value.split(',').find(item => item.match(new RegExp(`${prefix}*`))) || makeId();
-      el.classList.remove(id);
-      el.classList.add(id);
     }
-
     if (el) {
-      if (hidden) {
-        el.style.visibility = 'hidden';
-      } else {
-        el.style.visibility = '';
-      }
+      el.style.visibility = hidden ? 'hidden' : '';
     }
-
-    return id;
   }
 
   /**
@@ -118,6 +116,7 @@ export default class _Content extends _Object {
     const el = document.elementFromPoint(x, y);
     if (el && el.nodeName === 'IMG') {
       return {
+        id: this.generateId(el),
         element: el,
         src: el.src || 'null',
         rect: el.getAdjustedBoundingClientRect(),
@@ -152,6 +151,7 @@ export default class _Content extends _Object {
         }
 
         return {
+          id: this.generateId(el),
           element: el,
           html: `${prefix}${svgEl.innerHTML}</svg>`,
           rect: el.getAdjustedBoundingClientRect(),

@@ -62,14 +62,12 @@ export default class Handler extends _Handler {
     let result = content.getImageFromPoint(point.x, point.y);
     if (result) {
       const { left, top, width, height } = rectToAbsolute(result.rect);
-      const id = content.setHidden(true, result.element);
-      android.onImageFound(result.src, id, left, top, width, height);
+      android.onImageFound(result.src, result.id, left, top, width, height);
     } else {
       result = content.getSvgFromPoint(point.x, point.y);
       if (result) {
         const { left, top, width, height } = rectToAbsolute(result.rect);
-        const id = content.setHidden(true, result.element);
-        android.onSvgFound(result.html, id, left, top, width, height);
+        android.onSvgFound(result.html, result.id, left, top, width, height);
       }
     }
   }
