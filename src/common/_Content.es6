@@ -76,25 +76,65 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
+   * @param {Boolean} hidden
+   * @param {Node|String} any
    * @returns {String}
    */
-  getImagePathFromPoint(x, y) {
-    const el = document.elementFromPoint(x, y);
-    return (el && el.nodeName === 'IMG') ? (el.src || 'null') : 'null';
+  setHidden(hidden, any) {
+    const prefix = 'image-';
+    const makeId = (i => () => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
+
+    let el;
+    let id = any;
+    if (typeof any === 'string') {
+      [el] = document.getElementsByClassName(id);
+      if (!el) {
+        el = document.getElementById(id);
+      }
+    } else {
+      el = any;
+      id = el.classList.value.split(',').find(item => item.match(new RegExp(`${prefix}*`))) || makeId();
+      el.classList.remove(id);
+      el.classList.add(id);
+    }
+
+    if (el) {
+      if (hidden) {
+        el.style.visibility = 'hidden';
+      } else {
+        el.style.visibility = '';
+      }
+    }
+
+    return id;
   }
 
   /**
    * @param {Number} x
    * @param {Number} y
-   * @returns {String}
+   * @returns {Object}
    */
-  getSvgElementFromPoint(x, y) {
+  getImageFromPoint(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (el && el.nodeName === 'IMG') {
+      return {
+        element: el,
+        src: el.src || 'null',
+        rect: el.getAdjustedBoundingClientRect(),
+      };
+    }
+    return null;
+  }
+
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {Object}
+   */
+  getSvgFromPoint(x, y) {
     let el = document.elementFromPoint(x, y);
     while (el && el.nodeName !== 'HTML' && el.nodeName !== 'BODY') {
-      el = el.parentElement;
-      if (el.nodeName === 'SVG') {
+      if (el.nodeName.toLowerCase() === 'svg') { // SVGElement는 nodeName이 대문자가 아니다.
         let prefix = '<svg';
 
         const attrs = el.attributes;
@@ -111,10 +151,15 @@ export default class _Content extends _Object {
           svgEl.appendChild(nodes[j].cloneNode(true));
         }
 
-        return `${prefix}${svgEl.innerHTML}</svg>`;
+        return {
+          element: el,
+          html: `${prefix}${svgEl.innerHTML}</svg>`,
+          rect: el.getAdjustedBoundingClientRect(),
+        };
       }
+      el = el.parentElement;
     }
-    return 'null';
+    return null;
   }
 
   /**

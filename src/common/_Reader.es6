@@ -100,11 +100,12 @@ export default class _Reader extends _Object {
       return reader.adjustRects(newRects);
     }
 
-    Range.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-    Range.prototype.getAdjustedClientRects = getAdjustedClientRects;
-
-    HTMLElement.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
-    HTMLElement.prototype.getAdjustedClientRects = getAdjustedClientRects;
+    /* eslint-disable no-param-reassign */
+    [Range, HTMLElement, SVGElement].forEach((type) => {
+      type.prototype.getAdjustedBoundingClientRect = getAdjustedBoundingClientRect;
+      type.prototype.getAdjustedClientRects = getAdjustedClientRects;
+    });
+    /* eslint-enable no-param-reassign */
   }
 
   setViewport() {
