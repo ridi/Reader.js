@@ -1,6 +1,8 @@
 import _Object from './_Object';
 import _Util from './_Util';
 
+const makeId = (i => (prefix) => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
+
 export default class _Content extends _Object {
   /**
    * @returns {HTMLElement}
@@ -80,9 +82,8 @@ export default class _Content extends _Object {
    * @returns {String}
    */
   generateId(element) {
-    const prefix = 'element-';
-    const makeId = (i => () => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
-    const id = element.classList.value.split(',').find(item => item.match(new RegExp(`${prefix}*`))) || makeId();
+    const prefix = element.nodeName;
+    const id = element.classList.value.split(' ').find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
     element.classList.remove(id);
     element.classList.add(id);
     return id;
