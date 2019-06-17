@@ -13,7 +13,7 @@ if ( typeof window.getMatchedCSSRules !== 'function' ) {
     PSEUDO_ELEMENTS_RE = /\:\:?(after|before|first-letter|first-line|selection)/g;
   // convert an array-like object to array
   function toArray (list) {
-    return [].slice.call(list);
+    return [].slice.call(list || []);
   }
 
   // handles extraction of `cssRules` as an `Array` from a stylesheet or something that behaves the same
@@ -120,7 +120,10 @@ if ( typeof window.getMatchedCSSRules !== 'function' ) {
           // insert the contained rules of this media rule to the beginning of this stylesheet's rules
           rules = getSheetRules(rule).concat(rules);
           // and skip it
-          continue
+          continue;
+        }
+        else if ( !rule.selectorText || rule.selectorText.length === 0 ) {
+          continue;
         }
         //TODO: for now only polyfilling Gecko
         // check if this element matches this rule's selector
