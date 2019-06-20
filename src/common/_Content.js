@@ -1,14 +1,13 @@
+import NodeLocation from './NodeLocation';
 import Util from './Util';
 
 const { TEXT_NODE, ELEMENT_NODE } = Node;
 const { SHOW_TEXT, SHOW_ELEMENT } = NodeFilter;
 
-/* eslint-disable no-multi-assign */
-const NodeLocation = {};
-const HIGHLIGHT_ID = NodeLocation.HIGHLIGHT_ID = 'node-location-highlight';
-const HIGHLIGHT_MIN_WIDTH = NodeLocation.HIGHLIGHT_MIN_WIDTH = 3;
-const INDEX_SEPARATOR = NodeLocation.INDEX_SEPARATOR = '#';
-/* eslint-enable no-multi-assign */
+const { Type } = NodeLocation;
+
+const HIGHLIGHT_ID = 'node-location-highlight';
+const HIGHLIGHT_MIN_WIDTH = 3;
 
 const TOUCH_POINT_TOLERANCE = 12;
 const TOUCH_POINT_STRIDE = 6;
@@ -483,15 +482,15 @@ class _Content {
    * @param {RectList} rectList
    * @param {number} startOffset
    * @param {number} endOffset
-   * @param {string} type top or bottom
+   * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {?number}
    * @private
    */
-  _findRectIndex(rectList, startOffset, endOffset, type = 'top') {
+  _findRectIndex(rectList, startOffset, endOffset, type = Type.TOP) {
     const origin = this._context.isScrollMode ? 'top' : 'left';
     for (let rectIndex = 0; rectIndex < rectList.length; rectIndex += 1) {
       const rect = rectList[rectIndex];
-      if (type === 'bottom') {
+      if (type === Type.BOTTOM) {
         if (endOffset <= rect[origin] && rect.width > 0) {
           return rectIndex - 1;
         }
@@ -508,12 +507,11 @@ class _Content {
    *
    * @param {number} startOffset
    * @param {number} endOffset
-   * @param {string} type top or bottom
-   * @param {string} indexSeparator
+   * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {?string}
    * @private
    */
-  _findNodeLocation(startOffset, endOffset, type = 'top', indexSeparator = INDEX_SEPARATOR) {
+  _findNodeLocation(startOffset, endOffset, type = Type.TOP) {
     const { nodes } = this;
 
     // 현재 페이지에 위치한 노드 정보를 임시로 저장한 것으로 BottomNodeLocation을 구할 때 사용한다.
@@ -564,14 +562,14 @@ class _Content {
             if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
               if (rectIndex < 0) {
                 this._reader.lastNodeLocationRect = prev.rect;
-                return prev.location;
+                return prev.location.toString();
               }
               this._reader.lastNodeLocationRect = rectList[rectIndex];
-              return `${nodeIndex}${indexSeparator}${Math.min(wordIndex + rectIndex, words.length - 1)}`;
+              return new NodeLocation(nodeIndex, Math.min(wordIndex + rectIndex, words.length - 1), type).toString();
             }
             rectList.reverse().forEach((rect) => { // eslint-disable-line
               if (rect.left < endOffset) {
-                prev = { location: `${nodeIndex}${indexSeparator}${wordIndex}`, rect };
+                prev = { location: new NodeLocation(nodeIndex, wordIndex, type), rect };
               }
             });
           }
@@ -582,15 +580,15 @@ class _Content {
         if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
           if (rectIndex < 0) {
             this._reader.lastNodeLocationRect = prev.rect;
-            return prev.location;
+            return prev.location.toString();
           }
           this._reader.lastNodeLocationRect = rectList[rectIndex];
           // imageNode는 wordIndex를 구할 수 없기 때문에 0을 넣는다.
-          return `${nodeIndex}${indexSeparator}0`;
+          return new NodeLocation(nodeIndex, 0, type).toString();
         }
         rectList.reverse().forEach((rect) => { // eslint-disable-line
           if (rect.left < endOffset) {
-            prev = { location: `${nodeIndex}${indexSeparator}0`, rect };
+            prev = { location: new NodeLocation(nodeIndex, 0, type), rect };
           }
         });
       }
@@ -632,14 +630,11 @@ class _Content {
    * 위치를 찾을 수 없을 경우 null을 반환한다.
    *
    * @param {string} location
-   * @param {string} type top or bottom
-   * @param {string} indexSeparator
+   * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {?number}
    */
-  getOffsetFromNodeLocation(location, type = 'top', indexSeparator = INDEX_SEPARATOR) {
-    const parts = location.split(indexSeparator);
-    const nodeIndex = parseInt(parts[0], 10);
-    const wordIndex = parseInt(parts[1], 10);
+  getOffsetFromNodeLocation(location, type = Type.TOP) {
+    const { nodeIndex, wordIndex } = NodeLocation.fromString(location, type);
 
     if (nodeIndex === -1 || wordIndex === -1) {
       return null;
@@ -673,7 +668,7 @@ class _Content {
 
     if (node.nodeName === 'IMG' && wordIndex === 0) {
       if (this._context.isScrollMode) {
-        return Math.max((rect.top + this._reader.pageYOffset) - (type === 'bottom' ? this._context.pageUnit : 0), 0);
+        return Math.max((rect.top + this._reader.pageYOffset) - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
       }
       return page;
     }
@@ -712,12 +707,10 @@ class _Content {
     }
 
     if (this._context.isScrollMode) {
-      return Math.max((rect.top + this._reader.pageYOffset) - (type === 'bottom' ? this._context.pageUnit : 0), 0);
+      return Math.max((rect.top + this._reader.pageYOffset) - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
     }
     return page;
   }
 }
-
-_Content.NodeLocation = NodeLocation;
 
 export default _Content;

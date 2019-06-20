@@ -1,4 +1,5 @@
 import _Content from '../common/_Content';
+import NodeLocation from '../common/NodeLocation';
 import Sel from './Sel';
 
 /**
@@ -28,7 +29,7 @@ export default class Content extends _Content {
       if (elements.length === processedList.length) {
         const results = [];
         processedList.forEach((element) => {
-          const { width, height, position } = this.reviseImage(element, screenWidth, screenHeight);
+          const { width, height, position } = this._reviseImage(element, screenWidth, screenHeight);
           if (width.length || height.length || position.length) {
             results.push({ element, width, height, position });
           }
@@ -88,13 +89,13 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {string} type (top or bottom)
+   * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {string}
    */
-  getNodeLocationOfCurrentPage(type = 'top') {
+  getNodeLocationOfCurrentPage(type = NodeLocation.Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
-    const notFound = `-1${Content.NodeLocation.INDEX_SEPARATOR}-1`;
+    const notFound = new NodeLocation(-1, -1, type);
 
     const location = this._findNodeLocation(startOffset, endOffset, type);
     this.showNodeLocationIfDebug();

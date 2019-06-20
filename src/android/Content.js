@@ -1,4 +1,5 @@
 import _Content from '../common/_Content';
+import NodeLocation from '../common/NodeLocation';
 import Sel from './Sel';
 import SpeechHelper from './SpeechHelper';
 import Util from '../common/Util';
@@ -124,9 +125,9 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {string} type (top or bottom)
+   * @param {string} type Type.Top or Type.BOTTOM
    */
-  getNodeLocationOfCurrentPage(type = 'top') {
+  getNodeLocationOfCurrentPage(type = NodeLocation.Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
 

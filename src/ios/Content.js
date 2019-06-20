@@ -1,4 +1,5 @@
 import _Content from '../common/_Content';
+import NodeLocation from '../common/NodeLocation';
 import Sel from './Sel';
 import SpeechHelper from './SpeechHelper';
 import Util from '../common/Util';
@@ -118,13 +119,13 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {string} type (top or bottom)
+   * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {string}
    */
-  getNodeLocationOfCurrentPage(type = 'top') {
+  getNodeLocationOfCurrentPage(type = NodeLocation.Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
-    const notFound = `-1${Content.NodeLocation.INDEX_SEPARATOR}-1`;
+    const notFound = new NodeLocation(-1, -1, type);
 
     // 앱이 백그라운드 상태일 때는 계산하지 않는다.
     // (백그라운드 상태에서는 scrollLeft 값을 신뢰할 수 없기 때문)
