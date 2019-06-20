@@ -1,6 +1,5 @@
-import _Content from './_Content';
-import Util from '../common/Util';
 import SpeechUtil from './SpeechUtil';
+import Util from '../common/Util';
 
 const { DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_PRECEDING, TEXT_NODE } = Node;
 
@@ -322,7 +321,7 @@ export default class _Sel {
     }
 
     range.setEndAfter(range.endContainer);
-    if (range.endContainer.nodeName === _Content.Tag.BODY) {
+    if (range.endContainer.nodeName === 'BODY') {
       // case: 4
       // body
       //   p

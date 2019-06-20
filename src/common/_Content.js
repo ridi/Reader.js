@@ -1,4 +1,4 @@
-import Util from '../common/Util';
+import Util from './Util';
 
 const { TEXT_NODE, ELEMENT_NODE } = Node;
 const { SHOW_TEXT, SHOW_ELEMENT } = NodeFilter;
@@ -12,14 +12,6 @@ const INDEX_SEPARATOR = NodeLocation.INDEX_SEPARATOR = '#';
 
 const TOUCH_POINT_TOLERANCE = 12;
 const TOUCH_POINT_STRIDE = 6;
-
-const Tag = {
-  A: 'A',
-  IMG: 'IMG',
-  SVG: 'svg', // nodeName이 소문자다(..)
-  STYLE: 'STYLE',
-  BODY: 'BODY',
-};
 
 /**
  * @class _Content
@@ -56,7 +48,7 @@ class _Content {
   /**
    * @returns {HTMLElement[]} 콘텐츠(=스파인) 내 모든 이미지 엘리먼트를 반환한다.
    */
-  get images() { return Array.from(this.ref.getElementsByTagName(Tag.IMG)); }
+  get images() { return Array.from(this.ref.getElementsByTagName('IMG')); }
 
   /**
    * @param {HTMLElement} element
@@ -77,7 +69,7 @@ class _Content {
    */
   _getNodes() {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 수정 시 마지막 페이지 동기화가 오작동할 수 있다.
-    const filter = node => node.nodeType === TEXT_NODE || (node.nodeType === ELEMENT_NODE && node.nodeName === Tag.IMG);
+    const filter = node => node.nodeType === TEXT_NODE || (node.nodeType === ELEMENT_NODE && node.nodeName === 'IMG');
     const iterator = Util.createNodeIterator(this.ref, SHOW_TEXT | SHOW_ELEMENT, filter);
     const nodes = [];
     let node;
@@ -142,7 +134,7 @@ class _Content {
    * @returns {?string}
    */
   imagePathFromPoint(x, y) {
-    const element = this.elementFromPoint(x, y, Tag.IMG);
+    const element = this.elementFromPoint(x, y, 'IMG');
     return element ? element.src : null;
   }
 
@@ -152,7 +144,7 @@ class _Content {
    * @returns {?string}
    */
   svgHtmlFromPoint(x, y) {
-    const element = this.elementFromPoint(x, y, Tag.SVG);
+    const element = this.elementFromPoint(x, y, 'svg'); // svg의 nodeName은 소문자가 맞음.
     if (element) {
       let prefix = '<svg';
       const attrs = element.attributes;
@@ -185,7 +177,7 @@ class _Content {
   _getLinkFromNode(node) {
     while (node) {
       const { nodeName, href, attributes } = node;
-      if (node && nodeName === Tag.A) {
+      if (node && nodeName === 'A') {
         return { node, href, type: (attributes['epub:type'] || { value: '' }).value };
       }
       node = node.parentNode;
@@ -533,7 +525,7 @@ class _Content {
 
       let rect = range.getBoundingClientRect().toRect();
       if (rect.isZero) {
-        if (node.nodeName === Tag.IMG) {
+        if (node.nodeName === 'IMG') {
           range.selectNode(node);
           rect = range.getBoundingClientRect().toRect();
           if (rect.isZero) {
@@ -585,7 +577,7 @@ class _Content {
           }
           offset += (word.length + 1);
         }
-      } else if (node.nodeName === Tag.IMG) {
+      } else if (node.nodeName === 'IMG') {
         const rectList = range.getClientRects().toRectList();
         if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
           if (rectIndex < 0) {
@@ -663,7 +655,7 @@ class _Content {
 
     let rect = range.getBoundingClientRect().toRect();
     if (rect.isZero) {
-      if (node.nodeName === Tag.IMG) {
+      if (node.nodeName === 'IMG') {
         range.selectNode(node);
         rect = range.getBoundingClientRect().toRect();
         if (rect.isZero) {
@@ -679,7 +671,7 @@ class _Content {
       return null;
     }
 
-    if (node.nodeName === Tag.IMG && wordIndex === 0) {
+    if (node.nodeName === 'IMG' && wordIndex === 0) {
       if (this._context.isScrollMode) {
         return Math.max((rect.top + this._reader.pageYOffset) - (type === 'bottom' ? this._context.pageUnit : 0), 0);
       }
@@ -727,6 +719,5 @@ class _Content {
 }
 
 _Content.NodeLocation = NodeLocation;
-_Content.Tag = Tag;
 
 export default _Content;

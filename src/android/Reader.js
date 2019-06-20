@@ -157,7 +157,7 @@ export default class Reader extends _Reader {
 
     this.context = Object.assign(this.context, { width, height, gap });
 
-    const elements = document.getElementsByTagName(Content.Tag.STYLE);
+    const elements = document.getElementsByTagName('STYLE');
     const element = elements[elements.length - 1];
     element.innerHTML = style;
 
