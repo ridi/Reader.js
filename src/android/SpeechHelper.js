@@ -1,6 +1,6 @@
-import _TTS from '../common/tts/_TTS';
+import _SpeechHelper from '../common/_SpeechHelper';
 
-export default class TTS extends _TTS {
+export default class SpeechHelper extends _SpeechHelper {
   /**
    * @param {Boolean} isMakingTemporalChunk
    * @param {Boolean} addAtFirst

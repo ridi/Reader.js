@@ -1,11 +1,11 @@
-import Logger from '../Logger';
-import Util from '../Util';
+import Logger from './Logger';
+import Util from './Util';
 
-export default class TTSUtil {
+export default class SpeechUtil {
   /**
-   * @param {TTSPiece[]} list
+   * @param {SpeechPiece[]} list
    * @param {function} callback
-   * @returns {TTSPiece|null}
+   * @returns {SpeechPiece|null}
    */
   static find(list, callback) {
     for (let i = 0; i < list.length; i += 1) {

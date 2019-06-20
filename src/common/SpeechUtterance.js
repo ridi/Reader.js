@@ -1,6 +1,6 @@
-import TTSUtil from './TTSUtil';
+import SpeechUtil from './SpeechUtil';
 
-export default class TTSUtterance {
+export default class SpeechUtterance {
   /**
    * @returns {String}
    */
@@ -22,10 +22,10 @@ export default class TTSUtterance {
   /**
    * 개행문자는 읽을 때 잡음으로 변환되기 때문에 제거한다.
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   removeNewLine() {
-    return new TTSUtterance(this.text.replace(TTSUtil.getNewLineRegex(), ' '));
+    return new SpeechUtterance(this.text.replace(SpeechUtil.getNewLineRegex(), ' '));
   }
 
   /**
@@ -33,33 +33,33 @@ export default class TTSUtterance {
    * (사용자 사전으로 처리할 수 없기 때문에 코드로)
    *
    * @param {String[]} characters
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   removeSpecialCharacters(characters) {
     const regex = new RegExp(`[${characters.join('')}]`, 'gm');
-    return new TTSUtterance(this.text.replace(regex, ' '));
+    return new SpeechUtterance(this.text.replace(regex, ' '));
   }
 
   /**
    * 한자 단독으로 쓰이기보다 한글음과 같이 쓰일 때가 많아 중복 발음을 없애기 위해 한자를 제거한다.
    * TODO: 한자 단독으로 쓰일 때 처리하기
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   removeHanja() {
     let { text } = this;
     for (let i = 0; i < this.length; i += 1) {
-      if (TTSUtil.isChineseCharCode(text.charCodeAt(i))) {
+      if (SpeechUtil.isChineseCharCode(text.charCodeAt(i))) {
         text = text.replace(text.substr(i, 1), ' ');
       }
     }
-    return new TTSUtterance(text);
+    return new SpeechUtterance(text);
   }
 
   /**
    * // 한글과 영문이 붙어 있을 때 이후에 오는 문자가 공백, 마침표를 의미한다거나 한글과 영문이 붙어 있다면, 영문을 제거한다.
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   removeLatin() {
     const removeList = [];
@@ -83,15 +83,15 @@ export default class TTSUtterance {
 
     for (i = 0; i < length; i += 1) {
       code = text.charCodeAt(i);
-      if (i > 0 && TTSUtil.isLatinCharCode(code)) {
+      if (i > 0 && SpeechUtil.isLatinCharCode(code)) {
         let isAbbr = false;
         prevCode = text.charCodeAt(i - 1);
         if (i + 1 < length) {
           // 한글 옆에 붙은애는 알고보니 축약어였다!? -> 야는 제거해선 안 된다.
           nextCode = text.charCodeAt(i + 1);
-          isAbbr = TTSUtil.isLatinCharCode(code, 'u') && TTSUtil.isLatinCharCode(nextCode, 'u');
+          isAbbr = SpeechUtil.isLatinCharCode(code, 'u') && SpeechUtil.isLatinCharCode(nextCode, 'u');
         }
-        if (!isAbbr && TTSUtil.isHangulCharCode(prevCode)) {
+        if (!isAbbr && SpeechUtil.isHangulCharCode(prevCode)) {
           // 영어의 전 글자는 반드시 한글이어야 한다.
           startOffset = i;
         }
@@ -99,7 +99,7 @@ export default class TTSUtterance {
           for (j = i + 1; j < length; j += 1) {
             code = text.charCodeAt(j);
             ch = text.charAt(j);
-            if (TTSUtil.isSpaceCharCode(code) || TTSUtil.isLastCharOfSentence(ch) ||
+            if (SpeechUtil.isSpaceCharCode(code) || SpeechUtil.isLastCharOfSentence(ch) ||
               ch === ':' || ch === ',') {
               // 공백, 문장의 끝을 의미하는 문자일 때는 좀 더 이후 글자를 확인한다.
               if (j + 1 < length) {
@@ -107,9 +107,9 @@ export default class TTSUtterance {
                 for (k = j + 1; k < length; k += 1) {
                   nextCode = text.charCodeAt(k);
                   nextCh = text.charAt(k);
-                  if (TTSUtil.isSpaceCharCode(nextCode) || nextCh === ':' || nextCh === ',') {
+                  if (SpeechUtil.isSpaceCharCode(nextCode) || nextCh === ':' || nextCh === ',') {
                     ignoreCount += 1;
-                  } else if (TTSUtil.isLatinCharCode(nextCode)) {
+                  } else if (SpeechUtil.isLatinCharCode(nextCode)) {
                     j = k;
                     break;
                   } else {
@@ -121,11 +121,11 @@ export default class TTSUtterance {
               } else {
                 checkRemoveRange(startOffset, j);
               }
-            } else if (!TTSUtil.isLatinCharCode(code)) {
+            } else if (!SpeechUtil.isLatinCharCode(code)) {
               // 영문, 공백, 문장의 끝을 의미하는 문자가 아닐 때는 영문의 끝으로 간주한다.
               if (j + 1 < length) {
                 nextCode = text.charCodeAt(j + 1);
-                if (TTSUtil.isLatinCharCode(nextCode)) {
+                if (SpeechUtil.isLatinCharCode(nextCode)) {
                   j += 1;
                   continue;
                 }
@@ -152,13 +152,13 @@ export default class TTSUtterance {
     }
     result += text.substring(startOffset, length);
 
-    return new TTSUtterance(result);
+    return new SpeechUtterance(result);
   }
 
   /**
    * 한글에 틸드 문자가 붙을 경우 소리를 늘리는 의미기에 자모에 맞춰 늘려준다.
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   replaceTilde() {
     const extendTable = [
@@ -175,14 +175,14 @@ export default class TTSUtterance {
     let k;
     for (i = 0; i < textLength; i += 1) {
       const code = text.charCodeAt(i);
-      if (TTSUtil.isTildeCharCode(code)) {
+      if (SpeechUtil.isTildeCharCode(code)) {
         if (i > 0) {
           let isRangeTilde = false;// 범위를 의미하는 틸드일 때는 바꾸지 않는다. (3억~5억)
           for (j = i + 1; j < textLength; j += 1) {
             const nextCode = text.charCodeAt(j);
-            if (TTSUtil.isSpaceCharCode(nextCode)) {
+            if (SpeechUtil.isSpaceCharCode(nextCode)) {
               continue;
-            } else if (TTSUtil.isDigitCharCode(nextCode)) {
+            } else if (SpeechUtil.isDigitCharCode(nextCode)) {
               isRangeTilde = true;
               break;
             } else {
@@ -191,14 +191,14 @@ export default class TTSUtterance {
           } // end for j
           if (!isRangeTilde) {
             const prevCode = text.charCodeAt(i - 1);
-            if (TTSUtil.isHangulCharCode(prevCode) &&
-              TTSUtil.getFinalCharCode(prevCode) === 0x0000) {
+            if (SpeechUtil.isHangulCharCode(prevCode) &&
+              SpeechUtil.getFinalCharCode(prevCode) === 0x0000) {
               // 틸드의 뒷문자가 한글일 때는 앞문자의 자모에 맞춰 틸드를 바꿔준다. (와~ -> 와아)
               // 단, 받침이 없는 한글이어야 한다.
-              const index = TTSUtil.getMedialCharCodeIndex(prevCode);
+              const index = SpeechUtil.getMedialCharCodeIndex(prevCode);
               text = text.replace(text.substr(i, 1), extendTable[index]);
               offset = i;
-            } else if (TTSUtil.isLatinCharCode(prevCode)) {
+            } else if (SpeechUtil.isLatinCharCode(prevCode)) {
               // 틸드의 뒷문자가 영문일 때는 앞문자와 같게 틸드를 바꿔준다. (Oh~ -> Ohh)
               text = text.replace(text.substr(i, 1), text.substr(i - 1, 1));
               offset = i;
@@ -212,7 +212,7 @@ export default class TTSUtterance {
     if (offset !== -1) {
       let insertRest = true;
       for (k = offset + 1; k < textLength; k += 1) {
-        if (TTSUtil.isHangulCharCode(text.charCodeAt(k))) {
+        if (SpeechUtil.isHangulCharCode(text.charCodeAt(k))) {
           insertRest = false;
           break;
         } else if (text[k] !== '?' && text[k] !== '!') {
@@ -231,12 +231,12 @@ export default class TTSUtterance {
     // '~'가 아닌 '∼'와 '〜'는 사용자 사전(CP949)에서 커버할 수 없어서 수동으로 바꿔준다.
     text = text.replace(/∼|〜/gm, () => '에서 ');
 
-    return new TTSUtterance(text);
+    return new SpeechUtterance(text);
   }
 
   /**
    * @param {String[]} strs
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   removeAllRepeatedCharacter(strs) {
     let { text } = this;
@@ -244,11 +244,11 @@ export default class TTSUtterance {
       const regex = new RegExp(`${strs[i]}{2,}`, 'gm');
       text = text.replace(regex, '');
     }
-    return new TTSUtterance(text);
+    return new SpeechUtterance(text);
   }
 
   /**
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   replaceNumeric() {
     const Type = {
@@ -306,12 +306,12 @@ export default class TTSUtterance {
       let spaceCount = 0;
       for (i = startOffset - 1; i >= 0; i -= 1) {
         code = text.charCodeAt(i);
-        if (TTSUtil.isSpaceCharCode(code)) {
+        if (SpeechUtil.isSpaceCharCode(code)) {
           spaceCount += 1;
-        } else if (TTSUtil.isColonCharCode(code)) {
+        } else if (SpeechUtil.isColonCharCode(code)) {
           type = Type.Time;
           break;
-        } else if (i < startOffset - 1 && TTSUtil.isLatinCharCode(code, 'l')) {
+        } else if (i < startOffset - 1 && SpeechUtil.isLatinCharCode(code, 'l')) {
           type = Type.Latin;
           break;
         } else {
@@ -328,12 +328,12 @@ export default class TTSUtterance {
         code = text.charCodeAt(i);
         ch = text.charAt(i);
         const nextCh = text.charAt(i + 1);
-        if (TTSUtil.isSpaceCharCode(code)) {
+        if (SpeechUtil.isSpaceCharCode(code)) {
           continue;
-        } else if (type === Type.Time || TTSUtil.isColonCharCode(code)) {
+        } else if (type === Type.Time || SpeechUtil.isColonCharCode(code)) {
           type = Type.Time;
           break;
-        } else if (endOffset < i && (type === Type.Latin || TTSUtil.isLatinCharCode(code, 'l'))) {
+        } else if (endOffset < i && (type === Type.Latin || SpeechUtil.isLatinCharCode(code, 'l'))) {
           type = Type.Latin;
           break;
         } else if (type !== Type.Latin && ch === '.') {
@@ -342,10 +342,10 @@ export default class TTSUtterance {
         } else if (ch === '장' || ch === '권') {
           type = Type.HangulNotation;
           break;
-        } else if (TTSUtil.isLastCharOfSentence(ch)) {
+        } else if (SpeechUtil.isLastCharOfSentence(ch)) {
           break;
         } else if (i === endOffset &&
-          (ch = TTSUtil.numericToOrdinalString(numeric, ch + nextCh)) !== null) {
+          (ch = SpeechUtil.numericToOrdinalString(numeric, ch + nextCh)) !== null) {
           type = Type.HangulOrdinal;
           break;
         } else {
@@ -359,7 +359,7 @@ export default class TTSUtterance {
         if (type === Type.HangulOrdinal) {
           string = ch;
         } else {
-          string = TTSUtil.numericToNotationString(numeric, type !== Type.Latin);
+          string = SpeechUtil.numericToNotationString(numeric, type !== Type.Latin);
         }
       } else {
         string = origin;
@@ -367,13 +367,13 @@ export default class TTSUtterance {
       text = `${text.substr(0, startOffset)}${string}${text.substr(endOffset)}`;
     }
 
-    return new TTSUtterance(text);
+    return new SpeechUtterance(text);
   }
 
   /**
    * 소괄호를 읽지 못하게 했지만 읽어야할 경우가 있기 때문에 이를 보정해준다.
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   replaceBracket() {
     const pattern = /\([\d]{1,2}\)/gm;
@@ -388,22 +388,22 @@ export default class TTSUtterance {
       }
     }
     text = text.replace(/\(([가나다라마바사아자차카타파하OX])\)/gm, '[$1]');
-    return new TTSUtterance(text);
+    return new SpeechUtterance(text);
   }
 
   /**
    * 판타지 소설에서 '=' 문자로 구분선을 만들기 때문에 사용자 사전에 넣지는 못하고 수동으로.. '=' 하나만
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   replaceEqual() {
-    return new TTSUtterance(this.text.replace(/([^=])([=]{1})([^=])/gm, '$1는 $3'));
+    return new SpeechUtterance(this.text.replace(/([^=])([=]{1})([^=])/gm, '$1는 $3'));
   }
 
   /**
    * TODO: 영문 월을 한글로 변환하기
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   replaceDate() {
     // const abbrMonth = [
@@ -413,13 +413,13 @@ export default class TTSUtterance {
     //   "january", "february", "march", "april", "may", "june",
     //   "july", "august", "september", "october", "november", "december"
     // ];
-    return new TTSUtterance(this.text);
+    return new SpeechUtterance(this.text);
   }
 
   /**
    * 말줄임표, 쉼표를 의미하는 문자는 정말 쉬게 만들어준다.
    *
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   insertPauseTag() {
     let { text } = this;
@@ -428,6 +428,6 @@ export default class TTSUtterance {
     text = text.replace(/([…]{1,})/gm, '<pause=\'400ms\'>$1');
     text = text.replace(/([\D])(-|―){1,}([\D])/gm, '$1<pause=\'200ms\'>$2$3');
     text = text.replace(/^([\s]{0,}[\d]{1,}[\s]{1,})([^-―·|…_<])/gm, '$1<pause=\'200ms\'>$2');
-    return new TTSUtterance(text);
+    return new SpeechUtterance(text);
   }
 }

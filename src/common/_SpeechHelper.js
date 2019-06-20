@@ -1,8 +1,8 @@
-import TTSPiece from './TTSPiece';
-import TTSChunk from './TTSChunk';
-import TTSRange from './TTSRange';
-import TTSUtil from './TTSUtil';
-import Logger from '../Logger';
+import SpeechPiece from './SpeechPiece';
+import SpeechChunk from './SpeechChunk';
+import SpeechRange from './SpeechRange';
+import SpeechUtil from './SpeechUtil';
+import Logger from './Logger';
 
 //
 // * TTS 노트.
@@ -90,7 +90,7 @@ import Logger from '../Logger';
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
 
-export default class _TTS {
+export default class _SpeechHelper {
   /**
    * @returns {Reader}
    */
@@ -102,7 +102,7 @@ export default class _TTS {
   get nodes() { return this.reader.content.nodes; }
 
   /**
-   * @returns {TTSChunk[]}
+   * @returns {SpeechChunk[]}
    */
   get chunks() { return this._chunks; }
 
@@ -153,7 +153,7 @@ export default class _TTS {
   _serializedRangeToNodeLocation(serializedRange) {
     const range = rangy.deserializeRange(serializedRange, document.body);
     if (range === null) {
-      throw new Error('TTS: range is invalid.');
+      throw new Error('SpeechHelper: range is invalid.');
     }
 
     const { nodes } = this;
@@ -163,7 +163,7 @@ export default class _TTS {
       for (let i = 0, offset = 0; i < nodes.length; i += 1, offset = 0) {
         if (nodes[i] === range.startContainer) {
           nodeIndex = i;
-          const words = range.startContainer.textContent.split(TTSUtil.getSplitWordRegex());
+          const words = range.startContainer.textContent.split(SpeechUtil.getSplitWordRegex());
           for (; wordIndex < words.length; wordIndex += 1) {
             if (range.startOffset <= offset + words[wordIndex].length) {
               break;
@@ -212,7 +212,7 @@ export default class _TTS {
 
   makeLastSentenceChunksInSpine() {
     this.makeChunksByNodeLocationReverse(-1, -1, true);
-    const emptyChunkRegex = TTSUtil.getWhitespaceAndNewLineRegex('^', '$', null);
+    const emptyChunkRegex = SpeechUtil.getWhitespaceAndNewLineRegex('^', '$', null);
     let lastSentenceChunk = null;
     for (let i = this.chunks.length - 1; i >= 0; i -= 1) {
       lastSentenceChunk = this.chunks[i];
@@ -344,7 +344,7 @@ export default class _TTS {
 
       let piece;
       try {
-        piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, _wordIndex);
+        piece = new SpeechPiece(nodes[_nodeIndex], _nodeIndex, _wordIndex);
       } catch (e) {
         Logger.error(e);
         break;
@@ -407,7 +407,7 @@ export default class _TTS {
       return 0;
     }
 
-    const wordsInNode = node => (node ? (node.nodeValue || '').split(TTSUtil.getSplitWordRegex()) : []);
+    const wordsInNode = node => (node ? (node.nodeValue || '').split(SpeechUtil.getSplitWordRegex()) : []);
     const maxNodeIndex = nodes.length - 1;
     let _nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
     const maxWordIndex = wordsInNode(nodes[_nodeIndex]).length - 1;
@@ -433,7 +433,7 @@ export default class _TTS {
 
       let piece;
       try {
-        piece = new TTSPiece(nodes[_nodeIndex], _nodeIndex, startWordIndex, endWordIndex);
+        piece = new SpeechPiece(nodes[_nodeIndex], _nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
         Logger.error(e);
         break;
@@ -522,7 +522,7 @@ export default class _TTS {
   }
 
   /**
-   * @param {TTSPiece[]} pieces
+   * @param {SpeechPiece[]} pieces
    * @param {Boolean} addAtFirst
    * @private
    */
@@ -540,7 +540,7 @@ export default class _TTS {
     // 문장의 마지막이 아닐 경우 true
     const isNotEndOfSentence =
       nextText => nextText !== undefined &&
-                  nextText.match(TTSUtil.getSentenceRegex('^')) !== null;
+                  nextText.match(SpeechUtil.getSentenceRegex('^')) !== null;
 
     // Debug Info
     const log = (caseNum, chunk) => {
@@ -552,7 +552,7 @@ export default class _TTS {
     const makeTrimmedRange = (startOffset, text) => {
       const paddingLeft = (text.match(/^([\s]+)/g) || [''])[0].length;
       const paddingRight = (text.match(/([\s]+)$/g) || [''])[0].length;
-      return new TTSRange(startOffset + paddingLeft, (startOffset + text.length) - paddingRight);
+      return new SpeechRange(startOffset + paddingLeft, (startOffset + text.length) - paddingRight);
     };
 
     const buffer = [];
@@ -565,8 +565,8 @@ export default class _TTS {
       return chunk;
     };
 
-    const chunk = new TTSChunk(pieces);
-    const tokens = TTSUtil.mergeSentencesWithinBrackets(split(chunk.getText()));
+    const chunk = new SpeechChunk(pieces);
+    const tokens = SpeechUtil.mergeSentencesWithinBrackets(split(chunk.getText()));
     if (tokens.length > 1) {
       let offset = 0;
       let startOffset = 0;
@@ -575,7 +575,7 @@ export default class _TTS {
         const token = tokens[i];
         subText += token;
         offset += token.length;
-        if (TTSUtil.isPeriodPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
+        if (SpeechUtil.isPeriodPointOrName(subText, tokens[i + 1]) || isNotEndOfSentence(tokens[i + 1])) {
           // 소수점, 영문 이름을 위한 '.'을 만나거나 문장의 끝을 의미하는 문자가 없을 때는 아직 문장이 끝나지 않았다
           continue;
         }
@@ -602,7 +602,7 @@ export default class _TTS {
   }
 
   /**
-   * @param {TTSChunk} chunk
+   * @param {SpeechChunk} chunk
    * @returns {{nodeIndex: Number, wordIndex: Number, text: String, rectListCoord: String}}
    */
   getChunkInfo(chunk) {

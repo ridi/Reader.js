@@ -1,4 +1,4 @@
-export default class TTSRange {
+export default class SpeechRange {
   /**
    * @returns {Number}
    */

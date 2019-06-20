@@ -1,29 +1,29 @@
-import TTSRange from './TTSRange';
-import TTSUtterance from './TTSUtterance';
-import TTSUtil from './TTSUtil';
-import Logger from '../Logger';
-import RectList from '../RectList';
+import SpeechRange from './SpeechRange';
+import SpeechUtterance from './SpeechUtterance';
+import SpeechUtil from './SpeechUtil';
+import Logger from './Logger';
+import RectList from './RectList';
 
-export default class TTSChunk {
+export default class SpeechChunk {
   /**
-   * @returns {TTSRange}
+   * @returns {SpeechRange}
    */
   get range() { return this._range; }
 
   /**
-   * @param {TTSRange} newRange
+   * @param {SpeechRange} newRange
    */
   set range(newRange) {
-    if (newRange instanceof TTSRange) {
+    if (newRange instanceof SpeechRange) {
       this._range = newRange;
     } else {
-      this._range = new TTSRange(0, this._getFullText().length);
+      this._range = new SpeechRange(0, this._getFullText().length);
     }
   }
 
   /**
-   * @param {TTSPiece} pieces
-   * @param {TTSRange} range
+   * @param {SpeechPiece} pieces
+   * @param {SpeechRange} range
    */
   constructor(pieces, range = null) {
     this._pieces = pieces;
@@ -50,10 +50,10 @@ export default class TTSChunk {
   }
 
   /**
-   * @returns {TTSUtterance}
+   * @returns {SpeechUtterance}
    */
   getUtterance() {
-    return new TTSUtterance(this.getText())
+    return new SpeechUtterance(this.getText())
       .removeNewLine()
       .removeSpecialCharacters(['≪', '≫'])
       .removeHanja()
@@ -69,18 +69,18 @@ export default class TTSChunk {
 
   /**
    * @param {Number} offset
-   * @returns {TTSPiece|null}
+   * @returns {SpeechPiece|null}
    */
   getPiece(offset) {
     let length = 0;
-    return TTSUtil.find(this._pieces, (piece) => {
+    return SpeechUtil.find(this._pieces, (piece) => {
       length += piece.length;
       return offset <= length;
     });
   }
 
   /**
-   * @param {TTSPiece} piece
+   * @param {SpeechPiece} piece
    * @returns {Number}
    */
   getOffset(piece) {
@@ -95,14 +95,14 @@ export default class TTSChunk {
   }
 
   /**
-   * @returns {TTSPiece|null}
+   * @returns {SpeechPiece|null}
    */
   getStartWordPiece() {
     return this.getPiece(this.range.startOffset);
   }
 
   /**
-   * @returns {TTSPiece|null}
+   * @returns {SpeechPiece|null}
    */
   getEndWordPiece() {
     return this.getPiece(this.range.endOffset);
@@ -151,7 +151,7 @@ export default class TTSChunk {
       return 0;
     }
 
-    const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
+    const words = (piece.node.nodeValue || '').split(SpeechUtil.getSplitWordRegex());
     let currentWordStartOffset = 0;
     for (let j = 0; j < words.length; j += 1) {
       if (currentWordStartOffset >= offsetBeforeWordInNode) {
@@ -195,7 +195,7 @@ export default class TTSChunk {
     // |-----------------------------------------|-End Word-|--------------------|
     const offsetAfterEndWordInNode = (this.range.endOffset + firstPaddingLeft) - offsetBeforeNode;
 
-    const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
+    const words = (piece.node.nodeValue || '').split(SpeechUtil.getSplitWordRegex());
     let currentWordEndOffset = 0;
     for (let j = 0; j < words.length; j += 1) {
       currentWordEndOffset += (words[j].length + 1);
@@ -231,7 +231,7 @@ export default class TTSChunk {
       } else {
         totalLength = piece.length;
 
-        const pieceRange = new TTSRange(current, current + piece.length);
+        const pieceRange = new SpeechRange(current, current + piece.length);
         if (chunkRange.startOffset <= pieceRange.startOffset) {
           if (pieceRange.endOffset <= chunkRange.endOffset) {
             // Case 1
@@ -304,10 +304,10 @@ export default class TTSChunk {
   }
 
   /**
-   * @param {TTSRange} range
-   * @returns {TTSChunk}
+   * @param {SpeechRange} range
+   * @returns {SpeechChunk}
    */
   copy(range) {
-    return new TTSChunk(this._pieces, range);
+    return new SpeechChunk(this._pieces, range);
   }
 }

@@ -1,6 +1,6 @@
 import _Content from './_Content';
 import Util from '../common/Util';
-import TTSUtil from './tts/TTSUtil';
+import SpeechUtil from './SpeechUtil';
 
 const { DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_PRECEDING, TEXT_NODE } = Node;
 
@@ -232,9 +232,9 @@ export default class _Sel {
   _expandRangeByWord(range) {
     const { startContainer, endContainer } = range;
 
-    // FIXME: TTS 의존성 제거
-    const tables = [TTSUtil.chineseCodeTable(), TTSUtil.japaneseCodeTable()];
-    if (TTSUtil.getContainCharRegex(tables).test(range.toString())) {
+    // FIXME: SpeechUtil 의존성 제거
+    const tables = [SpeechUtil.chineseCodeTable(), SpeechUtil.japaneseCodeTable()];
+    if (SpeechUtil.getContainCharRegex(tables).test(range.toString())) {
       range.expand('character');
       return;
     }

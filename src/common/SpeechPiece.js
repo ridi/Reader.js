@@ -1,7 +1,7 @@
-import TTSUtil from './TTSUtil';
-import Util from '../Util';
+import SpeechUtil from './SpeechUtil';
+import Util from './Util';
 
-export default class TTSPiece {
+export default class SpeechPiece {
   /**
    * @returns {Number}
    */
@@ -67,10 +67,10 @@ export default class TTSPiece {
       if (startWordIndex < 0 && endWordIndex < 0) {
         this._text = nodeValue;
       } else {
-        const words = nodeValue.split(TTSUtil.getSplitWordRegex());
+        const words = nodeValue.split(SpeechUtil.getSplitWordRegex());
 
         if (startWordIndex >= words.length || endWordIndex >= words.length) {
-          throw new Error('TTSPiece: wordIndex is out of bounds - '
+          throw new Error('SpeechPiece: wordIndex is out of bounds - '
           + `startWordIndex: (${startWordIndex}/${words.length - 1}), `
           + `endWordIndex: (${endWordIndex}/${words.length - 1}).`);
         } else if (startWordIndex < 0) {
@@ -168,7 +168,7 @@ export default class TTSPiece {
    */
   isOnlyWhitespace() {
     const pNode = this._node.previousSibling;
-    const regex = TTSUtil.getWhitespaceAndNewLineRegex(null, `{${this.length},}`);
+    const regex = SpeechUtil.getWhitespaceAndNewLineRegex(null, `{${this.length},}`);
     let only = this.text.match(regex) !== null;
     if (only) {
       only = this._node.parentElement.nodeName !== 'SPAN';
@@ -183,6 +183,6 @@ export default class TTSPiece {
    * @returns {Boolean}
    */
   isSentence() {
-    return this.text.trim().match(TTSUtil.getSentenceRegex(null, '$')) !== null;
+    return this.text.trim().match(SpeechUtil.getSentenceRegex(null, '$')) !== null;
   }
 }
