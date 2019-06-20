@@ -1,8 +1,8 @@
+import Logger from './Logger';
 import SpeechPiece from './SpeechPiece';
 import SpeechChunk from './SpeechChunk';
 import SpeechRange from './SpeechRange';
 import SpeechUtil from './SpeechUtil';
-import Logger from './Logger';
 
 //
 // * TTS 노트.
@@ -90,16 +90,24 @@ import Logger from './Logger';
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
 
+/**
+ * @class _SpeechHelper
+ * @private @property {Reader} _reader
+ * @private @property {Content} _content
+ * @private @property {Context} _context
+ * @private @property {number} _reserveNodesCountMagic
+ * @private @property {number} _makeChunksInterval
+ * @private @property {number} _lastMinNodeIndex
+ * @private @property {number} _lastMaxNodeIndex
+ * @private @property {number} _generateMoreChunksTimeoutId
+ * @private @property {boolean} _didFinishMakeChunksEnabled
+ * @private @property {SpeechChunk[]} _chunks
+ */
 export default class _SpeechHelper {
-  /**
-   * @returns {Reader}
-   */
-  get reader() { return this._reader; }
-
   /**
    * @returns {Node[]}
    */
-  get nodes() { return this.reader.content.nodes; }
+  get nodes() { return this._reader.content.nodes; }
 
   /**
    * @returns {SpeechChunk[]}
@@ -107,51 +115,33 @@ export default class _SpeechHelper {
   get chunks() { return this._chunks; }
 
   /**
-   * @returns {Number}
+   * @param {Content} content
    */
-  get reserveNodesCountMagic() { return this._reserveNodesCountMagic; }
-
-  /**
-   * @returns {Number}
-   */
-  get makeChunksInterval() { return this._makeChunksInterval; }
-
-  /**
-   * @returns {Number}
-   */
-  get processedNodeMinIndex() { return this._processedNodeMinIndex; }
-
-  /**
-   * @returns {Number}
-   */
-  get processedNodeMaxIndex() { return this._processedNodeMaxIndex; }
-
-  /**
-   * @returns {Boolean}
-   */
-  get didFinishMakeChunksEnabled() { return this._didFinishMakeChunksEnabled; }
-
-  /**
-   * @param {Reader} reader
-   */
-  constructor(reader) {
-    this._reader = reader;
+  constructor(content) {
+    this._reader = content._reader;
+    this._content = content;
+    this._context = this._reader.context;
     this._reserveNodesCountMagic = 40; // 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
     this._makeChunksInterval = 100;
-    this._processedNodeMinIndex = -1;
-    this._processedNodeMaxIndex = -1;
+    this._lastMinNodeIndex = -1;
+    this._lastMaxNodeIndex = -1;
     this._generateMoreChunksTimeoutId = 0;
     this._didFinishMakeChunksEnabled = false;
     this._chunks = [];
   }
 
   /**
-   * @param {String} serializedRange
-   * @returns {{nodeIndex: Number, wordIndex: Number}}
+   * @typedef {object} NodeLocation
+   * @property {number} nodeIndex
+   * @property {number} wordIndex
+   */
+  /**
+   * @param {string} serializedRange
+   * @returns {NodeLocation}
    * @private
    */
   _serializedRangeToNodeLocation(serializedRange) {
-    const range = rangy.deserializeRange(serializedRange, document.body);
+    const range = rangy.deserializeRange(serializedRange, this._content.ref);
     if (range === null) {
       throw new Error('SpeechHelper: range is invalid.');
     }
@@ -180,7 +170,7 @@ export default class _SpeechHelper {
   }
 
   /**
-   * @param {String} serializedRange
+   * @param {string} serializedRange
    */
   playChunksBySerializedRange(serializedRange) {
     const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
@@ -188,8 +178,8 @@ export default class _SpeechHelper {
   }
 
   /**
-   * @param {Number} nodeIndex
-   * @param {Number} wordIndex
+   * @param {number} nodeIndex
+   * @param {number} wordIndex
    */
   playChunksByNodeLocation(nodeIndex, wordIndex) {
     this.makeChunksByNodeLocation(nodeIndex, wordIndex, true);
@@ -216,7 +206,7 @@ export default class _SpeechHelper {
     let lastSentenceChunk = null;
     for (let i = this.chunks.length - 1; i >= 0; i -= 1) {
       lastSentenceChunk = this.chunks[i];
-      if (lastSentenceChunk.getUtterance().text.match(emptyChunkRegex)) {
+      if (lastSentenceChunk.utterance.text.match(emptyChunkRegex)) {
         lastSentenceChunk = null;
       } else {
         break;
@@ -234,7 +224,7 @@ export default class _SpeechHelper {
   }
 
   /**
-   * @param {String} serializedRange
+   * @param {string} serializedRange
    */
   makeAdjacentChunksBySerializedRange(serializedRange) {
     const nodeLocation = this._serializedRangeToNodeLocation(serializedRange);
@@ -242,8 +232,8 @@ export default class _SpeechHelper {
   }
 
   /**
-   * @param {Number} nodeIndex
-   * @param {Number} wordIndex
+   * @param {number} nodeIndex
+   * @param {number} wordIndex
    */
   makeAdjacentChunksByNodeLocation(nodeIndex = -1, wordIndex = -1) {
     /**
@@ -269,12 +259,7 @@ export default class _SpeechHelper {
 
     this.playChunksByNodeLocation(nodeIndex, wordIndex);
 
-    const { nodes } = this;
-    if (!nodes) {
-      return;
-    }
-
-    const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < nodes.length);
+    const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < this.nodes.length);
     const hasMoreBeforeChunks = () => (this.processedNodeMinIndex - 1 >= 0);
     let generateMoreChunks = () => {};
     const scheduleTask = () => {
@@ -312,46 +297,44 @@ export default class _SpeechHelper {
   }
 
   /**
-   * @param {Number} nodeIndex
-   * @param {Number} wordIndex
-   * @param {Boolean} isMakingTemporalChunk : Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
-   * @returns {Number}
+   * @param {number} nodeIndex
+   * @param {number} wordIndex
+   * @param {boolean} isMakingTemporalChunk Selection 듣기 등 온전하지 못한 문장을 위한 임시 Chunk 1개를 만드는 경우이다.
+   * @returns {number}
    */
   makeChunksByNodeLocation(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
     const { nodes } = this;
-    if (nodes === null) {
-      return 0;
-    }
 
-    let _nodeIndex = Math.max(nodeIndex, 0);
-    let _wordIndex = Math.max(wordIndex, 0);
+    nodeIndex = Math.max(nodeIndex, 0);
+    wordIndex = Math.max(wordIndex, 0);
 
     const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
-    let maxIndex = Math.min(_nodeIndex + reserveNodesCount, nodes.length - 1);
+    let maxNodeIndex = Math.min(nodeIndex + reserveNodesCount, nodes.length - 1);
 
-    const incrementMaxIndex = () => { maxIndex = Math.min(maxIndex + 1, nodes.length - 1); };
+    const incrementMaxIndex = () => { maxNodeIndex = Math.min(maxNodeIndex + 1, nodes.length - 1); };
     let pieceBuffer = [];
     const flushPieces = () => {
       this._addChunk(pieceBuffer, false);
       pieceBuffer = [];
     };
 
-    for (; _nodeIndex <= maxIndex + 1; _nodeIndex += 1, _wordIndex = -1) {
-      if (_nodeIndex >= nodes.length) {
+    for (; nodeIndex <= maxNodeIndex + 1; nodeIndex += 1, wordIndex = -1) {
+      if (nodeIndex >= nodes.length) {
         flushPieces();
         break;
       }
 
       let piece;
       try {
-        piece = new SpeechPiece(nodes[_nodeIndex], _nodeIndex, _wordIndex);
+        const node = nodes[nodeIndex];
+        piece = new SpeechPiece(node, nodeIndex, wordIndex);
       } catch (e) {
         Logger.error(e);
         break;
       }
 
       // maxIndex + 1까지 살펴보는 것은 이전까지 만들어둔 piece들이 완성된 문장인지 판단하기 위함이다.
-      const aboveMaxIndex = (_nodeIndex > maxIndex);
+      const aboveMaxIndex = (nodeIndex > maxNodeIndex);
 
       if (piece.isInvalid()) {
         // invalid (아랫 첨자 등) 의 경우 문장의 끝이 아닐 수 있다.
@@ -377,82 +360,81 @@ export default class _SpeechHelper {
           // 현재 piece의 말단 부분이 문장의 끝 부분을 포함하고 있으므로
           // 이제까지 쌓인 piece들이 완성된 문장이 되었다는 판단을 할 수 있다.
           flushPieces();
-        } else if (_nodeIndex >= maxIndex) {
+        } else if (nodeIndex >= maxNodeIndex) {
           // 문장의 나머지 부분이 더 존재하는 경우이므로 계속 진행한다.
           incrementMaxIndex();
 
           if (aboveMaxIndex) {
             // 위에서 현재 노드를 계속 무시했는데, maxIndex가 증가되었으므로
             // 현재 node부터 다시 처리해야한다.
-            _nodeIndex -= 1;
+            nodeIndex -= 1;
           }
         }
       }
     }
     if (!isMakingTemporalChunk) {
-      this._processedNodeMaxIndex = maxIndex;
+      this._lastMaxNodeIndex = maxNodeIndex;
     }
     return this.chunks.length;
   }
 
   /**
-   * @param {Number} nodeIndex
-   * @param {Number} wordIndex
-   * @param {Boolean} isMakingTemporalChunk
-   * @returns {Boolean}
+   * @param {number} nodeIndex
+   * @param {number} wordIndex
+   * @param {boolean} isMakingTemporalChunk
+   * @returns {boolean}
    */
   makeChunksByNodeLocationReverse(nodeIndex = -1, wordIndex = -1, isMakingTemporalChunk = false) {
     const { nodes } = this;
-    if (nodes === null) {
-      return 0;
-    }
 
     const wordsInNode = node => (node ? (node.nodeValue || '').split(SpeechUtil.getSplitWordRegex()) : []);
+
+    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
     const maxNodeIndex = nodes.length - 1;
-    let _nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
-    const maxWordIndex = wordsInNode(nodes[_nodeIndex]).length - 1;
+    let minNodeIndex = Math.max(0, nodeIndex - reserveNodesCount);
+    nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
+
+    const maxWordIndex = wordsInNode(nodes[nodeIndex]).length - 1;
     let startWordIndex = 0;
     let endWordIndex = (wordIndex >= 0 ? Math.min(wordIndex, maxWordIndex) : maxWordIndex);
 
-    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
-    let minIndex = Math.max(0, _nodeIndex - reserveNodesCount);
-
-    const decrementMinIndex = () => { minIndex = Math.max(minIndex - 1, 0); };
+    const decrementMinIndex = () => { minNodeIndex = Math.max(minNodeIndex - 1, 0); };
     let pieceBuffer = [];
     const flushPieces = () => {
       this._addChunk(pieceBuffer, true);
       pieceBuffer = [];
     };
 
-    const initMinIndex = minIndex;
-    for (; _nodeIndex >= minIndex - 1; _nodeIndex -= 1, startWordIndex = -1, endWordIndex = -1) {
-      if (_nodeIndex < 0) {
+    const initMinIndex = minNodeIndex;
+    for (; nodeIndex >= minNodeIndex - 1; nodeIndex -= 1, startWordIndex = -1, endWordIndex = -1) {
+      if (nodeIndex < 0) {
         flushPieces();
         break;
       }
 
       let piece;
       try {
-        piece = new SpeechPiece(nodes[_nodeIndex], _nodeIndex, startWordIndex, endWordIndex);
+        const node = nodes[nodeIndex];
+        piece = new SpeechPiece(node, nodeIndex, startWordIndex, endWordIndex);
       } catch (e) {
         Logger.error(e);
         break;
       }
 
       // minIndex - 1까지 살펴보는 것은 이전까지 만들어둔 piece들이 완성된 문장인지 판단하기 위험이다.
-      const belowMinIndex = (_nodeIndex < minIndex);
+      const belowMinNodeIndex = (nodeIndex < minNodeIndex);
 
       if (piece.isInvalid()) {
         // invalid (아랫 첨자 등) 의 경우 문장을 분리하는 기준이 될 수 없다.
-        if (!belowMinIndex) {
+        if (!belowMinNodeIndex) {
           decrementMinIndex();
         }
       } else if (piece.isOnlyWhitespace()) {
         flushPieces();
-        if (!belowMinIndex) {
+        if (!belowMinNodeIndex) {
           decrementMinIndex();
         }
-      } else if (!belowMinIndex && piece.isSiblingBrRecursive(false)) {
+      } else if (!belowMinNodeIndex && piece.isSiblingBrRecursive(false)) {
         pieceBuffer.unshift(piece);
         // 이전 element가 br이라면 이 piece의 시작 부분은 현재 문장의 처음 부분을 담고 있다.
         // 문장이 완성되었으므로 flush.
@@ -467,25 +449,25 @@ export default class _SpeechHelper {
           flushPieces();
 
           // 충분한 수의 chunk가 만들어진 경우 멈춘다.
-          if (_nodeIndex < initMinIndex && this.chunks.length > 0) {
-            minIndex = _nodeIndex + 1;
+          if (nodeIndex < initMinIndex && this.chunks.length > 0) {
+            minNodeIndex = nodeIndex + 1;
             break;
           }
         }
 
-        if (belowMinIndex) {
+        if (belowMinNodeIndex) {
           // 현재 piece가 문장이라면 minIndex까지의 piece들 만으로 문장이 완성되므로 더 할 일이 없다.
           if (!isCurrentPieceSentence) {
             // 아직 이전 문장의 끝 부분을 발견하지 못했으므로 계속 진행한다.
             decrementMinIndex();
             // 위에서 현재 node를 계속 무시했는데, minIndex가 감소되었으므로
             // 현재 node부터 다시 처리해야한다.
-            _nodeIndex += 1;
+            nodeIndex += 1;
           }
         } else {
           pieceBuffer.unshift(piece);
 
-          if (_nodeIndex === minIndex) {
+          if (nodeIndex === minNodeIndex) {
             // 아직 이전 문장의 끝 부분을 발견하지 못했으므로 계속 진행한다.
             decrementMinIndex();
           }
@@ -493,25 +475,25 @@ export default class _SpeechHelper {
       }
     }
     if (!isMakingTemporalChunk) {
-      this._processedNodeMinIndex = minIndex;
+      this._lastMinNodeIndex = minNodeIndex;
     }
     return this.chunks.length;
   }
 
   /**
-   * makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 method
+   * makeChunksByNodeLocation(Reverse)를 1회 실행한 후 불리는 메소드
    *
-   * @param {Boolean} isMakingTemporalChunk
-   * @param {Boolean} addAtFirst
+   * @param {boolean} isMakingTemporalChunk
+   * @param {boolean} addAtFirst
    */
   didFinishMakePartialChunks(/* isMakingTemporalChunk, addAtFirst */) {
-    throw new Error('Must override this method');
+    throw new Error('SpeechHelper: Must override this method');
   }
 
   /**
-   * 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 method
+   * 모든 chunk를 이미 다 만들었을 때, 즉 새로운 chunk를 만들지 못했을 때 불리는 메소드
    *
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   didFinishMakeChunks() {
     if (this.didFinishMakeChunksEnabled) {
@@ -523,7 +505,7 @@ export default class _SpeechHelper {
 
   /**
    * @param {SpeechPiece[]} pieces
-   * @param {Boolean} addAtFirst
+   * @param {boolean} addAtFirst
    * @private
    */
   _addChunk(pieces, addAtFirst) {
@@ -539,13 +521,12 @@ export default class _SpeechHelper {
 
     // 문장의 마지막이 아닐 경우 true
     const isNotEndOfSentence =
-      nextText => nextText !== undefined &&
-                  nextText.match(SpeechUtil.getSentenceRegex('^')) !== null;
+      nextText => nextText !== undefined && nextText.match(SpeechUtil.getSentenceRegex('^')) !== null;
 
     // Debug Info
     const log = (caseNum, chunk) => {
       if (chunk) {
-        Logger.debug(`Case: ${caseNum}, Text: ${chunk.getText()}`);
+        Logger.debug(`Case: ${caseNum}, Text: ${chunk.text}`);
       }
     };
 
@@ -566,7 +547,7 @@ export default class _SpeechHelper {
     };
 
     const chunk = new SpeechChunk(pieces);
-    const tokens = SpeechUtil.mergeSentencesWithinBrackets(split(chunk.getText()));
+    const tokens = SpeechUtil.mergeSentencesWithinBrackets(split(chunk.text));
     if (tokens.length > 1) {
       let offset = 0;
       let startOffset = 0;
@@ -602,21 +583,28 @@ export default class _SpeechHelper {
   }
 
   /**
+   * @typedef {object} ChunkInfo
+   * @property {number} nodeIndex
+   * @property {number} wordIndex
+   * @property {string} text
+   * @property {string} rectListCoord
+   */
+  /**
    * @param {SpeechChunk} chunk
-   * @returns {{nodeIndex: Number, wordIndex: Number, text: String, rectListCoord: String}}
+   * @returns {ChunkInfo}
    */
   getChunkInfo(chunk) {
     return {
       nodeIndex: chunk.getStartNodeIndex(),
       wordIndex: chunk.getStartWordIndex(),
-      text: chunk.getUtterance().text,
-      rectListCoord: this.reader.rectsToAbsolute(chunk.getRectList(true)).trim().toCoord(),
+      text: chunk.utterance.text,
+      rectListCoord: this._reader.rectsToAbsolute(chunk.getRectList(true)).trim().toCoord(),
     };
   }
 
   flush() {
-    this._processedNodeMinIndex = -1;
-    this._processedNodeMaxIndex = -1;
+    this._lastMinNodeIndex = -1;
+    this._lastMaxNodeIndex = -1;
     this._generateMoreChunksTimeoutId += 1;
     this._didFinishMakeChunksEnabled = false;
     this._chunks = [];

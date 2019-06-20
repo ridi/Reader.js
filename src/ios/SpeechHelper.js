@@ -1,16 +1,23 @@
 import _SpeechHelper from '../common/_SpeechHelper';
 
+/**
+ * @class SpeechHelper
+ * @extends _SpeechHelper
+ * @private @property {boolean} _makeChunksFinished
+ * @private @property {SpeechChunk[]} _chunkSetsForPolling
+ * @private @property {SpeechChunk} _temporalChunk
+ */
 export default class SpeechHelper extends _SpeechHelper {
   /**
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   get makeChunksFinished() { return this._makeChunksFinished; }
 
   /**
-   * @param {Reader} reader
+   * @param {Content} content
    */
-  constructor(reader) {
-    super(reader);
+  constructor(content) {
+    super(content);
     this._makeChunksFinished = false;
     this._chunkSetsForPolling = [];
     this._temporalChunk = null;
@@ -32,8 +39,8 @@ export default class SpeechHelper extends _SpeechHelper {
   }
 
   /**
-   * @param {Boolean} isMakingTemporalChunk
-   * @param {Boolean} addAtFirst
+   * @param {boolean} isMakingTemporalChunk
+   * @param {boolean} addAtFirst
    */
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     if (!isMakingTemporalChunk) {

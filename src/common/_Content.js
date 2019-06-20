@@ -27,6 +27,7 @@ const Tag = {
  * @private @property {Reader} _reader
  * @private @property {Context} _context
  * @private @property {Sel} _sel
+ * @private @property {SpeechHelper} _speechHelper
  */
 class _Content {
   /**
@@ -38,6 +39,11 @@ class _Content {
    * @returns {Sel}
    */
   get sel() { return this._sel; }
+
+  /**
+   * @returns {SpeechHelper}
+   */
+  get speechHelper() { return this._speechHelper; }
 
   /**
    * @returns {Node[]} 콘텐츠(=스파인) 내 모든 텍스트와 이미지 노드를 반환한다.
@@ -61,6 +67,7 @@ class _Content {
     this._reader = reader;
     this._context = reader.context;
     this._sel = this._createSel();
+    this._speechHelper = this._createSpeechHelper();
     this._nodes = null;
   }
 
@@ -85,6 +92,14 @@ class _Content {
    * @private
    */
   _createSel() {
+    return null;
+  }
+
+  /**
+   * @returns {SpeechHelper}
+   * @private
+   */
+  _createSpeechHelper() {
     return null;
   }
 

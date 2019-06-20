@@ -1,27 +1,15 @@
 import Logger from './Logger';
 import Util from './Util';
 
+/**
+ * @class SpeechUtil
+ */
 export default class SpeechUtil {
   /**
-   * @param {SpeechPiece[]} list
-   * @param {function} callback
-   * @returns {SpeechPiece|null}
-   */
-  static find(list, callback) {
-    for (let i = 0; i < list.length; i += 1) {
-      const item = list[i];
-      if (callback(item)) {
-        return item;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * @param {String} prefix
-   * @param {String} pattern
-   * @param {String} suffix
-   * @param {String} flags
+   * @param {string} prefix
+   * @param {string} pattern
+   * @param {string} suffix
+   * @param {string} flags
    * @returns {RegExp}
    * @private
    */
@@ -37,9 +25,9 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {String} prefix
-   * @param {String} suffix
-   * @param {String} flags
+   * @param {string} prefix
+   * @param {string} suffix
+   * @param {string} flags
    * @returns {RegExp}
    */
   static getWhitespaceRegex(prefix, suffix, flags) {
@@ -47,9 +35,9 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {String} prefix
-   * @param {String} suffix
-   * @param {String} flags
+   * @param {string} prefix
+   * @param {string} suffix
+   * @param {string} flags
    * @returns {RegExp}
    */
   static getNewLineRegex(prefix, suffix, flags) {
@@ -57,9 +45,9 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {String} prefix
-   * @param {String} suffix
-   * @param {String} flags
+   * @param {string} prefix
+   * @param {string} suffix
+   * @param {string} flags
    * @returns {RegExp}
    */
   static getWhitespaceAndNewLineRegex(prefix, suffix, flags) {
@@ -67,9 +55,9 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {String} prefix
-   * @param {String} suffix
-   * @param {String} flags
+   * @param {string} prefix
+   * @param {string} suffix
+   * @param {string} flags
    * @returns {RegExp}
    */
   static getSentenceRegex(prefix, suffix, flags) {
@@ -81,16 +69,16 @@ export default class SpeechUtil {
   // *** Char ***
 
   /**
-   * @param {String} ch
-   * @returns {Boolean}
+   * @param {string} ch
+   * @returns {boolean}
    */
   static isLastCharOfSentence(ch = '') {
     return ch.match(this.getSentenceRegex()) !== null;
   }
 
   /**
-   * @param {String} ch
-   * @returns {Boolean}
+   * @param {string} ch
+   * @returns {boolean}
    */
   static isDigitOrLatin(ch = '') {
     const code = ch.charCodeAt(0);
@@ -100,9 +88,9 @@ export default class SpeechUtil {
   /**
    * '.'이 소수점 또는 영문이름을 위해 사용될 경우 true
    *
-   * @param {String} textWithPeriod
-   * @param {String} textAfterPeriod
-   * @returns {Boolean}
+   * @param {string} textWithPeriod
+   * @param {string} textAfterPeriod
+   * @returns {boolean}
    */
   static isPeriodPointOrName(textWithPeriod, textAfterPeriod) {
     if (textWithPeriod === undefined || textAfterPeriod === undefined) {
@@ -123,8 +111,8 @@ export default class SpeechUtil {
   // *** Bracket ***
 
   /**
-   * @param {String} text
-   * @returns {String}
+   * @param {string} text
+   * @returns {string}
    */
   static getBrackets(text = '') {
     try {
@@ -137,17 +125,17 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {String} open
-   * @param {String} close
-   * @returns {Boolean}
+   * @param {string} open
+   * @param {string} close
+   * @returns {boolean}
    */
   static isOnePairBracket(open = '', close = '') {
     return (open + close).match(/\(\)|\{\}|\[\]/gm) !== null;
   }
 
   /**
-   * @param {String[]} sentences
-   * @returns {String[]}
+   * @param {string[]} sentences
+   * @returns {string[]}
    */
   static mergeSentencesWithinBrackets(sentences = []) {
     const resultSentences = [];
@@ -179,9 +167,9 @@ export default class SpeechUtil {
   // *** CharCode ***
 
   /**
-   * @param {Number} code
-   * @param {Number[]} table
-   * @returns {Boolean}
+   * @param {number} code
+   * @param {number[]} table
+   * @returns {boolean}
    * @private
    */
   static _containCharCode(code, table) {
@@ -196,39 +184,39 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isDigitCharCode(code) {
     return this._containCharCode(code, [0x0030, 0x0039]);
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isSpaceCharCode(code) {
     return code === 0x0020 || code === 0x00A0;
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isTildeCharCode(code) {
     return code === 0x007E || code === 0x223C || code === 0x301C; // ~, ∼, 〜
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isColonCharCode(code) {
     return code === 0x003A;
   }
 
   /**
-   * @returns {Number[]}
+   * @returns {number[]}
    */
   static hangulCodeTable() {
     return [
@@ -237,15 +225,15 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isHangulCharCode(code) {
     return this._containCharCode(code, this.hangulCodeTable());
   }
 
   /**
-   * @returns {Number[]}
+   * @returns {number[]}
    */
   static latinCodeTable() {
     return [
@@ -257,9 +245,9 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @param {String} flag
-   * @returns {Boolean}
+   * @param {number} code
+   * @param {string} flag
+   * @returns {boolean}
    */
   static isLatinCharCode(code, flag) {
     if (isNaN(code)) {
@@ -308,7 +296,7 @@ export default class SpeechUtil {
   }
 
   /**
-   * @returns {Number[]}
+   * @returns {number[]}
    */
   static chineseCodeTable() {
     return [
@@ -336,15 +324,15 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isChineseCharCode(code) {
     return this._containCharCode(code, this.chineseCodeTable());
   }
 
   /**
-   * @returns {Number[]}
+   * @returns {number[]}
    */
   static japaneseCodeTable() {
     return [
@@ -362,15 +350,15 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @returns {Boolean}
+   * @param {number} code
+   * @returns {boolean}
    */
   static isJapaneseCharCode(code) {
     return this._containCharCode(code, this.japaneseCodeTable());
   }
 
   /**
-   * @param {Number[]} tables
+   * @param {number[]} tables
    * @returns {RegExp}
    */
   static getContainCharRegex(tables = []) {
@@ -398,8 +386,8 @@ export default class SpeechUtil {
   // Hangel
 
   /**
-   * @param {Number} code
-   * @returns {Number}
+   * @param {number} code
+   * @returns {number}
    */
   static getInitialCharCode(code) {
     //      ㄱ  ㄲ ㄴ  ㄷ  ㄸ ㄹ  ㅁ ㅂ  ㅃ  ㅅ ㅆ  ㅇ ㅈ  ㅉ ㅊ  ㅋ ㅌ  ㅍ ㅎ
@@ -412,16 +400,16 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @returns {Number}
+   * @param {number} code
+   * @returns {number}
    */
   static getMedialCharCodeIndex(code) {
     return ((((code - 0xAC00) - ((code - 0xAC00) % 28))) / 28) % 21;
   }
 
   /**
-   * @param {Number} code
-   * @returns {Number}
+   * @param {number} code
+   * @returns {number}
    */
   static getMedialCharCode(code) {
     //      ㅏ  ㅐ  ㅑ ㅒ  ㅓ ㅔ  ㅕ ㅖ  ㅗ  ㅘ ㅙ  ㅚ ㅛ ㅜ  ㅝ  ㅞ ㅟ  ㅠ ㅡ  ㅢ  ㅣ
@@ -435,8 +423,8 @@ export default class SpeechUtil {
   }
 
   /**
-   * @param {Number} code
-   * @returns {Number}
+   * @param {number} code
+   * @returns {number}
    */
   static getFinalCharCode(code) {
     //             ㄱ  ㄲ ㄳ  ㄴ ㄵ  ㄶ  ㄷ ㄹ  ㄺ ㄻ  ㄼ  ㄽ ㄾ  ㄿ ㅀ  ㅁ ㅂ  ㅄ  ㅅ ㅆ  ㅇ ㅈ  ㅊ ㅋ  ㅌ  ㅍ ㅎ
@@ -455,9 +443,9 @@ export default class SpeechUtil {
   /**
    * 기(양)수사 : 수량을 쓸 때 쓰는 수사
    *
-   * @param {Number} num
-   * @param {Boolean} isHangul
-   * @returns {String}
+   * @param {number} num
+   * @param {boolean} isHangul
+   * @returns {string}
    */
   static numericToNotationString(num, isHangul = true) {
     let ones;
@@ -534,9 +522,9 @@ export default class SpeechUtil {
   /**
    * 서수사 : 순서를 나타내는 수사(영문은 지원 안함)
    *
-   * @param {Number} num
-   * @param {String} suffix
-   * @returns {String|null}
+   * @param {number} num
+   * @param {string} suffix
+   * @returns {?string}
    */
   static numericToOrdinalString(num, suffix = '') {
     const ones = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉'];

@@ -1,9 +1,14 @@
+import Logger from './Logger';
+import RectList from './RectList';
 import SpeechRange from './SpeechRange';
 import SpeechUtterance from './SpeechUtterance';
 import SpeechUtil from './SpeechUtil';
-import Logger from './Logger';
-import RectList from './RectList';
 
+/**
+ * @class SpeechChunk
+ * @private @property {SpeechPiece[]} _pieces
+ * @private @property {SpeechRange} _range
+ */
 export default class SpeechChunk {
   /**
    * @returns {SpeechRange}
@@ -17,43 +22,26 @@ export default class SpeechChunk {
     if (newRange instanceof SpeechRange) {
       this._range = newRange;
     } else {
-      this._range = new SpeechRange(0, this._getFullText().length);
+      this._range = new SpeechRange(0, this._fullText().length);
     }
   }
 
   /**
-   * @param {SpeechPiece} pieces
-   * @param {SpeechRange} range
-   */
-  constructor(pieces, range = null) {
-    this._pieces = pieces;
-    this.range = range;
-  }
-
-  /**
-   * @returns {String}
+   * @returns {string}
    * @private
    */
-  _getFullText() {
-    let fullText = '';
-    this._pieces.forEach((piece) => {
-      fullText += piece.text;
-    });
-    return fullText;
-  }
+  get _fullText() { return this._pieces.map(piece => piece.text).join(''); }
 
   /**
-   * @returns {String}
+   * @returns {string}
    */
-  getText() {
-    return this._getFullText().substring(this.range.startOffset, this.range.endOffset);
-  }
+  get text() { return this._fullText().substring(this.range.startOffset, this.range.endOffset); }
 
   /**
    * @returns {SpeechUtterance}
    */
-  getUtterance() {
-    return new SpeechUtterance(this.getText())
+  get utterance() {
+    return new SpeechUtterance(this.text)
       .removeNewLine()
       .removeSpecialCharacters(['≪', '≫'])
       .removeHanja()
@@ -68,12 +56,22 @@ export default class SpeechChunk {
   }
 
   /**
-   * @param {Number} offset
-   * @returns {SpeechPiece|null}
+   * @param {SpeechPiece} pieces
+   * @param {SpeechRange} range
    */
-  getPiece(offset) {
+  constructor(pieces, range = null) {
+    this._pieces = pieces;
+    this.range = range;
+  }
+
+  /**
+   * @param {number} offset
+   * @returns {?SpeechPiece}
+   * @private
+   */
+  _getPiece(offset) {
     let length = 0;
-    return SpeechUtil.find(this._pieces, (piece) => {
+    return this._pieces.find((piece) => {
       length += piece.length;
       return offset <= length;
     });
@@ -81,9 +79,10 @@ export default class SpeechChunk {
 
   /**
    * @param {SpeechPiece} piece
-   * @returns {Number}
+   * @returns {number}
+   * @private
    */
-  getOffset(piece) {
+  _getOffset(piece) {
     let offset = piece.paddingLeft;
     return this._pieces.find((item) => {
       if (item === piece) {
@@ -95,35 +94,35 @@ export default class SpeechChunk {
   }
 
   /**
-   * @returns {SpeechPiece|null}
+   * @returns {?SpeechPiece}
    */
   getStartWordPiece() {
-    return this.getPiece(this.range.startOffset);
+    return this._getPiece(this.range.startOffset);
   }
 
   /**
-   * @returns {SpeechPiece|null}
+   * @returns {?SpeechPiece}
    */
   getEndWordPiece() {
-    return this.getPiece(this.range.endOffset);
+    return this._getPiece(this.range.endOffset);
   }
 
   /**
-   * @returns {Number|null}
+   * @returns {?number}
    */
   getStartNodeIndex() {
     return this.getStartWordPiece().nodeIndex;
   }
 
   /**
-   * @returns {Number|null}
+   * @returns {?number}
    */
   getEndNodeIndex() {
     return this.getEndWordPiece().nodeIndex;
   }
 
   /**
-   * @returns {Number}
+   * @returns {number}
    */
   getStartWordIndex() {
     // start word piece === this._pieces[0]인 경우
@@ -163,7 +162,7 @@ export default class SpeechChunk {
   }
 
   /**
-   * @returns {Number}
+   * @returns {number}
    */
   getEndWordIndex() {
     const piece = this.getEndWordPiece();
@@ -207,7 +206,7 @@ export default class SpeechChunk {
   }
 
   /**
-   * @param {Boolean} removeBlank
+   * @param {boolean} removeBlank
    * @returns {RectList}
    */
   getRectList(removeBlank) {
@@ -284,7 +283,7 @@ export default class SpeechChunk {
           range.expand('character');
         } catch (e) {
           Logger.error(
-            `TSChunk:getRectList() Error!! ${e.toString()}\n`
+            `SpeechChunk:getRectList() Error!! ${e.toString()}\n`
             + ` => {startOffset: ${start}`
             + `, endOffset: ${end}`
             + `, offset: ${current}`

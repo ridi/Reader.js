@@ -1,22 +1,25 @@
 import SpeechUtil from './SpeechUtil';
 
+/**
+ * @class SpeechUtterance
+ * @private @property {string} _text
+ */
 export default class SpeechUtterance {
   /**
-   * @returns {String}
+   * @returns {string}
    */
   get text() { return this._text; }
 
   /**
-   * @returns {Number}
+   * @returns {number}
    */
-  get length() { return this._length; }
+  get length() { return this.text.length; }
 
   /**
-   * @param {String} text
+   * @param {string} text
    */
   constructor(text) {
     this._text = text;
-    this._length = text.length;
   }
 
   /**
@@ -32,7 +35,7 @@ export default class SpeechUtterance {
    * 읽지 말아야할 특수문자를 제거한다.
    * (사용자 사전으로 처리할 수 없기 때문에 코드로)
    *
-   * @param {String[]} characters
+   * @param {string[]} characters
    * @returns {SpeechUtterance}
    */
   removeSpecialCharacters(characters) {
@@ -235,15 +238,15 @@ export default class SpeechUtterance {
   }
 
   /**
-   * @param {String[]} strs
+   * @param {string[]} characters
    * @returns {SpeechUtterance}
    */
-  removeAllRepeatedCharacter(strs) {
+  removeAllRepeatedCharacter(characters) {
     let { text } = this;
-    for (let i = 0; i < strs.length; i += 1) {
-      const regex = new RegExp(`${strs[i]}{2,}`, 'gm');
+    characters.forEach((character) => {
+      const regex = new RegExp(`${character}{2,}`, 'gm');
       text = text.replace(regex, '');
-    }
+    });
     return new SpeechUtterance(text);
   }
 

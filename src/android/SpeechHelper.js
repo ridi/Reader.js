@@ -1,9 +1,13 @@
 import _SpeechHelper from '../common/_SpeechHelper';
 
+/**
+ * @class SpeechHelper
+ * @extends _SpeechHelper
+ */
 export default class SpeechHelper extends _SpeechHelper {
   /**
-   * @param {Boolean} isMakingTemporalChunk
-   * @param {Boolean} addAtFirst
+   * @param {boolean} isMakingTemporalChunk
+   * @param {boolean} addAtFirst
    */
   didFinishMakePartialChunks(isMakingTemporalChunk, addAtFirst) {
     while (this.chunks.length > 0) {

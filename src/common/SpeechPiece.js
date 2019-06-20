@@ -1,19 +1,29 @@
 import SpeechUtil from './SpeechUtil';
 import Util from './Util';
 
+/**
+ * @class SpeechPiece
+ * @private @property {number} _nodeIndex
+ * @private @property {number} _startWordIndex
+ * @private @property {number} _endWordIndex
+ * @private @property {Node} _node
+ * @private @property {string} _text
+ * @private @property {number} _paddingLeft
+ * @private @property {number} _paddingRight
+ */
 export default class SpeechPiece {
   /**
-   * @returns {Number}
+   * @returns {mumber}
    */
   get nodeIndex() { return this._nodeIndex; }
 
   /**
-   * @returns {Number}
+   * @returns {mumber}
    */
   get startWordIndex() { return this._startWordIndex; }
 
   /**
-   * @returns {Number}
+   * @returns {mumber}
    */
   get endWordIndex() { return this._endWordIndex; }
 
@@ -23,34 +33,34 @@ export default class SpeechPiece {
   get node() { return this._node; }
 
   /**
-   * @returns {String}
+   * @returns {string}
    */
   get text() { return this._text; }
 
   /**
-   * @returns {Number}
+   * @returns {number}
    */
-  get length() { return this._length; }
+  get length() { return this.text.length; }
 
   /**
    * node.nodeValue (piece.text 아님) 의 좌측 끝에서 startWordIndex에 해당하는 단어의 첫 글자까지의 offset
    *
-   * @returns {Number}
+   * @returns {number}
    */
   get paddingLeft() { return this._paddingLeft; }
 
   /**
    * node.nodeValue (piece.text 아님) 의 우측 끝에서 endWordIndex에 해당하는 단어의 마지막 글자까지의 offset
    *
-   * @returns {Number}
+   * @returns {number}
    */
   get paddingRight() { return this._paddingRight; }
 
   /**
    * @param {Node} node
-   * @param {Number} nodeIndex
-   * @param {Number} startWordIndex
-   * @param {Number} endWordIndex
+   * @param {mumber} nodeIndex
+   * @param {mumber} startWordIndex
+   * @param {mumber} endWordIndex
    */
   constructor(node, nodeIndex, startWordIndex = -1, endWordIndex = -1) {
     this._node = node;
@@ -95,7 +105,6 @@ export default class SpeechPiece {
     } else if (this._node.nodeName === 'IMG') {
       this._text = this._node.alt || '';
     }
-    this._length = this._text.length;
   }
 
   /**
@@ -136,8 +145,8 @@ export default class SpeechPiece {
    * NodeLocation이 정식 버전에 들어간 상태라 br 태그를 textAndImageNodes에 포함시킬 수도 없고.. 이런식으로... 허허;
    * <span><strong>TEXT</strong></span><br> 이런 경우에 대비하여 parentNode의 sibling까지 탐색하고 있다.
    *
-   * @param {Boolean} checkNextSibling
-   * @returns {Boolean}
+   * @param {boolean} checkNextSibling
+   * @returns {boolean}
    */
   isSiblingBrRecursive(checkNextSibling = true) {
     let node = this._node;
@@ -156,7 +165,6 @@ export default class SpeechPiece {
           return false;
         }
       }
-
       node = node.parentNode;
     }
 
@@ -164,7 +172,7 @@ export default class SpeechPiece {
   }
 
   /**
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   isOnlyWhitespace() {
     const pNode = this._node.previousSibling;
@@ -180,7 +188,7 @@ export default class SpeechPiece {
   }
 
   /**
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   isSentence() {
     return this.text.trim().match(SpeechUtil.getSentenceRegex(null, '$')) !== null;
