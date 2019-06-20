@@ -1,37 +1,43 @@
 import _Sel from '../common/_Sel';
-import Util from './Util';
+import Util from '../common/Util';
 
+/**
+ * @class Sel
+ * @extends _Sel
+ */
 export default class Sel extends _Sel {
   /**
    * @param {Range} range
-   * @returns {Boolean}
+   * @returns {boolean}
+   * @private
    */
-  isOutOfBounds(range) {
+  _isOutOfBounds(range) {
     // 화면 하단 바깥쪽으로 드레그 했을 때 viewport 밖인데도 caretRangeFromPoint로 노드를 잡을 수 있어
     // 하이라이트가 뒷페이지까지 이어지는 문제가 발생하고 있다(Android 4.x~)
     // 이를 해결하기 위해 caretRangeFromPoint로 잡은 Range의 left가 현재 페이지를 벗어났는지를 확인한다
-    const pageWidth = Util.getStylePropertyIntValue(this.reader.content.wrapper, 'width');
+    const pageWidth = Util.getStylePropertyIntValue(this._content.ref, 'width');
     const testRange = document.createRange();
     testRange.selectNode(range.endContainer);
-    const testRect = testRange.getBoundingClientRect().bind(this.reader).toNormalize();
+    const testRect = testRange.getBoundingClientRect().toRect();
     return testRect.left > pageWidth;
   }
 
   /**
    * @param {Range} range
-   * @returns {Number}
+   * @returns {number}
    * @private
    */
   _clientLeftOfRangeForCheckingNextPageContinuable(range) {
-    const rect = range.getBoundingClientRect().bind(this.reader).toNormalize();
+    const rect = range.getBoundingClientRect().toRect();
     return Math.floor(rect.left + rect.width);
   }
 
   /**
-   * @returns {Number}
+   * @returns {number}
+   * @private
    */
-  getUpperBound() {
-    return this.reader.context.pageWidthUnit;
+  _getUpperBound() {
+    return this._context.pageWidthUnit;
   }
 
   expandIntoNextPage() {
@@ -44,8 +50,8 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
+   * @param {number} x
+   * @param {number} y
    */
   start(x, y) {
     if (super.start(x, y)) {
@@ -57,8 +63,8 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
+   * @param {number} x
+   * @param {number} y
    */
   expandIntoUpper(x, y) {
     if (super.expandIntoUpper(x, y)) {
@@ -70,8 +76,8 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
+   * @param {number} x
+   * @param {number} y
    */
   expandIntoLower(x, y) {
     if (super.expandIntoLower(x, y)) {
@@ -84,7 +90,7 @@ export default class Sel extends _Sel {
 
   requestSelectionInfo() {
     android.onSelectionInfo(
-      this.getRange().toSerializedString(),
+      this.getRange().toSerializedString(this._content.ref),
       this.getText(),
       this.isExpandContinuableIntoNextPage(),
     );

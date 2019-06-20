@@ -1,17 +1,35 @@
-import _Object from './_Object';
+const { SHOW_TEXT, FILTER_ACCEPT, FILTER_SKIP } = NodeFilter;
 
-export default class _Util extends _Object {
+/**
+ * @class Util
+ */
+export default class Util {
   /**
-   * @param {Node} rootNode
-   * @param {Function} filter
+   * @param {Node} root
+   * @param {function} filter
    * @returns {NodeIterator}
    */
-  static createTextNodeIterator(rootNode, filter = () => true) {
-    return document.createNodeIterator(rootNode, NodeFilter.SHOW_TEXT, {
+  static createTextNodeIterator(root, filter = () => true) {
+    return document.createNodeIterator(root, SHOW_TEXT, {
       acceptNode(node) {
-        return filter(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+        return filter(node) ? FILTER_ACCEPT : FILTER_SKIP;
       },
     }, true);
+  }
+
+  /**
+   * @param {Node} root
+   * @param {number} whatToShow
+   * @param {function} filter
+   * @param {boolean} entityReferenceExpansion
+   * @returns {NodeIterator}
+   */
+  static createNodeIterator(root, whatToShow, filter = () => true, entityReferenceExpansion = false) {
+    return document.createNodeIterator(root, whatToShow, {
+      acceptNode(node) {
+        return filter(node) ? FILTER_ACCEPT : FILTER_SKIP;
+      },
+    }, entityReferenceExpansion);
   }
 
   /**
@@ -31,25 +49,35 @@ export default class _Util extends _Object {
   }
 
   /**
-   * @param {Node} imgEl
-   * @returns {{dWidth: *, dHeight: *, nWidth: number, nHeight: number,
-   * sWidth: *, sHeight: *, aWidth: string, aHeight: string}}
+   * @typedef {object} ImageSize
+   * @property {number} dWidth
+   * @property {number} dHeight
+   * @property {number} nWidth
+   * @property {number} nHeight
+   * @property {number} sWidth
+   * @property {number} sHeight
+   * @property {number} aWidth
+   * @property {number} aHeight
    */
-  static getImageSize(imgEl) {
-    const attrs = imgEl.attributes;
+  /**
+   * @param {HTMLImageElement} element
+   * @returns {ImageSize}
+   */
+  static getImageSize(element) {
+    const attrs = element.attributes;
     const zeroAttr = document.createAttribute('size');
     zeroAttr.value = '0px';
 
     return {
       // 화면에 맞춰 랜더링된 크기
-      dWidth: imgEl.width,
-      dHeight: imgEl.height,
+      dWidth: element.width,
+      dHeight: element.height,
       // 원본 크기
-      nWidth: imgEl.naturalWidth,
-      nHeight: imgEl.naturalHeight,
+      nWidth: element.naturalWidth,
+      nHeight: element.naturalHeight,
       // CSS에서 명시된 크기
-      sWidth: _Util.getMatchedCSSValue(imgEl, 'width'),
-      sHeight: _Util.getMatchedCSSValue(imgEl, 'height'),
+      sWidth: Util.getMatchedCSSValue(element, 'width'),
+      sHeight: Util.getMatchedCSSValue(element, 'height'),
       // 엘리먼트 속성으로 명시된 크기
       aWidth: (attrs.width || zeroAttr).value,
       aHeight: (attrs.height || zeroAttr).value,
@@ -58,8 +86,8 @@ export default class _Util extends _Object {
 
   /**
    * @param {Node} target
-   * @param {String} property
-   * @returns {Number}
+   * @param {string} property
+   * @returns {number}
    */
   static getStylePropertyIntValue(target, property) {
     let style = target;
@@ -71,8 +99,8 @@ export default class _Util extends _Object {
 
   /**
    * @param {Node} target
-   * @param {String[]} properties
-   * @returns {Number}
+   * @param {string[]} properties
+   * @returns {number}
    */
   static getStylePropertiesIntValue(target, properties) {
     let style = target;
@@ -87,22 +115,22 @@ export default class _Util extends _Object {
   }
 
   /**
-   * @param {Node} el
-   * @param {String} property
-   * @returns {String}
+   * @param {HTMLElement} element
+   * @param {string} property
+   * @returns {string}
    * @private
    */
-  static _getMatchedCSSValue(el, property) {
+  static _getMatchedCSSValue(element, property) {
     // element property has highest priority
-    let val = el.style.getPropertyValue(property);
+    let val = element.style.getPropertyValue(property);
 
     // if it's important, we are done
-    if (el.style.getPropertyPriority(property)) {
+    if (element.style.getPropertyPriority(property)) {
       return val;
     }
 
     // get matched rules
-    const rules = window.getMatchedCSSRules(el);
+    const rules = window.getMatchedCSSRules(element);
     if (rules === null) {
       return val;
     }
@@ -128,17 +156,16 @@ export default class _Util extends _Object {
   }
 
   /**
-   * @param {Node} el
-   * @param {String} property
-   * @param {Boolean} recursive
-   * @returns {String|null}
+   * @param {HTMLElement} element
+   * @param {string} property
+   * @param {boolean} recursive
+   * @returns {?string}
    */
-  static getMatchedCSSValue(el, property, recursive = false) {
+  static getMatchedCSSValue(element, property, recursive = false) {
     let val;
-    let target = el;
-    while (!(val = this._getMatchedCSSValue(target, property))) {
-      target = target.parentElement;
-      if (target === null || !recursive) {
+    while (!(val = this._getMatchedCSSValue(element, property))) {
+      element = element.parentElement;
+      if (element === null || !recursive) {
         break;
       }
     }

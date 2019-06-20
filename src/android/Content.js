@@ -1,57 +1,68 @@
 import _Content from '../common/_Content';
+import Sel from './Sel';
+import Util from '../common/Util';
 
+/**
+ * @class Content
+ * @extends _Content
+ * @private @property {string} _src
+ */
 export default class Content extends _Content {
-  get src() { return this._src; }
-
-  constructor(wrapper, src) {
-    super(wrapper);
+  /**
+   * @param {HTMLElement} element
+   * @param {string} src
+   * @param {Reader} reader
+   */
+  constructor(element, src, reader) {
+    super(element, reader);
     this._src = src;
   }
 
   /**
-   * @param {Number} screenWidth
-   * @param {Number} screenHeight
+   * @returns {Sel}
+   * @private
    */
-  reviseImagesInSpine(screenWidth, screenHeight) {
+  _createSel() {
+    return new Sel(this._reader);
+  }
+
+  /**
+   * @param {number} screenWidth
+   * @param {number} screenHeight
+   */
+  reviseImages(screenWidth, screenHeight) {
     const results = [];
 
-    const els = this.images;
-    for (let i = 0; i < els.length; i += 1) {
-      const el = els[i];
-      const result = this.reviseImage(el, screenWidth, screenHeight);
-      if (result.width.length || result.height.length || result.position.length) {
-        results.push({
-          el,
-          width: result.width,
-          height: result.height,
-          position: result.position,
-        });
+    this.images.forEach((element) => {
+      const { width, height, position } = this._reviseImage(element, screenWidth, screenHeight);
+      if (width.length || height.length || position.length) {
+        results.push({ element, width, height, position });
       }
-    }
+    });
 
     results.forEach((result) => {
-      const { el, width, height, position } = result;
+      const { element, width, height, position } = result;
       if (width.length) {
-        el.style.width = width;
+        element.style.width = width;
       }
       if (height.length) {
-        el.style.height = height;
+        element.style.height = height;
       }
       if (position.length) {
-        el.style.position = position;
+        element.style.position = position;
       }
     });
   }
 
   /**
-   * @param {Node} imgEl
-   * @param {Number} screenWidth
-   * @param {Number} screenHeight
-   * @returns {{el: Node, width: String, height: String, position: String,
-   * size: {dWidth, dHeight, nWidth, nHeight, sWidth, sHeight, aWidth, aHeight}}}
+   * @param {HTMLImageElement} element
+   * @param {number} screenWidth
+   * @param {number} screenHeight
+   * @returns {Image}
+   * @private
    */
-  reviseImage(imgEl, screenWidth, screenHeight) {
-    const result = super.reviseImage(imgEl, screenWidth, screenHeight);
+  _reviseImage(element, screenWidth, screenHeight) {
+    const result = super._reviseImage(element, screenWidth, screenHeight);
 
     //
     // * 부모에 의한 크기 소멸 보정.
@@ -61,15 +72,130 @@ export default class Content extends _Content {
     //
 
     if (result.size.dWidth === 0 || result.size.dHeight === 0) {
-      let el = imgEl.parentElement;
+      let target = element.parentElement;
       do {
-        if (el.nodeName.match(/H[0-9]/)) {
+        if (target.nodeName.match(/H[0-9]/)) {
           result.position = 'absolute';
           break;
         }
-      } while ((el = el.parentElement));
+      } while ((target = target.parentElement));
     }
 
     return result;
+  }
+
+  /**
+   * @param {Rect} rect
+   * @param {HTMLElement} element
+   * @returns {?number}
+   */
+  getPageFromRect(rect, element) {
+    if (rect === null) {
+      return null;
+    }
+
+    const { calcPageForDoublePageMode, pageOffset } = this._reader;
+    const { pageWidthUnit, pageHeightUnit } = this._context;
+
+    const direction = this._getOffsetDirectionFromElement(element);
+    const origin = rect[direction] + pageOffset;
+    const pageUnit = direction === 'left' ? pageWidthUnit : pageHeightUnit;
+    const offset = origin / pageUnit;
+    const fOffset = Math.floor(offset);
+
+    if (calcPageForDoublePageMode) {
+      const rOffset = Math.round(offset);
+      if (fOffset === rOffset) {
+        return fOffset;
+      }
+      return rOffset - 0.5;
+    }
+
+    return fOffset;
+  }
+
+  /**
+   * @param {string} type (top or bottom)
+   */
+  getNodeLocationOfCurrentPage(type = 'top') {
+    const startOffset = 0;
+    const endOffset = this._context.pageUnit;
+
+    const location = this._findNodeLocation(startOffset, endOffset, type);
+    this.showNodeLocationIfDebug();
+    if (!location) {
+      android.onNodeLocationOfCurrentPageNotFound();
+      return;
+    }
+
+    android.onNodeLocationOfCurrentPageFound(location);
+  }
+
+  /**
+   * @param {number} index
+   * @param {string} serializedRange
+   */
+  getRectListFromSerializedRange(index, serializedRange) {
+    const rectList = super.getRectListFromSerializedRange(serializedRange);
+    const rectListCoord = this._reader.rectsToAbsolute(rectList).toCoord();
+    android.onRectListOfSerializedRange(index, serializedRange, rectListCoord);
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} nativePoints
+   */
+  onSingleTapEvent(x, y, nativePoints) {
+    const link = this.linkFromPoint(x, y);
+    if (link !== null) {
+      const href = link.href || '';
+      const type = link.type || '';
+      if (href.length) {
+        const range = document.createRange();
+        range.selectNodeContents(link.node);
+
+        const { context, pageYOffset, curPage, rectsToAbsolute } = this._reader;
+
+        const rectListCoord = rectsToAbsolute(range.getClientRects()).trim().toCoord();
+        const footnoteType = type === 'noteref' ? 3.0 : 2.0;
+        const text = link.node.textContent || '';
+        let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
+          (text.trim().match(Util.getFootnoteRegex()) !== null || footnoteType >= 3.0);
+
+        if (canUseFootnote) {
+          const src = href.replace(window.location.href, '');
+          if (src[0] === '#' || src.match(this._src) !== null) {
+            const anchor = src.substring(src.lastIndexOf('#') + 1);
+            const offset = this._reader.getOffsetFromAnchor(anchor);
+            if (context.isScrollMode) {
+              canUseFootnote = offset >= pageYOffset;
+            } else {
+              canUseFootnote = offset >= curPage;
+            }
+          }
+        }
+
+        android.onLinkPressed(href, rectListCoord, canUseFootnote, footnoteType >= 3.0 ? text : null);
+        return;
+      }
+    }
+    android.onSingleTapEventNotProcessed(nativePoints);
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   */
+  onLongTapZoomEvent(x, y) {
+    let src = this.imagePathFromPoint(x, y);
+    if (src !== 'null') {
+      android.onImageLongTapZoom(src);
+    }
+
+    src = this.svgHtmlFromPoint(x, y);
+    if (src !== 'null') {
+      android.onSvgElementLongTapZoom(src);
+    }
   }
 }

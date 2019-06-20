@@ -1,4 +1,20 @@
-class RectList extends Array {
+/**
+ * @class RectList
+ * @extends Array
+ */
+export default class RectList extends Array {
+  /**
+   * @param {number|DOMRect|ClientRect|Rect|object} xOrRect
+   * @param {?number} y
+   * @returns {boolean}
+   */
+  contains(xOrRect, y) {
+    if (typeof xOrRect === 'number' && y !== undefined) {
+      return this.find(rect => rect.contains(xOrRect, y)) !== undefined;
+    }
+    return this.find(rect => rect.equals(xOrRect)) !== undefined;
+  }
+
   /**
    * @returns {RectList}
    */
@@ -10,32 +26,9 @@ class RectList extends Array {
   }
 
   /**
-   * @returns {RectList}
-   */
-  toNormalize() {
-    return this.trim().map(rect => rect.toNormalize());
-  }
-
-  /**
-   * @returns {RectList}
-   */
-  toAbsolute() {
-    return this.map(rect => rect.toAbsolute());
-  }
-
-  /**
    * @returns {string}
-   */
-  toAbsoluteCoord() {
-    return this.map(rect => rect.toAbsoluteCoord()).join('');
-  }
-
-  /**
-   * @returns {String}
    */
   toCoord() {
     return this.map(rect => rect.toCoord()).join('');
   }
 }
-
-export default RectList;

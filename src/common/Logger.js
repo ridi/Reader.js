@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+/**
+ * @class Logger
+ */
 export default class Logger {
   static info(message, ...optionalParams) {
     console.log(message, ...optionalParams);

@@ -1,5 +1,5 @@
-import _Util from '../_Util';
 import Logger from '../Logger';
+import Util from '../Util';
 
 export default class TTSUtil {
   /**
@@ -33,7 +33,7 @@ export default class TTSUtil {
    * @returns {RegExp}
    */
   static getSplitWordRegex() {
-    return _Util.getSplitWordRegex();
+    return Util.getSplitWordRegex();
   }
 
   /**

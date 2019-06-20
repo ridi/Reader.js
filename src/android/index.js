@@ -1,6 +1,6 @@
-import Context from './Context';
+import Context from '../common/Context';
 import Reader from './Reader';
-import Util from './Util';
+import Util from '../common/Util';
 import TTS from './TTS';
 
 // for UnitTests

@@ -1,48 +1,31 @@
 import _Reader from '../common/_Reader';
 import Content from './Content';
-import Sel from './Sel';
-import Handler from './Handler';
-import Logger from '../common/Logger';
 
+/**
+ * @class Reader
+ * @extends _Reader
+ * @property {boolean} isInBackground
+ */
 export default class Reader extends _Reader {
   /**
-   * @returns {Boolean}
-   */
-  get isBackground() { return this._appInBackground; }
-
-  /**
-   * @param {HTMLElement} wrapper
    * @param {Context} context
    */
-  constructor(wrapper, context) {
-    super(wrapper, context);
-    this._appInBackground = false;
-    this._content = new Content(this, wrapper);
-    this._handler = new Handler(this);
-    this._sel = new Sel(this);
-  }
-
-  injectMethod() {
-    super.injectMethod();
-
-    ['info', 'debug', 'error'].forEach((funcName) => {
-      Logger[funcName] = (func => (message) => { // eslint-disable-line
-        func(message);
-        window.location.href = `ridi+epub://invocation/log?${encodeURIComponent(message)}`;
-      })(Logger[funcName]);
-    });
-  }
-
-  didEnterBackground() {
-    this._appInBackground = true;
-  }
-
-  didEnterForeground() {
-    this._appInBackground = false;
+  constructor(context) {
+    super(context);
+    this.isInBackground = false;
   }
 
   /**
-   * @param {Number} offset
+   * @param {HTMLElement} ref
+   * @returns {Content}
+   * @private
+   */
+  _createContent(ref) {
+    return new Content(ref, this);
+  }
+
+  /**
+   * @param {number} offset
    */
   scrollTo(offset = 0) {
     // offset이 maxOffset을 넘길 수 없도록 보정한다. 이게 필요한 이유는 아래와 같다.
@@ -57,76 +40,28 @@ export default class Reader extends _Reader {
       const maxPage = Math.max(Math.ceil(this.totalWidth / width) - 1, 0);
       adjustOffset = Math.min(adjustOffset, maxPage * width);
     }
-
     super.scrollTo(adjustOffset);
   }
 
   /**
-   * @param {Rect} rect
-   * @param {Node} el
-   * @returns {Number|null} (zero-base)
-   */
-  getPageFromRect(rect, el) {
-    if (rect === null) {
-      return null;
-    }
-
-    const direction = this.getOffsetDirectionFromElement(el);
-    const pageUnit = direction === 'left' ? this.context.pageWidthUnit : this.context.pageHeightUnit;
-    let page = Math.floor((rect[direction] + this.pageOffset) / pageUnit);
-
-    if (!this.context.isScrollMode && rect.top < 0) {
-      page += Math.floor(rect.top / this.context.pageHeightUnit);
-    }
-    return page;
-  }
-
-  /**
-   * @param {String} type (top or bottom)
-   * @param {String} posSeparator
-   * @returns {String}
-   */
-  getNodeLocationOfCurrentPage(type = 'top', posSeparator = '#') {
-    const startOffset = 0;
-    const endOffset = this.context.pageUnit;
-    const notFound = `-1${posSeparator}-1`;
-
-    // 앱이 백그라운드 상태일 때는 계산하지 않는다.
-    // (백그라운드 상태에서는 scrollLeft 값을 신뢰할 수 없기 때문)
-    if (this.isBackground) {
-      return notFound;
-    }
-
-    const location = this.findNodeLocation(startOffset, endOffset, type, posSeparator);
-    this.showNodeLocationIfNeeded();
-    if (!location) {
-      return notFound;
-    }
-
-    return location;
-  }
-
-  /**
-   * @param {Number} width
-   * @param {Number} height
-   * @param {Number} gap
-   * @param {String} style
-   * @param {Number} fontSize
+   * @param {number} width
+   * @param {number} height
+   * @param {number} gap
+   * @param {string} style
+   * @param {number} fontSize
    */
   changePageSizeWithStyle(width, height, gap, style, fontSize) {
     const prevPage = this.curPage;
 
-    this.changeContext(Object.assign(this.context, { _width: width, _height: height, _gap: gap }));
+    this.context = Object.assign(this.context, { width, height, gap });
 
-    const styleElements = document.getElementsByTagName('style');
-    const styleElement = styleElements[styleElements.length - 1];
-    styleElement.innerHTML = style;
+    const elements = document.getElementsByTagName(Content.Tag.STYLE);
+    const element = elements[elements.length - 1];
+    element.innerHTML = style;
 
-    const bodyStyle = this.content.body.style;
-    bodyStyle['font-size'] = `${fontSize}%`;
+    const wrapperStyle = this._wrapper.style;
+    wrapperStyle['font-size'] = `${fontSize}%`;
 
     this.scrollTo(prevPage * this.context.pageUnit);
-
-    this.setViewport();
   }
 }

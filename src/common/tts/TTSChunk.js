@@ -210,10 +210,10 @@ export default class TTSChunk {
    * @param {Boolean} removeBlank
    * @returns {RectList}
    */
-  getRects(removeBlank) {
+  getRectList(removeBlank) {
     const chunkRange = this.range;
     const pieces = this._pieces;
-    let rects = new RectList();
+    let rectList = new RectList();
     let start = 0;
     let end = 0;
     let current = 0;
@@ -227,7 +227,7 @@ export default class TTSChunk {
       range.selectNodeContents(node);
       if (piece.isInvalid()) {
         totalLength = 0;
-        rects.push(range.getBoundingClientRect());
+        rectList.push(range.getBoundingClientRect().toRect());
       } else {
         totalLength = piece.length;
 
@@ -284,7 +284,7 @@ export default class TTSChunk {
           range.expand('character');
         } catch (e) {
           Logger.error(
-            `TSChunk:getRects() Error!! ${e.toString()}\n`
+            `TSChunk:getRectList() Error!! ${e.toString()}\n`
             + ` => {startOffset: ${start}`
             + `, endOffset: ${end}`
             + `, offset: ${current}`
@@ -297,10 +297,10 @@ export default class TTSChunk {
           continue;
         }
 
-        rects = rects.concat(range.getClientRects());
+        rectList = rectList.concat(range.getClientRects().toRectList());
       }
-    }// end for
-    return rects;
+    } // end for
+    return rectList;
   }
 
   /**

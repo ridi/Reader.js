@@ -10,6 +10,7 @@ module.exports = {
     'no-continue': 0,
     'no-bitwise': 0,
     'no-restricted-globals': 0,
+    'no-param-reassign': 0,
     'no-underscore-dangle': 0,
     'object-curly-newline': ['error', { 'multiline': true }],
   },

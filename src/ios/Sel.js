@@ -1,24 +1,29 @@
 import _Sel from '../common/_Sel';
 
+/**
+ * @class Sel
+ * @extends _Sel
+ */
 export default class Sel extends _Sel {
   /**
    * @param {Range} range
-   * @returns {Number}
+   * @returns {number}
    * @private
    */
   _clientLeftOfRangeForCheckingNextPageContinuable(range) {
-    return range.getBoundingClientRect().bind(this.reader).toNormalize().left;
+    return range.getBoundingClientRect().toRect().left;
   }
 
   /**
-   * @returns {Number}
+   * @returns {number}
+   * @private
    */
-  getUpperBound() {
-    return this.reader.context.pageWidthUnit * (this.reader.context.isDoublePageMode ? 2 : 1);
+  _getUpperBound() {
+    return this._context.pageWidthUnit * (this._context.isDoublePageMode ? 2 : 1);
   }
 
   /**
-   * @returns {String}
+   * @returns {string}
    */
   expandIntoNextPage() {
     if (super.expandIntoNextPage()) {
@@ -28,9 +33,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {String}
+   * @param {number} x
+   * @param {number} y
+   * @returns {string}
    */
   start(x, y) {
     if (super.start(x, y)) {
@@ -40,9 +45,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {String}
+   * @param {number} x
+   * @param {number} y
+   * @returns {string}
    */
   expandIntoUpper(x, y) {
     if (super.expandIntoUpper(x, y)) {
@@ -52,9 +57,9 @@ export default class Sel extends _Sel {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {String}
+   * @param {number} x
+   * @param {number} y
+   * @returns {string}
    */
   expandIntoLower(x, y) {
     if (super.expandIntoLower(x, y)) {

@@ -1,62 +1,77 @@
-import _Object from './_Object';
-import _Util from './_Util';
+import Util from '../common/Util';
 
-export default class _Content extends _Object {
-  /**
-   * @returns {Reader} reader
-   */
-  get reader() { return this._reader; }
+const { TEXT_NODE, ELEMENT_NODE } = Node;
+const { SHOW_TEXT, SHOW_ELEMENT } = NodeFilter;
 
+/* eslint-disable no-multi-assign */
+const NodeLocation = {};
+const HIGHLIGHT_ID = NodeLocation.HIGHLIGHT_ID = 'node-location-highlight';
+const HIGHLIGHT_MIN_WIDTH = NodeLocation.HIGHLIGHT_MIN_WIDTH = 3;
+const INDEX_SEPARATOR = NodeLocation.INDEX_SEPARATOR = '#';
+/* eslint-enable no-multi-assign */
+
+const TOUCH_POINT_TOLERANCE = 12;
+const TOUCH_POINT_STRIDE = 6;
+
+const Tag = {
+  A: 'A',
+  IMG: 'IMG',
+  SVG: 'svg', // nodeName이 소문자다(..)
+  STYLE: 'STYLE',
+  BODY: 'BODY',
+};
+
+/**
+ * @class _Content
+ * @private @property {HTMLElement} _ref
+ * @private @property {Reader} _reader
+ * @private @property {Context} _context
+ * @private @property {Sel} _sel
+ */
+class _Content {
   /**
    * @returns {HTMLElement}
    */
-  get wrapper() { return this._wrapper; }
+  get ref() { return this._ref; }
 
   /**
-   * @returns {HTMLElement}
+   * @returns {Sel}
    */
-  get body() { return this.wrapper.getElementsByTagName('BODY')[0] || this.wrapper; }
+  get sel() { return this._sel; }
 
   /**
-   * @returns {Node[]}
+   * @returns {Node[]} 콘텐츠(=스파인) 내 모든 텍스트와 이미지 노드를 반환한다.
    */
-  get nodes() { return this._nodes; }
+  get nodes() {
+    this._nodes = this._nodes || this._getNodes();
+    return this._nodes;
+  }
 
   /**
-   * @returns {HTMLElement[]}
+   * @returns {HTMLElement[]} 콘텐츠(=스파인) 내 모든 이미지 엘리먼트를 반환한다.
    */
-  get images() { return this.wrapper.getElementsByTagName('IMG'); }
-
-  get customElementFromPointEnabled() { return false; }
+  get images() { return Array.from(this.ref.getElementsByTagName(Tag.IMG)); }
 
   /**
+   * @param {HTMLElement} element
    * @param {Reader} reader
-   * @param {HTMLElement} wrapper
    */
-  constructor(reader, wrapper) {
-    super();
+  constructor(element, reader) {
+    this._ref = element;
     this._reader = reader;
-    this._wrapper = wrapper;
-    this.updateNodes();
-  }
-
-  updateNodes() {
-    this._nodes = this.fetchNodes();
+    this._context = reader.context;
+    this._sel = this._createSel();
+    this._nodes = null;
   }
 
   /**
    * @returns {Node[]}
+   * @private
    */
-  fetchNodes() {
-    // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 함부로 수정하지 말것.
-    const filter = node =>
-      node.nodeType === Node.TEXT_NODE || (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'IMG');
-    const iterator = document.createNodeIterator(this.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
-      acceptNode(node) {
-        return filter(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-      },
-    }, false);
-
+  _getNodes() {
+    // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 수정 시 마지막 페이지 동기화가 오작동할 수 있다.
+    const filter = node => node.nodeType === TEXT_NODE || (node.nodeType === ELEMENT_NODE && node.nodeName === Tag.IMG);
+    const iterator = Util.createNodeIterator(this.ref, SHOW_TEXT | SHOW_ELEMENT, filter);
     const nodes = [];
     let node;
     while ((node = iterator.nextNode())) {
@@ -66,38 +81,40 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {?String} tag
-   * @returns {HTMLElement|null}
+   * @returns {Sel}
+   * @private
+   */
+  _createSel() {
+    return null;
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {?string} tag
+   * @returns {?HTMLElement}
    */
   elementFromPoint(x, y, tag) {
-    const point = this.reader.normalizePoint(x, y);
-    if (this.customElementFromPointEnabled) {
-      // z-index 같이 계층에 영향 주는 요소를 고려하지 않았기 때문에 레이아웃이 복잡할 경우 오작동할 수 있음.
+    if (this._context.isSameDomAsUi) {
+      // z-index 같이 계층에 영향 주는 요소를 고려하지 않았기 때문에 레이아웃이 복잡할 경우 오작동할 수 있다.
       // (참고: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index)
-      const find = (el) => {
-        const rects = el.getClientRects().bind(this.reader).toNormalize();
-        return rects.find(rect => rect.contains(x, y)) !== undefined;
-      };
+      const find = element => element.getClientRects().toRectList().contains(x, y);
       if (tag) {
-        const els = Array.from(this.body.querySelectorAll(tag));
-        return els.find(find) || null;
+        return Array.from(this.ref.querySelectorAll(tag)).find(find) || null;
       }
-      const iterator = document.createNodeIterator(this.body, NodeFilter.SHOW_ELEMENT, {
-        acceptNode() {
-          return NodeFilter.FILTER_ACCEPT;
-        },
-      }, false);
-      let el;
-      while ((el = iterator.nextNode())) {
-        if (find(el)) {
-          return el;
+
+      const iterator = Util.createNodeIterator(this.ref, SHOW_ELEMENT);
+      let element;
+      while ((element = iterator.nextNode())) {
+        if (find(element)) {
+          return element;
         }
       }
+
       return null;
     }
-    const result = document.elementFromPoint(point.x, point.y);
+
+    const result = document.elementFromPoint(x, y);
     if (result && tag) {
       return result.nodeName === tag ? result : null;
     }
@@ -105,60 +122,80 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {String|null}
+   * @param {number} x
+   * @param {number} y
+   * @returns {?string}
    */
   imagePathFromPoint(x, y) {
-    const el = this.elementFromPoint(x, y, 'IMG');
-    return el ? el.src : null;
+    const element = this.elementFromPoint(x, y, Tag.IMG);
+    return element ? element.src : null;
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {String|null}
+   * @param {number} x
+   * @param {number} y
+   * @returns {?string}
    */
   svgHtmlFromPoint(x, y) {
-    const el = this.elementFromPoint(x, y, 'SVG');
-    if (el) {
+    const element = this.elementFromPoint(x, y, Tag.SVG);
+    if (element) {
       let prefix = '<svg';
-      const attrs = el.attributes;
-      for (let i = 0; i < attrs.length; i += 1) {
-        const attr = attrs[i];
+      const attrs = element.attributes;
+      attrs.forEach((attr) => {
         prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
-      }
+      });
       prefix += '>';
       // svg 객체는 innerHTML 을 사용할 수 없으므로 아래와 같이 바꿔준다.
-      const svgEl = document.createElement('svgElement');
-      const nodes = el.childNodes;
+      const svgElement = document.createElement('svgElement');
+      const nodes = element.childNodes;
       for (let j = 0; j < nodes.length; j += 1) {
-        svgEl.appendChild(nodes[j].cloneNode(true));
+        svgElement.appendChild(nodes[j].cloneNode(true));
       }
-      return `${prefix}${svgEl.innerHTML}</svg>`;
+      return `${prefix}${svgElement.innerHTML}</svg>`;
     }
     return null;
   }
 
+  /**
+   * @typedef {object} Link
+   * @property {Node} node
+   * @property {string} href
+   * @property {?string} type
+   */
+  /**
+   * @param {Node} node
+   * @returns {Link}
+   * @private
+   */
+  _getLinkFromNode(node) {
+    while (node) {
+      const { nodeName, href, attributes } = node;
+      if (node && nodeName === Tag.A) {
+        return { node, href, type: (attributes['epub:type'] || { value: '' }).value };
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @returns {{node: Node, href: String, type: String}|null}
+   * @param {number} x
+   * @param {number} y
+   * @returns {?Link}
    */
   linkFromPoint(x, y) {
     if (document.links.length === 0) {
       return null;
     }
 
-    const point = this.reader.normalizePoint(x, y);
-    const tolerance = 12;
-    const stride = 6;
+    const point = { x, y };
+    const tolerance = TOUCH_POINT_TOLERANCE;
+    const stride = TOUCH_POINT_STRIDE;
     for (let x = point.x - tolerance; x <= point.x + tolerance; x += stride) { // eslint-disable-line no-shadow
       for (let y = point.y - tolerance; y <= point.y + tolerance; y += stride) { // eslint-disable-line no-shadow
-        const el = this.elementFromPoint(x, y, 'A');
-        if (el) {
-          const link = this._getLinkFromElement(el);
+        const element = this.elementFromPoint(x, y, 'A');
+        if (element) {
+          const link = this._getLinkFromNode(element);
           if (link !== null) {
             return link;
           }
@@ -170,32 +207,21 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Node} el
-   * @returns {{node: Node, href: string, type: string}}
+   * @typedef {object} Image
+   * @property {HTMLImageElement} element
+   * @property {string} width
+   * @property {string} height
+   * @property {string} position
+   * @property {ImageSize} size
    */
-  _getLinkFromElement(el) {
-    let target = el;
-    while (target) {
-      if (target && target.nodeName === 'A') {
-        return {
-          node: target,
-          href: target.href,
-          type: (target.attributes['epub:type'] || { value: '' }).value,
-        };
-      }
-      target = target.parentNode;
-    }
-    return null;
-  }
-
   /**
-   * @param {Node} imgEl
-   * @param {Number} screenWidth
-   * @param {Number} screenHeight
-   * @returns {{el: Node, width: String, height: String, position: String,
-   * size: {dWidth, dHeight, nWidth, nHeight, sWidth, sHeight, aWidth, aHeight}}}
+   * @param {HTMLImageElement} element
+   * @param {number} screenWidth
+   * @param {number} screenHeight
+   * @returns {Image}
+   * @private
    */
-  reviseImage(imgEl, screenWidth, screenHeight) {
+  _reviseImage(element, screenWidth, screenHeight) {
     const isPercentValue = (value) => {
       if (typeof value === 'string') {
         return value.search(/%/);
@@ -235,14 +261,14 @@ export default class _Content extends _Object {
     };
 
     const maxHeight = 0.95;
-    const size = _Util.getImageSize(imgEl);
+    const size = Util.getImageSize(element);
     let cssWidth = '';
     let cssHeight = '';
 
     // 원본 사이즈가 없다는 것은 엑박이란 거다
     if (size.nWidth === 0 || size.nHeight === 0) {
       return {
-        el: imgEl,
+        element,
         width: cssWidth,
         height: cssHeight,
         position: '',
@@ -316,8 +342,9 @@ export default class _Content extends _Object {
     const width = parseInt(cssWidth, 10) || size.dWidth;
     const height = parseInt(cssHeight, 10) || size.dHeight;
     if (width > screenWidth || height > screenHeight) {
-      const top = this.reader.context.isScrollMode ? 0 : imgEl.offsetTop;
-      const margin = top + _Util.getStylePropertiesIntValue(imgEl, ['line-height', 'margin-bottom', 'padding-bottom']);
+      const top = this._context.isScrollMode ? 0 : element.offsetTop;
+      const margin =
+        top + Util.getStylePropertiesIntValue(element, ['line-height', 'margin-bottom', 'padding-bottom']);
       const vmin = Math.min(screenWidth, screenHeight) / 2;
       let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin);
       let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;
@@ -329,13 +356,362 @@ export default class _Content extends _Object {
       cssHeight = `${adjustHeight}px`;
     }
 
-
     return {
-      el: imgEl,
+      element,
       width: cssWidth,
       height: cssHeight,
       position: '',
       size,
     };
   }
+
+  /**
+   * element의 위치 기준을 반환한다.
+   *
+   * @param {HTMLElement} element
+   * @returns {string} top or left
+   * @private
+   */
+  _getOffsetDirectionFromElement(element) {
+    let direction = this._context.isScrollMode ? 'top' : 'left';
+    if (element) {
+      const position = Util.getMatchedCSSValue(element, 'position', true);
+      if (direction === 'left' && position === 'absolute') {
+        direction = 'top';
+      }
+    }
+    return direction;
+  }
+
+  /**
+   * @param {Rect} rect
+   * @param {HTMLElement} element
+   * @returns {?number} zero-base page number
+   */
+  getPageFromRect(/* rect, element */) {
+    return null;
+  }
+
+  /**
+   * @param {string} anchor
+   * @param {function} block
+   * @returns {number}
+   * @private
+   */
+  _getOffsetFromAnchor(anchor, block) {
+    const element = document.getElementById(anchor);
+    if (element) {
+      const iterator = Util.createTextNodeIterator(element);
+      const node = iterator.nextNode();
+      if (node) {
+        // 첫번째 텍스트만 확인
+        const range = document.createRange();
+        range.selectNodeContents(node);
+
+        const { display } = window.getComputedStyle(element);
+        const rectList = range.getClientRects().toRectList();
+        if (rectList.length) {
+          return block(rectList[0], element);
+        } else if (display === 'none') {
+          element.style.display = 'block';
+          const rect = element.getBoundingClientRect().toRect();
+          element.style.display = 'none';
+          return block(rect, element);
+        }
+      }
+
+      // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
+      return block(element.getBoundingClientRect().toRect(), element);
+    }
+    return block({ left: null, top: null }, null);
+  }
+
+  /**
+   * anchor의 위치를 구한다.
+   * 페이지 넘김 보기일 때는 zero-base page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
+   * 위치를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} anchor
+   * @returns {?number}
+   */
+  getOffsetFromAnchor(anchor) {
+    return this._getOffsetFromAnchor(anchor, (rect, element) => {
+      if (this._context.isScrollMode) {
+        return rect.top === null ? null : rect.top + this._reader.pageYOffset;
+      }
+      return rect.left === null ? null : this.getPageFromRect(rect, element);
+    });
+  }
+
+  /**
+   * serializedRange(rangy.js 참고)의 위치를 구한다.
+   * 페이지 넘김 보기일 때는 zero-base page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
+   * 위치를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} serializedRange
+   * @returns {?number}
+   */
+  getOffsetFromSerializedRange(serializedRange) {
+    try {
+      const range = Range.fromSerializedString(serializedRange, this.ref);
+      const rectList = range.getClientRects().toRectList();
+      return this.getPageFromRect(rectList[0]);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * @param {string} serializedRange
+   * @returns {RectList}
+   */
+  getRectListFromSerializedRange(serializedRange) {
+    return Range.fromSerializedString(serializedRange, this.ref).getTextRectList().trim();
+  }
+
+  /**
+   * rectList 중에 startOffset~endOffset 사이에 위치한 rect의 index를 반환한다.
+   * type이 bottom일 때 -1을 반환하는 경우가 있을 수 있는데 이전 rectList에 마지막 rect를 의미한다.
+   *
+   * @param {RectList} rectList
+   * @param {number} startOffset
+   * @param {number} endOffset
+   * @param {string} type top or bottom
+   * @returns {?number}
+   * @private
+   */
+  _findRectIndex(rectList, startOffset, endOffset, type = 'top') {
+    const origin = this._context.isScrollMode ? 'top' : 'left';
+    for (let rectIndex = 0; rectIndex < rectList.length; rectIndex += 1) {
+      const rect = rectList[rectIndex];
+      if (type === 'bottom') {
+        if (endOffset <= rect[origin] && rect.width > 0) {
+          return rectIndex - 1;
+        }
+      } else if (startOffset <= rect[origin] && rect[origin] <= endOffset && rect.width > 0) {
+        return rectIndex;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * startOffset~endOffset 사이에 위치한 NodeLocation을 반환한다.
+   * type으로 startOffset에 근접한 위치(top)를 찾을 것인지 endOffset에 근접한 위치(bottom)를 찾을 것인지 정할 수 있다.
+   *
+   * @param {number} startOffset
+   * @param {number} endOffset
+   * @param {string} type top or bottom
+   * @param {string} indexSeparator
+   * @returns {?string}
+   * @private
+   */
+  _findNodeLocation(startOffset, endOffset, type = 'top', indexSeparator = INDEX_SEPARATOR) {
+    const { nodes } = this;
+
+    // 현재 페이지에 위치한 노드 정보를 임시로 저장한 것으로 BottomNodeLocation을 구할 때 사용한다.
+    let prev = null;
+    for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex += 1) {
+      const node = nodes[nodeIndex];
+      const range = document.createRange();
+      range.selectNodeContents(node);
+
+      let rect = range.getBoundingClientRect().toRect();
+      if (rect.isZero) {
+        if (node.nodeName === Tag.IMG) {
+          range.selectNode(node);
+          rect = range.getBoundingClientRect().toRect();
+          if (rect.isZero) {
+            continue;
+          }
+        } else {
+          continue;
+        }
+      }
+
+      // node가 여러 페이지에 걸쳐있을 때 현재 페이지도 포함하고 있는지.
+      const origin = this._context.isScrollMode ? rect.maxY : rect.maxX;
+      if (rect.width === 0 || origin < startOffset) {
+        continue;
+      }
+
+      let rectIndex;
+      if (node.nodeType === TEXT_NODE) {
+        const string = node.nodeValue;
+        if (!string) {
+          continue;
+        }
+
+        const words = string.split(Util.getSplitWordRegex());
+        let offset = range.startOffset;
+        for (let wordIndex = 0; wordIndex < words.length; wordIndex += 1) {
+          const word = words[wordIndex];
+          if (word.trim().length) {
+            try {
+              range.setStart(node, offset);
+              range.setEnd(node, offset + word.length);
+            } catch (e) {
+              return null;
+            }
+            const rectList = range.getClientRects().toRectList();
+            if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
+              if (rectIndex < 0) {
+                this._reader.lastNodeLocationRect = prev.rect;
+                return prev.location;
+              }
+              this._reader.lastNodeLocationRect = rectList[rectIndex];
+              return `${nodeIndex}${indexSeparator}${Math.min(wordIndex + rectIndex, words.length - 1)}`;
+            }
+            rectList.reverse().forEach((rect) => { // eslint-disable-line
+              if (rect.left < endOffset) {
+                prev = { location: `${nodeIndex}${indexSeparator}${wordIndex}`, rect };
+              }
+            });
+          }
+          offset += (word.length + 1);
+        }
+      } else if (node.nodeName === Tag.IMG) {
+        const rectList = range.getClientRects().toRectList();
+        if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
+          if (rectIndex < 0) {
+            this._reader.lastNodeLocationRect = prev.rect;
+            return prev.location;
+          }
+          this._reader.lastNodeLocationRect = rectList[rectIndex];
+          // imageNode는 wordIndex를 구할 수 없기 때문에 0을 넣는다.
+          return `${nodeIndex}${indexSeparator}0`;
+        }
+        rectList.reverse().forEach((rect) => { // eslint-disable-line
+          if (rect.left < endOffset) {
+            prev = { location: `${nodeIndex}${indexSeparator}0`, rect };
+          }
+        });
+      }
+    }
+
+    return null;
+  }
+
+  showNodeLocationIfDebug() {
+    if (!this._reader.debugNodeLocation || this._reader.lastNodeLocationRect === null) {
+      return;
+    }
+
+    const id = HIGHLIGHT_ID;
+    let span = document.getElementById(id);
+    if (!span) {
+      span = document.createElement('span');
+      span.setAttribute('id', id);
+      document.body.appendChild(span);
+    }
+
+    const rect = this._reader.lastNodeLocationRect;
+    rect[this._context.isScrollMode ? 'top' : 'left'] += this._reader.pageOffset;
+    span.style.cssText =
+      'position: absolute !important;' +
+      'background-color: red !important;' +
+      `left: ${rect.left}px !important;` +
+      `top: ${rect.top}px !important;` +
+      `width: ${(rect.width || HIGHLIGHT_MIN_WIDTH)}px !important;` +
+      `height: ${rect.height}px !important;` +
+      'display: block !important;' +
+      'opacity: 0.4 !important;' +
+      'z-index: 99 !important;';
+  }
+
+  /**
+   * NodeLocation의 위치를 구한다.
+   * 페이지 넘김 보기일 때는 zero-base page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
+   * 위치를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} location
+   * @param {string} type top or bottom
+   * @param {string} indexSeparator
+   * @returns {?number}
+   */
+  getOffsetFromNodeLocation(location, type = 'top', indexSeparator = INDEX_SEPARATOR) {
+    const parts = location.split(indexSeparator);
+    const nodeIndex = parseInt(parts[0], 10);
+    const wordIndex = parseInt(parts[1], 10);
+
+    if (nodeIndex === -1 || wordIndex === -1) {
+      return null;
+    }
+
+    const node = this.nodes[nodeIndex];
+    if (!node) {
+      return null;
+    }
+
+    const range = document.createRange();
+    range.selectNodeContents(node);
+
+    let rect = range.getBoundingClientRect().toRect();
+    if (rect.isZero) {
+      if (node.nodeName === Tag.IMG) {
+        range.selectNode(node);
+        rect = range.getBoundingClientRect().toRect();
+        if (rect.isZero) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+
+    let page = this.getPageFromRect(rect);
+    if (page === null || this._reader.totalSize <= this._context.pageUnit * page) {
+      return null;
+    }
+
+    if (node.nodeName === Tag.IMG && wordIndex === 0) {
+      if (this._context.isScrollMode) {
+        return Math.max((rect.top + this._reader.pageYOffset) - (type === 'bottom' ? this._context.pageUnit : 0), 0);
+      }
+      return page;
+    }
+
+    const string = node.nodeValue;
+    if (string === null) {
+      return null;
+    }
+
+    const words = string.split(Util.getSplitWordRegex());
+    let word;
+    let offset = 0;
+    for (let i = 0; i <= Math.min(wordIndex, words.length - 1); i += 1) {
+      word = words[i];
+      offset += (word.length + 1);
+    }
+    try {
+      range.setStart(range.startContainer, offset - word.length - 1);
+      range.setEnd(range.startContainer, offset - 1);
+    } catch (e) {
+      return null;
+    }
+
+    rect = range.getBoundingClientRect().toRect();
+    page = this.getPageFromRect(rect);
+    if (page === null || this._reader.totalSize <= this._context.pageUnit * page) {
+      return null;
+    }
+
+    if (rect.left < 0 || (page + 1) * this._context.pageUnit < rect.left + rect.width) {
+      if (rect.width < this._context.pageUnit) {
+        page += 1;
+      } else {
+        page += Math.floor(rect.width / this._context.pageUnit);
+      }
+    }
+
+    if (this._context.isScrollMode) {
+      return Math.max((rect.top + this._reader.pageYOffset) - (type === 'bottom' ? this._context.pageUnit : 0), 0);
+    }
+    return page;
+  }
 }
+
+_Content.NodeLocation = NodeLocation;
+_Content.Tag = Tag;
+
+export default _Content;

@@ -1,5 +1,5 @@
 import TTSUtil from './TTSUtil';
-import _Util from '../_Util';
+import Util from '../Util';
 
 export default class TTSPiece {
   /**
@@ -110,14 +110,14 @@ export default class TTSPiece {
     if (this.length === 0 || readable === 'no') {
       valid = false;
     } else if (readable !== 'yes') {
-      if (_Util.getMatchedCSSValue(el, 'display') === 'none'
-        || _Util.getMatchedCSSValue(el, 'visibility') === 'hidden') {
+      if (Util.getMatchedCSSValue(el, 'display') === 'none'
+        || Util.getMatchedCSSValue(el, 'visibility') === 'hidden') {
         // 눈에 보이지 않는 것은 읽지 않는다
         valid = false;
       } else {
         do {
           // 주석 링크는 읽지 않는다
-          if (el.nodeName === 'A' && this._text.match(_Util.getFootnoteRegex()) !== null) {
+          if (el.nodeName === 'A' && this._text.match(Util.getFootnoteRegex()) !== null) {
             valid = false;
             break;
           }

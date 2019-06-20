@@ -1,45 +1,54 @@
-import _Object from './_Object';
-import _Util from './_Util';
+import _Content from './_Content';
+import Util from '../common/Util';
 import TTSUtil from './tts/TTSUtil';
+
+const { DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_PRECEDING, TEXT_NODE } = Node;
 
 let caretIterator = null;
 
-export default class _Sel extends _Object {
+/**
+ * @class _Sel
+ * @private @property {Reader} _reader
+ * @private @property {Content} _content
+ * @private @property {Context} _context
+ * @private @property {Node} _startContainer
+ * @private @property {number} _startOffset
+ * @private @property {Node} _endContainer
+ * @private @property {number} _endOffset
+ * @private @property {boolean} _isOverflowed
+ * @private @property {Node} _continueContainer
+ * @private @property {number} _continueOffset
+ */
+export default class _Sel {
   /**
-   * @returns {Reader}
+   * @param {Content} content
    */
-  get reader() { return this._reader; }
-
-  /**
-   * @param {Reader} reader
-   */
-  constructor(reader) {
-    super();
-    this._reader = reader;
-    this._maxLength = reader.context.maxSelectionLength;
+  constructor(content) {
+    this._reader = content._reader;
+    this._content = content;
+    this._context = this._reader.context;
     this._startContainer = null;
     this._startOffset = null;
     this._endContainer = null;
     this._endOffset = null;
-    this._isOverflowed = false; // 셀렉션 글자수 제한을 넘긴 상태인지
+    this._isOverflowed = false;
     this._continueContainer = null;
     this._continueOffset = null;
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Node} rootNode
-   * @param {String} unit (character or word)
-   * @returns {Boolean}
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit character or word
+   * @returns {boolean}
    */
-  start(x, y, rootNode, unit) {
-    const range = this._getCaretRange(x, y, rootNode, unit);
+  start(x, y, unit) {
+    const range = this._getCaretRange(x, y, unit);
     if (range === null) {
       return false;
     }
 
-    // 처음 선택시에는 붙어있는 특수문자까지 모두 포함시킨다
+    // 처음 선택시에는 붙어있는 특수문자까지 모두 포함시킨다.
     this._expandRangeByWord(range);
 
     this._startContainer = range.startContainer;
@@ -51,37 +60,36 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Node} rootNode
-   * @param {String} unit (character or word)
-   * @returns {Boolean}
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit character or word
+   * @returns {boolean}
    */
-  expandIntoUpper(x, y, rootNode, unit = 'character') {
-    const exRange = this._getCaretRange(x, y, rootNode, unit, true);
+  expandIntoUpper(x, y, unit = 'character') {
+    const exRange = this._getCaretRange(x, y, unit, true);
     if (exRange === null) {
       return false;
     }
 
     const containerDiff = this._endContainer.compareDocumentPosition(exRange.startContainer);
-    if (containerDiff === Node.DOCUMENT_POSITION_FOLLOWING ||
+    if (containerDiff === DOCUMENT_POSITION_FOLLOWING ||
       (containerDiff === 0 && this._endOffset < exRange.startOffset)) {
       return false;
     }
 
-    if (exRange.startContainer === this._startContainer &&
-      exRange.startOffset === this._startOffset) {
+    if (exRange.startContainer === this._startContainer && exRange.startOffset === this._startOffset) {
       return false;
     }
 
-    // selection이 상위 div 등의 배경에 거친 경우 offset들은 childNode의 index이므로
-    // 해당 childNode를 start/end container로 설정한다
+    // selection이 상위 div 등의 배경에 거친 경우 offset들은 childNode의 index이므로 해당 childNode를 start/end container로 설정한다.
     if (exRange.startContainer.childNodes.length) {
       exRange.setStart(exRange.startContainer.childNodes[exRange.startOffset], 0);
     }
     if (exRange.endContainer.childNodes.length) {
-      exRange.setEnd(exRange.endContainer.childNodes[exRange.endOffset],
-        exRange.endContainer.childNodes[exRange.endOffset].textContent.length);
+      exRange.setEnd(
+        exRange.endContainer.childNodes[exRange.endOffset],
+        exRange.endContainer.childNodes[exRange.endOffset].textContent.length,
+      );
     }
 
     const range = document.createRange();
@@ -102,20 +110,19 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Node} rootNode
-   * @param {String} unit (character or word)
-   * @returns {Boolean}
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit character or word
+   * @returns {boolean}
    */
-  expandIntoLower(x, y, rootNode, unit = 'character') {
-    const exRange = this._getCaretRange(x, y, rootNode, unit, true);
+  expandIntoLower(x, y, unit = 'character') {
+    const exRange = this._getCaretRange(x, y, unit, true);
     if (exRange === null) {
       return false;
     }
 
     const containerDiff = this._startContainer.compareDocumentPosition(exRange.endContainer);
-    if (containerDiff === Node.DOCUMENT_POSITION_PRECEDING ||
+    if (containerDiff === DOCUMENT_POSITION_PRECEDING ||
       (containerDiff === 0 && this._startOffset > exRange.endOffset)) {
       return false;
     }
@@ -124,14 +131,15 @@ export default class _Sel extends _Object {
       return false;
     }
 
-    // selection이 상위 div 등의 배경에 거친 경우 offset들은 childNode의 index이므로
-    // 해당 childNode를 start/end container로 설정한다
+    // selection이 상위 div 등의 배경에 거친 경우 offset들은 childNode의 index이므로 해당 childNode를 start/end container로 설정한다.
     if (exRange.startContainer.childNodes.length) {
       exRange.setStart(exRange.startContainer.childNodes[exRange.startOffset], 0);
     }
     if (exRange.endContainer.childNodes.length) {
-      exRange.setEnd(exRange.endContainer.childNodes[exRange.endOffset],
-        exRange.endContainer.childNodes[exRange.endOffset].textContent.length);
+      exRange.setEnd(
+        exRange.endContainer.childNodes[exRange.endOffset],
+        exRange.endContainer.childNodes[exRange.endOffset].textContent.length,
+      );
     }
 
     if (this.isOutOfBounds(exRange)) {
@@ -156,7 +164,7 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   expandIntoNextPage() {
     if (!this.isExpandContinuableIntoNextPage()) {
@@ -170,20 +178,28 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   isExpandContinuableIntoNextPage() {
     return this._isExpandContinuableIntoNextPage(this.getRange());
   }
 
   /**
+   * @returns {number}
+   * @private
+   */
+  _getUpperBound() {
+    return 0;
+  }
+
+  /**
    * @param {Range} range
-   * @returns {Boolean}
+   * @returns {boolean}
    * @private
    */
   _isExpandContinuableIntoNextPage(range) {
-    if (!this.reader.context.isScrollMode) {
-      const upperBound = this.getUpperBound();
+    if (!this._context.isScrollMode) {
+      const upperBound = this._getUpperBound();
       const clonedRange = range.cloneRange();
       let node = clonedRange.endContainer;
       let end = clonedRange.endOffset;
@@ -216,6 +232,7 @@ export default class _Sel extends _Object {
   _expandRangeByWord(range) {
     const { startContainer, endContainer } = range;
 
+    // FIXME: TTS 의존성 제거
     const tables = [TTSUtil.chineseCodeTable(), TTSUtil.japaneseCodeTable()];
     if (TTSUtil.getContainCharRegex(tables).test(range.toString())) {
       range.expand('character');
@@ -247,7 +264,7 @@ export default class _Sel extends _Object {
 
   /**
    * @param {Range} range
-   * @param {Number} expandBound
+   * @param {number} expandBound
    * @private
    */
   _expandRangeBySentence(range, expandBound = -1) {
@@ -260,7 +277,7 @@ export default class _Sel extends _Object {
 
     let end = range.endOffset;
     while (end > origin) {
-      if (range.getBoundingClientRect().bind(this.reader).toNormalize().right <= expandBound) {
+      if (range.getBoundingClientRect().toRect().right <= expandBound) {
         break;
       }
       range.setEnd(range.endContainer, end -= 1);
@@ -269,14 +286,14 @@ export default class _Sel extends _Object {
 
   /**
    * @param {Range} range
-   * @returns {Node|null}
+   * @returns {?Node}
    * @private
    */
   _getNextTextNode(range) {
     const node = range.endContainer;
     const nextNode = node.nextSibling;
     if (nextNode) {
-      if (nextNode.nodeType === Node.TEXT_NODE) {
+      if (nextNode.nodeType === TEXT_NODE) {
         // case 1-1:
         // p
         //   text (node)
@@ -284,7 +301,7 @@ export default class _Sel extends _Object {
         return nextNode;
       }
 
-      const textNode = _Util.createTextNodeIterator(nextNode).nextNode();
+      const textNode = Util.createTextNodeIterator(nextNode).nextNode();
       if (textNode) {
         // case 2-1:
         // p
@@ -305,7 +322,7 @@ export default class _Sel extends _Object {
     }
 
     range.setEndAfter(range.endContainer);
-    if (range.endContainer.nodeName === 'BODY') {
+    if (range.endContainer.nodeName === _Content.Tag.BODY) {
       // case: 4
       // body
       //   p
@@ -334,13 +351,13 @@ export default class _Sel extends _Object {
 
   /**
    * @param {Range} range
-   * @returns {Boolean}
+   * @returns {boolean}
    * @private
    */
   _isValid(range) {
     if (range.toString().length > this._maxLength) {
       if (!this._isOverflowed) {
-        _Util.toast(`최대 ${this._maxLength}자까지 선택할 수 있습니다.`);
+        this._context.onMessage(`최대 ${this._maxLength}자까지 선택할 수 있습니다.`);
       }
       this._isOverflowed = true;
     } else {
@@ -350,23 +367,22 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Node} rootNode
-   * @param {String} unit (character or word)
-   * @returns {Range|null}
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit character or word
+   * @returns {?Range}
    */
-  _caretRangeFromPoint(x, y, rootNode, unit = 'word') {
-    if (rootNode) {
+  _caretRangeFromPoint(x, y, unit = 'word') {
+    if (this._context.isSameDomAsUi) {
       if (caretIterator) {
         caretIterator.previousNode();
       } else {
-        caretIterator = _Util.createTextNodeIterator(rootNode, (textNode) => {
+        caretIterator = Util.createTextNodeIterator(this._content.ref, (textNode) => {
           if (/^\s*$/.test(textNode.nodeValue)) {
             return false;
           }
-          const rects = textNode.parentElement.getClientRects().bind(this.reader).toNormalize();
-          return rects.find(rect => rect.contains(x, y)) !== undefined;
+          const rectList = textNode.parentElement.getClientRects().toRectList();
+          return rectList.find(rect => rect.contains(x, y)) !== undefined;
         });
       }
 
@@ -379,7 +395,7 @@ export default class _Sel extends _Object {
         for (let i = 0; i < length - 1; i++) {
           range.setStart(range.startContainer, i);
           range.setEnd(range.endContainer, i + 1);
-          const rect = range.getBoundingClientRect().bind(this.reader).toNormalize();
+          const rect = range.getBoundingClientRect().toRect();
           if (rect.contains(x, y)) {
             range.expand(unit);
             return range;
@@ -393,17 +409,15 @@ export default class _Sel extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
-   * @param {Node} rootNode
-   * @param {String} unit (character or word)
-   * @param {Boolean} allowCollapsed
-   * @returns {TextRange|null}
+   * @param {number} x
+   * @param {number} y
+   * @param {string} unit character or word
+   * @param {boolean} allowCollapsed
+   * @returns {?Range}
    * @private
    */
-  _getCaretRange(x, y, rootNode, unit = 'word', allowCollapsed = false) {
-    const point = this.reader.normalizePoint(x, y);
-    const range = this._caretRangeFromPoint(point.x, point.y, rootNode, unit);
+  _getCaretRange(x, y, unit = 'word', allowCollapsed = false) {
+    const range = this._caretRangeFromPoint(x, y, this._content.ref, unit);
     if (range === null) {
       return null;
     }
@@ -418,9 +432,10 @@ export default class _Sel extends _Object {
 
   /**
    * @param {Range} range
-   * @returns {Boolean}
+   * @returns {boolean}
+   * @private
    */
-  isOutOfBounds(/* range */) {
+  _isOutOfBounds(/* range */) {
     return false;
   }
 
@@ -431,27 +446,27 @@ export default class _Sel extends _Object {
     const range = document.createRange();
     range.setStart(this._startContainer, this._startOffset);
     range.setEnd(this._endContainer, this._endOffset);
-    return range.bind(this.reader);
+    return range;
   }
 
   /**
    * @returns {RectList}
    */
-  getRects() {
-    return this.getRange().getTextRectsWithBind(this.reader).toNormalize();
+  getRectList() {
+    return this.getRange().getTextRectList();
   }
 
   /**
-   * @returns {String}
+   * @returns {string}
    */
   getText() {
     return this.getRange().toString();
   }
 
   /**
-   * @returns {String}
+   * @returns {string}
    */
   getAbsoluteRectListCoord() {
-    return this.getRects().bind(this.reader).toNormalize().toAbsoluteCoord();
+    return this._reader.rectsToAbsolute(this.getRectList()).trim().toCoord();
   }
 }

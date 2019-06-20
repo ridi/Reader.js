@@ -1,3 +1,9 @@
+import TTSPiece from './TTSPiece';
+import TTSChunk from './TTSChunk';
+import TTSRange from './TTSRange';
+import TTSUtil from './TTSUtil';
+import Logger from '../Logger';
+
 //
 // * TTS 노트.
 //
@@ -83,12 +89,6 @@
 //    - 문장으로 생각했는데 뒤에 붙어야할 애가 있다.
 //         예) <h2>내 '안'<span>에서</span><br>천직<spa...
 //
-
-import TTSPiece from './TTSPiece';
-import TTSChunk from './TTSChunk';
-import TTSRange from './TTSRange';
-import TTSUtil from './TTSUtil';
-import Logger from '../Logger';
 
 export default class _TTS {
   /**
@@ -610,7 +610,7 @@ export default class _TTS {
       nodeIndex: chunk.getStartNodeIndex(),
       wordIndex: chunk.getStartWordIndex(),
       text: chunk.getUtterance().text,
-      rectListCoord: chunk.getRects(true).bind(this.reader).toNormalize().toAbsoluteCoord(),
+      rectListCoord: this.reader.rectsToAbsolute(chunk.getRectList(true)).trim().toCoord(),
     };
   }
 
