@@ -20,6 +20,13 @@ let caretIterator = null;
  */
 export default class _Sel {
   /**
+   * @returns {boolean}
+   */
+  get isExpandContinuableIntoNextPage() {
+    return this._isExpandContinuableIntoNextPage(this.getRange());
+  }
+
+  /**
    * @param {Content} content
    */
   constructor(content) {
@@ -141,7 +148,7 @@ export default class _Sel {
       );
     }
 
-    if (this.isOutOfBounds(exRange)) {
+    if (this._isOutOfBounds(exRange)) {
       return false;
     }
 
@@ -166,7 +173,7 @@ export default class _Sel {
    * @returns {boolean}
    */
   expandIntoNextPage() {
-    if (!this.isExpandContinuableIntoNextPage()) {
+    if (!this.isExpandContinuableIntoNextPage) {
       return false;
     }
 
@@ -174,13 +181,6 @@ export default class _Sel {
     this._endOffset = this._continueOffset;
 
     return true;
-  }
-
-  /**
-   * @returns {boolean}
-   */
-  isExpandContinuableIntoNextPage() {
-    return this._isExpandContinuableIntoNextPage(this.getRange());
   }
 
   /**
@@ -446,6 +446,13 @@ export default class _Sel {
     range.setStart(this._startContainer, this._startOffset);
     range.setEnd(this._endContainer, this._endOffset);
     return range;
+  }
+
+  /**
+   * @returns {string}
+   */
+  getSerializedRange() {
+    return this.getRange().toSerializedString(this._content.ref);
   }
 
   /**

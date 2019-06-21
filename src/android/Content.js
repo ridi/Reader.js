@@ -165,9 +165,9 @@ export default class Content extends _Content {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const { context, pageYOffset, curPage, rectsToAbsolute } = this._reader;
+        const { context, pageYOffset, curPage } = this._reader;
 
-        const rectListCoord = rectsToAbsolute(range.getClientRects()).trim().toCoord();
+        const rectListCoord = this._reader.rectsToAbsolute(range.getClientRects()).trim().toCoord();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
@@ -177,7 +177,7 @@ export default class Content extends _Content {
           const src = href.replace(window.location.href, '');
           if (src[0] === '#' || src.match(this._src) !== null) {
             const anchor = src.substring(src.lastIndexOf('#') + 1);
-            const offset = this._reader.getOffsetFromAnchor(anchor);
+            const offset = this.getOffsetFromAnchor(anchor);
             if (context.isScrollMode) {
               canUseFootnote = offset >= pageYOffset;
             } else {
@@ -199,13 +199,56 @@ export default class Content extends _Content {
    */
   onLongTapZoomEvent(x, y) {
     let src = this.imagePathFromPoint(x, y);
-    if (src !== 'null') {
+    if (src) {
       android.onImageLongTapZoom(src);
     }
 
     src = this.svgHtmlFromPoint(x, y);
-    if (src !== 'null') {
+    if (src) {
       android.onSvgElementLongTapZoom(src);
     }
+  }
+
+  /**
+   * @param {*} args
+   * @private
+   */
+  _moveTo(...args) {
+    const method = args[0];
+    if (this._context.isScrollMode) {
+      const scrollY = this[`getOffsetFrom${method}`](args[1]);
+      if (scrollY !== null) {
+        android[`onScrollYOffsetOf${method}Found`](android.dipToPixel(scrollY));
+        return;
+      }
+    } else {
+      const page = this[`getOffsetFrom${method}`](args[1]);
+      if (page !== null) {
+        android[`onPageOffsetOf${method}Found`](page);
+        return;
+      }
+    }
+    android[`on${method}NotFound`]();
+  }
+
+  /**
+   * @param {string} anchor
+   */
+  moveToAnchor(anchor) {
+    this._moveTo('Anchor', anchor);
+  }
+
+  /**
+   * @param {string} serializedRange
+   */
+  moveToSerializedRange(serializedRange) {
+    this._moveTo('SerializedRange', serializedRange);
+  }
+
+  /**
+   * @param {string} location
+   */
+  moveToNodeLocation(location) {
+    this._moveTo('NodeLocation', location);
   }
 }

@@ -57,7 +57,7 @@ export default class Sel extends _Sel {
     if (super.start(x, y)) {
       const coord = this.getAbsoluteRectListCoord();
       if (coord.length) {
-        android.onstart(coord);
+        android.onStartSelectionMode(coord);
       }
     }
   }
@@ -90,9 +90,9 @@ export default class Sel extends _Sel {
 
   requestSelectionInfo() {
     android.onSelectionInfo(
-      this.getRange().toSerializedString(this._content.ref),
+      this.getSerializedRange(),
       this.getText(),
-      this.isExpandContinuableIntoNextPage(),
+      this.isExpandContinuableIntoNextPage,
     );
   }
 }

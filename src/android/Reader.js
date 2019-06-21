@@ -1,5 +1,6 @@
 import _Reader from '../common/_Reader';
 import Content from './Content';
+import Context from '../common/Context';
 import Util from '../common/Util';
 
 const RETRY_REQUIRED = -1;
@@ -155,7 +156,10 @@ export default class Reader extends _Reader {
   changePageSizeWithStyle(width, height, gap, style) {
     let prevPage = this.curPage;
 
-    this.context = Object.assign(this.context, { width, height, gap });
+    this.context = Context.build((context) => {
+      Object.assign(context, this.context);
+      Object.assign(context, { width, height, gap });
+    });
 
     const elements = document.getElementsByTagName('STYLE');
     const element = elements[elements.length - 1];
@@ -168,48 +172,5 @@ export default class Reader extends _Reader {
       }
       this.scrollTo(prevPage * this.context.pageUnit);
     }, 0);
-  }
-
-  /**
-   * @param {*} args
-   * @private
-   */
-  _moveTo(...args) {
-    const method = args[0];
-    if (this.context.isScrollMode) {
-      const scrollY = this[`getOffsetFrom${method}`](args[1]);
-      if (scrollY !== null) {
-        android[`onScrollYOffsetOf${method}Found`](android.dipToPixel(scrollY));
-        return;
-      }
-    } else {
-      const page = this[`getOffsetFrom${method}`](args[1]);
-      if (page !== null) {
-        android[`onPageOffsetOf${method}Found`](page);
-        return;
-      }
-    }
-    android[`on${method}NotFound`]();
-  }
-
-  /**
-   * @param {string} anchor
-   */
-  moveToAnchor(anchor) {
-    this._moveTo('Anchor', anchor);
-  }
-
-  /**
-   * @param {string} serializedRange
-   */
-  moveToSerializedRange(serializedRange) {
-    this._moveTo('SerializedRange', serializedRange);
-  }
-
-  /**
-   * @param {string} location
-   */
-  moveToNodeLocation(location) {
-    this._moveTo('NodeLocation', location);
   }
 }

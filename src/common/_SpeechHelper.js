@@ -107,7 +107,7 @@ export default class _SpeechHelper {
   /**
    * @returns {Node[]}
    */
-  get nodes() { return this._reader.content.nodes; }
+  get nodes() { return this._content.nodes; }
 
   /**
    * @returns {SpeechChunk[]}
@@ -200,7 +200,7 @@ export default class _SpeechHelper {
     }
   }
 
-  makeLastSentenceChunksInSpine() {
+  makeLastSentenceChunks() {
     this.makeChunksByNodeLocationReverse(-1, -1, true);
     const emptyChunkRegex = SpeechUtil.getWhitespaceAndNewLineRegex('^', '$', null);
     let lastSentenceChunk = null;
@@ -265,8 +265,8 @@ export default class _SpeechHelper {
     const scheduleTask = () => {
       if (hasMoreAfterChunks() || hasMoreBeforeChunks()) {
         const timeoutId = this._generateMoreChunksTimeoutId;
-        if (this.makeChunksInterval > 0) {
-          setTimeout(() => generateMoreChunks(timeoutId), this.makeChunksInterval);
+        if (this._makeChunksInterval > 0) {
+          setTimeout(() => generateMoreChunks(timeoutId), this._makeChunksInterval);
         } else {
           // Only for test
           generateMoreChunks(timeoutId);
@@ -308,7 +308,7 @@ export default class _SpeechHelper {
     nodeIndex = Math.max(nodeIndex, 0);
     wordIndex = Math.max(wordIndex, 0);
 
-    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
+    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this._reserveNodesCountMagic);
     let maxNodeIndex = Math.min(nodeIndex + reserveNodesCount, nodes.length - 1);
 
     const incrementMaxIndex = () => { maxNodeIndex = Math.min(maxNodeIndex + 1, nodes.length - 1); };
@@ -389,7 +389,7 @@ export default class _SpeechHelper {
 
     const wordsInNode = node => (node ? (node.nodeValue || '').split(SpeechUtil.getSplitWordRegex()) : []);
 
-    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this.reserveNodesCountMagic);
+    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this._reserveNodesCountMagic);
     const maxNodeIndex = nodes.length - 1;
     let minNodeIndex = Math.max(0, nodeIndex - reserveNodesCount);
     nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
@@ -496,7 +496,7 @@ export default class _SpeechHelper {
    * @returns {boolean}
    */
   didFinishMakeChunks() {
-    if (this.didFinishMakeChunksEnabled) {
+    if (this._didFinishMakeChunksEnabled) {
       this._didFinishMakeChunksEnabled = false;
       return true;
     }

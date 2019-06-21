@@ -72,7 +72,7 @@ export default class _Reader {
    */
   constructor(context) {
     this._injectMethod();
-    this._wrapper = document.body;
+    this._wrapper = document.documentElement;
     this.context = context;
     this.debugNodeLocation = false;
     this.lastNodeLocationRect = null;
@@ -91,10 +91,10 @@ export default class _Reader {
    * @param {?HTMLElement} wrapper
    */
   setContents(refs, wrapper) {
-    this._wrapper = wrapper || document.body;
+    this._wrapper = wrapper || document.documentElement;
     this._contents = [];
     refs.forEach((ref) => {
-      this._contents.push(this.createContent(ref));
+      this._contents.push(this._createContent(ref));
     });
   }
 
@@ -111,7 +111,7 @@ export default class _Reader {
    * @param {HTMLElement|number} key
    * @returns {?Content}
    */
-  getContents(key) {
+  getContent(key) {
     if (typeof key === 'number') {
       return this.contents[key];
     }
@@ -274,10 +274,10 @@ export default class _Reader {
     if (window.find(keyword, 0)) { // Case insensitive
       const range = getSelection().getRangeAt(0);
       const target = range.startContainer;
-      const ref =
+      const { ref } =
         this.contents.find(content => content.ref.compareDocumentPosition(target) & DOCUMENT_POSITION_CONTAINED_BY);
       if (ref) {
-        return rangy.serializeRange(range, true, ref);
+        return range.toSerializedString(ref);
       }
     }
     return null;
@@ -327,7 +327,9 @@ export default class _Reader {
    * @returns {number} (zero-base)
    */
   getPageOfSearchResult() {
-    const rectList = this.getRectListOfSearchResult();
-    return this.getPageFromRect(rectList[0]);
+    const range = getSelection().getRangeAt(0);
+    return this.contents
+      .find(content => content.ref.compareDocumentPosition(range.startContainer) & DOCUMENT_POSITION_CONTAINED_BY)
+      .getPageFromRect(this.getRectListOfSearchResult()[0]);
   }
 }

@@ -17,8 +17,8 @@ const TOUCH_POINT_STRIDE = 6;
  * @private @property {HTMLElement} _ref
  * @private @property {Reader} _reader
  * @private @property {Context} _context
- * @private @property {Sel} _sel
- * @private @property {SpeechHelper} _speechHelper
+ * @private @property {?Sel} _sel
+ * @private @property {?SpeechHelper} _speechHelper
  */
 class _Content {
   /**
@@ -27,12 +27,12 @@ class _Content {
   get ref() { return this._ref; }
 
   /**
-   * @returns {Sel}
+   * @returns {?Sel}
    */
   get sel() { return this._sel; }
 
   /**
-   * @returns {SpeechHelper}
+   * @returns {?SpeechHelper}
    */
   get speechHelper() { return this._speechHelper; }
 
@@ -79,7 +79,7 @@ class _Content {
   }
 
   /**
-   * @returns {Sel}
+   * @returns {?Sel}
    * @private
    */
   _createSel() {
@@ -87,7 +87,7 @@ class _Content {
   }
 
   /**
-   * @returns {SpeechHelper}
+   * @returns {?SpeechHelper}
    * @private
    */
   _createSpeechHelper() {
@@ -199,7 +199,7 @@ class _Content {
     const stride = TOUCH_POINT_STRIDE;
     for (let x = point.x - tolerance; x <= point.x + tolerance; x += stride) { // eslint-disable-line no-shadow
       for (let y = point.y - tolerance; y <= point.y + tolerance; y += stride) { // eslint-disable-line no-shadow
-        const element = this.elementFromPoint(x, y, 'A');
+        const element = this.elementFromPoint(x, y);
         if (element) {
           const link = this._getLinkFromNode(element);
           if (link !== null) {

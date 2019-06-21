@@ -22,7 +22,7 @@ export default class SpeechChunk {
     if (newRange instanceof SpeechRange) {
       this._range = newRange;
     } else {
-      this._range = new SpeechRange(0, this._fullText().length);
+      this._range = new SpeechRange(0, this._fullText.length);
     }
   }
 
@@ -35,7 +35,7 @@ export default class SpeechChunk {
   /**
    * @returns {string}
    */
-  get text() { return this._fullText().substring(this.range.startOffset, this.range.endOffset); }
+  get text() { return this._fullText.substring(this.range.startOffset, this.range.endOffset); }
 
   /**
    * @returns {SpeechUtterance}

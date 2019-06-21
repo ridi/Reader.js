@@ -60,6 +60,25 @@ export default class Context {
   }
 
   /**
+   * @returns {object}
+   */
+  toObject() {
+    return {
+      width: this.width,
+      height: this.height,
+      gap: this.height,
+      isDoublePageMode: this.isDoublePageMode,
+      isScrollMode: this.isScrollMode,
+      maxSelectionLength: this.maxSelectionLength,
+      systemMajorVersion: this.systemMajorVersion,
+      isSameDomAsUi: this.isSameDomAsUi,
+      shouldViewportInitialize: this.shouldViewportInitialize,
+      shouldTwoPageAsOneWhenDoublePageMode: this.shouldTwoPageAsOneWhenDoublePageMode,
+      onMessage: this.onMessage,
+    };
+  }
+
+  /**
    * @param {function} builder
    * @returns {Context}
    */

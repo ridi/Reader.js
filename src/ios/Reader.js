@@ -1,5 +1,6 @@
 import _Reader from '../common/_Reader';
 import Content from './Content';
+import Context from '../common/Context';
 
 /**
  * @class Reader
@@ -53,7 +54,10 @@ export default class Reader extends _Reader {
   changePageSizeWithStyle(width, height, gap, style, fontSize) {
     const prevPage = this.curPage;
 
-    this.context = Object.assign(this.context, { width, height, gap });
+    this.context = Context.build((context) => {
+      Object.assign(context, this.context);
+      Object.assign(context, { width, height, gap });
+    });
 
     const elements = document.getElementsByTagName('STYLE');
     const element = elements[elements.length - 1];
