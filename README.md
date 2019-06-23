@@ -56,10 +56,10 @@ $ npm install @ridi/reader.js
 import { Reader, Context, Util, Rect, RectList } from '@ridi/reader.js/[android|ios|web]';
 
 const context = Context.build((context) => {
-	context.width = 300;
-	context.height = 450;
-	context.gap = 0;
-	...
+  context.width = 300;
+  context.height = 450;
+  context.gap = 0;
+  ...
 });
 const reader = new Reader(context);
 ```
