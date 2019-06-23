@@ -87,6 +87,23 @@ reader.setContent(document.body, document.documentElement);
 reader.setContents([spineRefs], spineWrapperRef);
 ```
 
+### Content 가져오기
+
+- 해당하는 `Content`가 없으면 `null`을 반환한다.
+
+```js
+const content = reader.getContent(spineIndex or spineRef);
+```
+
+### `Rect`, `RectList`를 절대값으로 바꾸기
+
+- `Reader` 내에서 얻은 `Rect`, `RectList`는 `viewport`를 기준으로 계산된 상대값이기 때문에 상황에 따라서는 절대값으로 변환이 필요하다.
+
+```js
+const rect = reader.rectToAbsolute(rect);
+const rectList = reader.rectsToAbsolute(rectList);
+```
+
 ### 이미지 보정
 
 - 랜더링 이후 이미지의 크기나 비율이 원본과 다를 경우 일그러지거나 다른 페이지로 이어지게 되는 등의 문제를 보정해준다.
@@ -95,7 +112,7 @@ reader.setContents([spineRefs], spineWrapperRef);
 
 ```js
 reader.getContent(spineIndex).reviseImages(() => {
-	// 이미지 보정 작업이 완료됨
+  // 이미지 보정 작업이 완료됨
 });
 ```
 
@@ -207,15 +224,15 @@ reader.getContent(spineIndex).showNodeLocationIfDebug();
 ```js
 let serializedRange = null;
 while ((serializedRange = reader.searchText(keyword)) !== null) {
-	const text = reader.textAroundSearchResult(10, 100);
-	const rectList = reader.getRectListOfSearchResult();
-	const page = reader.getPageOfSearchResult();
+  const text = reader.textAroundSearchResult(10, 100);
+  const rectList = reader.getRectListOfSearchResult();
+  const page = reader.getPageOfSearchResult();
 }
 ```
 
 ### 텍스트 선택 시작하기
 
-- `Sel`은 랜더링에 관여하지 않고 선택하기 결과만 관리한다.
+- `Sel`은 랜더링에 관여하지 않고 선택하기 상태와 결과만 관리한다.
 - `텍스트 선택하기 기능`을 개발할 때 사용한다.
 
 ```js
@@ -233,7 +250,7 @@ const isSuccess = reader.getContent(spineIndex).sel.expandIntoLower(x, y);
 ### 위쪽으로 선택 확장하기
 
 - `sel.start`가 반드시 한번 이상 선행되어야 한다.
-- 
+
 ```js
 const isSuccess = reader.getContent(spineIndex).sel.expandIntoUpper(x, y);
 ```
