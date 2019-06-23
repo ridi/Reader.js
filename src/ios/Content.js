@@ -38,17 +38,17 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {number} screenWidth
-   * @param {number} screenHeight
+   * @param {function} callback
    */
-  reviseImages(screenWidth, screenHeight) {
+  reviseImages(callback) {
+    const { width: baseWidth, height: baseHeight } = this._context;
     const processedList = [];
     const elements = this.images;
     const tryReviseImages = () => {
       if (elements.length === processedList.length) {
         const results = [];
         processedList.forEach((element) => {
-          const { width, height, position } = this._reviseImage(element, screenWidth, screenHeight);
+          const { width, height, position } = this._reviseImage(element, baseWidth, baseHeight);
           if (width.length || height.length || position.length) {
             results.push({ element, width, height, position });
           }
@@ -70,6 +70,12 @@ export default class Content extends _Content {
           }
         });
         this.isImagesRevised = true;
+
+        if (callback) {
+          setTimeout(() => {
+            callback();
+          }, 0);
+        }
       }
     };
 

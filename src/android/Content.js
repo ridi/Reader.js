@@ -37,14 +37,14 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {number} screenWidth
-   * @param {number} screenHeight
+   * @param {function} callback
    */
-  reviseImages(screenWidth, screenHeight) {
+  reviseImages(callback) {
+    const { width: baseWidth, height: baseHeight } = this._context;
     const results = [];
 
     this.images.forEach((element) => {
-      const { width, height, position } = this._reviseImage(element, screenWidth, screenHeight);
+      const { width, height, position } = this._reviseImage(element, baseWidth, baseHeight);
       if (width.length || height.length || position.length) {
         results.push({ element, width, height, position });
       }
@@ -62,17 +62,23 @@ export default class Content extends _Content {
         element.style.position = position;
       }
     });
+
+    if (callback) {
+      setTimeout(() => {
+        callback();
+      }, 0);
+    }
   }
 
   /**
    * @param {HTMLImageElement} element
-   * @param {number} screenWidth
-   * @param {number} screenHeight
+   * @param {number} baseWidth
+   * @param {number} baseHeight
    * @returns {Image}
    * @private
    */
-  _reviseImage(element, screenWidth, screenHeight) {
-    const result = super._reviseImage(element, screenWidth, screenHeight);
+  _reviseImage(element, baseWidth, baseHeight) {
+    const result = super._reviseImage(element, baseWidth, baseHeight);
 
     //
     // * 부모에 의한 크기 소멸 보정.

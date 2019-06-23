@@ -222,12 +222,12 @@ class _Content {
    */
   /**
    * @param {HTMLImageElement} element
-   * @param {number} screenWidth
-   * @param {number} screenHeight
+   * @param {number} baseWidth
+   * @param {number} baseHeight
    * @returns {Image}
    * @private
    */
-  _reviseImage(element, screenWidth, screenHeight) {
+  _reviseImage(element, baseWidth, baseHeight) {
     const isPercentValue = (value) => {
       if (typeof value === 'string') {
         return value.search(/%/);
@@ -316,7 +316,7 @@ class _Content {
       Math.abs(calcRate(size.nWidth, size.nHeight) - calcRate(size.dWidth, size.dHeight)) > diff) {
       if (size.dWidth >= size.dHeight && size.dWidth < size.nWidth) {
         rate = (calcRate(size.dWidth, size.nWidth) / 100);
-        if (size.dWidth < screenWidth && Math.round(size.nHeight * rate) < screenHeight) {
+        if (size.dWidth < baseWidth && Math.round(size.nHeight * rate) < baseHeight) {
           cssWidth = `${size.dWidth}px`;
           cssHeight = `${Math.round(size.nHeight * rate)}px`;
         } else {
@@ -325,7 +325,7 @@ class _Content {
         }
       } else if (size.dWidth < size.dHeight && size.dHeight < size.nHeight) {
         rate = (calcRate(size.dHeight, size.nHeight) / 100);
-        if (Math.round(size.nWidth * rate) < screenWidth && size.dHeight < screenHeight) {
+        if (Math.round(size.nWidth * rate) < baseWidth && size.dHeight < baseHeight) {
           cssWidth = `${Math.round(size.nWidth * rate)}px`;
           cssHeight = `${size.dHeight}px`;
         } else {
@@ -347,16 +347,16 @@ class _Content {
 
     const width = parseInt(cssWidth, 10) || size.dWidth;
     const height = parseInt(cssHeight, 10) || size.dHeight;
-    if (width > screenWidth || height > screenHeight) {
+    if (width > baseWidth || height > baseHeight) {
       const top = this._context.isScrollMode ? 0 : element.offsetTop;
       const margin =
         top + Util.getStylePropertiesIntValue(element, ['line-height', 'margin-bottom', 'padding-bottom']);
-      const vmin = Math.min(screenWidth, screenHeight) / 2;
-      let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin);
+      const vmin = Math.min(baseWidth, baseHeight) / 2;
+      let adjustHeight = Math.max((baseHeight - margin) * maxHeight, vmin);
       let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;
-      if (adjustWidth > screenWidth) {
-        adjustHeight *= screenWidth / adjustWidth;
-        adjustWidth = screenWidth;
+      if (adjustWidth > baseWidth) {
+        adjustHeight *= baseWidth / adjustWidth;
+        adjustWidth = baseWidth;
       }
       cssWidth = `${adjustWidth}px`;
       cssHeight = `${adjustHeight}px`;
@@ -392,7 +392,7 @@ class _Content {
   /**
    * @param {Rect} rect
    * @param {HTMLElement} element
-   * @returns {?number} zero-base page number
+   * @returns {?number} zero-based page number
    */
   getPageFromRect(/* rect, element */) {
     return null;
@@ -434,7 +434,7 @@ class _Content {
 
   /**
    * anchor의 위치를 구한다.
-   * 페이지 넘김 보기일 때는 zero-base page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
+   * 페이지 넘김 보기일 때는 zero-based page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
    * 위치를 찾을 수 없을 경우 null을 반환한다.
    *
    * @param {string} anchor
@@ -451,7 +451,7 @@ class _Content {
 
   /**
    * serializedRange(rangy.js 참고)의 위치를 구한다.
-   * 페이지 넘김 보기일 때는 zero-base page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
+   * 페이지 넘김 보기일 때는 zero-based page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
    * 위치를 찾을 수 없을 경우 null을 반환한다.
    *
    * @param {string} serializedRange
@@ -626,7 +626,7 @@ class _Content {
 
   /**
    * NodeLocation의 위치를 구한다.
-   * 페이지 넘김 보기일 때는 zero-base page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
+   * 페이지 넘김 보기일 때는 zero-based page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
    * 위치를 찾을 수 없을 경우 null을 반환한다.
    *
    * @param {string} location

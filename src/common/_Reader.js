@@ -63,7 +63,7 @@ export default class _Reader {
   get pageOffset() { return this.context.isScrollMode ? this.pageYOffset : this.pageXOffset; }
 
   /**
-   * @returns {number} zero-base page number
+   * @returns {number} zero-based page number
    */
   get curPage() { return this.pageOffset / this.context.pageUnit; }
 
@@ -324,7 +324,7 @@ export default class _Reader {
   }
 
   /**
-   * @returns {number} (zero-base)
+   * @returns {number} zero-based page number
    */
   getPageOfSearchResult() {
     const range = getSelection().getRangeAt(0);

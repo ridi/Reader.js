@@ -19,9 +19,7 @@ export default class Content extends _Content {
    * @param {function} callback
    */
   reviseImages(callback) {
-    const { pageWidthUnit, pageHeightUnit, pageGap } = this._context;
-    const screenWidth = pageWidthUnit - pageGap;
-    const screenHeight = pageHeightUnit;
+    const { width: baseWidth, height: baseHeight } = this._context;
     const processedList = [];
     const elements = this.images;
 
@@ -29,7 +27,7 @@ export default class Content extends _Content {
       if (elements.length === processedList.length) {
         const results = [];
         processedList.forEach((element) => {
-          const { width, height, position } = this._reviseImage(element, screenWidth, screenHeight);
+          const { width, height, position } = this._reviseImage(element, baseWidth, baseHeight);
           if (width.length || height.length || position.length) {
             results.push({ element, width, height, position });
           }
@@ -47,7 +45,12 @@ export default class Content extends _Content {
             element.style.position = position;
           }
         });
-        callback();
+
+        if (callback) {
+          setTimeout(() => {
+            callback();
+          }, 0);
+        }
       }
     };
 
