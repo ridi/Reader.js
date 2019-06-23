@@ -185,10 +185,11 @@ const rectList = reader.getContent(spineIndex).getRectListFromSerializedRange(se
 ### 특정 `nodeLocation`의 위치(`offset`) 구하기
 
 - 위치를 찾을 수 없으면 `null`을 반환한다.
+- `type` 생략 시 `top`으로 간주한다.
 - `마지막 페이지 동기화 정확도 향상`을 위해 사용한다.
 
 ```js
-const offset = reader.getContent(spineIndex).getOffsetFromNodeLocation(nodeLocation);
+const offset = reader.getContent(spineIndex).getOffsetFromNodeLocation(nodeLocation or string, type);
 ```
 
 ### 현재 페이지의 `nodeLocation` 구하기

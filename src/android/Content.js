@@ -144,7 +144,7 @@ export default class Content extends _Content {
       return;
     }
 
-    android.onNodeLocationOfCurrentPageFound(location);
+    android.onNodeLocationOfCurrentPageFound(location.toString());
   }
 
   /**

@@ -629,11 +629,14 @@ class _Content {
    * 페이지 넘김 보기일 때는 zero-based page number를, 스크롤 보기일 때는 scrollYOffset을 반환한다.
    * 위치를 찾을 수 없을 경우 null을 반환한다.
    *
-   * @param {string} location
+   * @param {string|NodeLocation} location
    * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {?number}
    */
   getOffsetFromNodeLocation(location, type = Type.TOP) {
+    if (location instanceof NodeLocation) {
+      location = location.toString();
+    }
     const { nodeIndex, wordIndex } = NodeLocation.fromString(location, type);
 
     if (nodeIndex === -1 || wordIndex === -1) {

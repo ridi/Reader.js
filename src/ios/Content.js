@@ -131,7 +131,7 @@ export default class Content extends _Content {
   getNodeLocationOfCurrentPage(type = NodeLocation.Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
-    const notFound = new NodeLocation(-1, -1, type);
+    const notFound = new NodeLocation(-1, -1, type).toString();
 
     // 앱이 백그라운드 상태일 때는 계산하지 않는다.
     // (백그라운드 상태에서는 scrollLeft 값을 신뢰할 수 없기 때문)
@@ -145,7 +145,7 @@ export default class Content extends _Content {
       return notFound;
     }
 
-    return location;
+    return location.toString();
   }
 
   /**

@@ -45,7 +45,7 @@ export default class _Sel {
   /**
    * @param {number} x
    * @param {number} y
-   * @param {string} unit character or word
+   * @param {?string} unit character or word
    * @returns {boolean}
    */
   start(x, y, unit) {
@@ -68,7 +68,7 @@ export default class _Sel {
   /**
    * @param {number} x
    * @param {number} y
-   * @param {string} unit character or word
+   * @param {?string} unit character or word
    * @returns {boolean}
    */
   expandIntoUpper(x, y, unit = 'character') {
@@ -118,7 +118,7 @@ export default class _Sel {
   /**
    * @param {number} x
    * @param {number} y
-   * @param {string} unit character or word
+   * @param {?string} unit character or word
    * @returns {boolean}
    */
   expandIntoLower(x, y, unit = 'character') {
@@ -368,7 +368,7 @@ export default class _Sel {
   /**
    * @param {number} x
    * @param {number} y
-   * @param {string} unit character or word
+   * @param {?string} unit character or word
    * @returns {?Range}
    */
   _caretRangeFromPoint(x, y, unit = 'word') {
