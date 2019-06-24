@@ -9,6 +9,8 @@ const { Type } = NodeLocation;
 const TOUCH_POINT_TOLERANCE = 12;
 const TOUCH_POINT_STRIDE = 6;
 
+const makeId = (i => (prefix) => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
+
 /**
  * @class _Content
  * @private @property {HTMLElement} _ref
@@ -92,6 +94,37 @@ class _Content {
   }
 
   /**
+   * @param {HTMLElement} element
+   * @returns {string}
+   */
+  _generateId(element) {
+    const prefix = element.nodeName;
+    const id = element.classList.value.split(' ').find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
+    element.classList.remove(id);
+    element.classList.add(id);
+    return id;
+  }
+
+  /**
+   * @param {hoolean} hidden
+   * @param {HTMLElement|string} elementOrId
+   */
+  setHidden(hidden, elementOrId) {
+    let el;
+    if (typeof elementOrId === 'string') {
+      [el] = document.getElementsByClassName(elementOrId);
+      if (!el) {
+        el = document.getElementById(elementOrId);
+      }
+    } else {
+      el = elementOrId;
+    }
+    if (el) {
+      el.style.visibility = hidden ? 'hidden' : '';
+    }
+  }
+
+  /**
    * @param {number} x
    * @param {number} y
    * @param {?string} tag
@@ -117,30 +150,54 @@ class _Content {
       return null;
     }
 
-    const result = document.elementFromPoint(x, y);
-    if (result && tag) {
-      return result.nodeName === tag ? result : null;
+    let result = document.elementFromPoint(x, y);
+    if (tag) {
+      while (result && result.nodeName.toLowerCase() !== tag.toLowerCase()) {
+        result = result.parentElement;
+      }
     }
     return result;
   }
 
   /**
-   * @param {number} x
-   * @param {number} y
-   * @returns {?string}
+   * @typedef {object} Image
+   * @property {string} id
+   * @property {HTMLImageElement} element
+   * @property {string} src
+   * @property {Rect} rect
    */
-  imagePathFromPoint(x, y) {
-    const element = this.elementFromPoint(x, y, 'IMG');
-    return element ? element.src : null;
-  }
-
   /**
    * @param {number} x
    * @param {number} y
-   * @returns {?string}
+   * @returns {?Image}
    */
-  svgHtmlFromPoint(x, y) {
-    const element = this.elementFromPoint(x, y, 'svg'); // svg의 nodeName은 소문자가 맞음.
+  imageFromPoint(x, y) {
+    const element = this.elementFromPoint(x, y, 'IMG');
+    if (element && element.src) {
+      return {
+        id: this._generateId(element),
+        element,
+        src: element.src || 'null',
+        rect: element.getBoundingClientRect().toRect(),
+      };
+    }
+    return null;
+  }
+
+  /**
+   * @typedef {object} Svg
+   * @property {string} id
+   * @property {HTMLSVGElement} element
+   * @property {string} html
+   * @property {Rect} rect
+   */
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @returns {?Svg}
+   */
+  svgFromPoint(x, y) {
+    const element = this.elementFromPoint(x, y, 'SVG');
     if (element) {
       let prefix = '<svg';
       const attrs = element.attributes;
@@ -154,7 +211,12 @@ class _Content {
       for (let j = 0; j < nodes.length; j += 1) {
         svgElement.appendChild(nodes[j].cloneNode(true));
       }
-      return `${prefix}${svgElement.innerHTML}</svg>`;
+      return {
+        id: this._generateId(svgElement),
+        element: svgElement,
+        html: `${prefix}${svgElement.innerHTML}</svg>`,
+        rect: svgElement.getBoundingClientRect().toRect(),
+      };
     }
     return null;
   }
