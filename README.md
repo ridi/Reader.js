@@ -125,24 +125,24 @@ reader.getContent(spineIndex).reviseImages(() => {
 const element = reader.getContent(spineIndex).elementFromPoint(x, y{, tag});
 ```
 
-### 클릭/터치 지점의 이미지 경로 얻기
+### 클릭/터치 지점의 이미지 얻기
 
 - 클릭/터치 지점에 이미지(`img`)가 없거나 `src` 애트리뷰트가 없는 경우 `null`을 반환한다.
 - `이미지 확대 보기 기능`을 구현할 때 사용한다.
 
 ```js
-const imagePath = reader.getContent(spineIndex).imagePathFromPoint(x, y);
-// imagePath: '../Images/0001.jpg'
+const image = reader.getContent(spineIndex).imageFromPoint(x, y);
+// image: { id: 'img-1', element: ..., src: '../Images/0001.jpg', rect: ... }
 ```
 
-### 클릭/터치 지점의 SVG HTML 얻기
+### 클릭/터치 지점의 SVG 얻기
 
 - 클릭/터치 지점에 `svg`가 없으면 `null`을 반환한다.
 - `이미지 확대 보기 기능`을 구현할 때 사용한다.
 
 ```js
-const html = reader.getContent(spineIndex).svgHtmlFromPoint(x, y);
-// html: '<svg width="298px" height="120px" ...>...</svg>'
+const svg = reader.getContent(spineIndex).svgFromPoint(x, y);
+// svg: { id: 'svg-1', element: ..., html: '<svg width="298px" height="120px" ...>...</svg>', rect: ... }
 ```
 
 ### 클릭/터치 지점의 링크 정보 얻기
@@ -209,6 +209,12 @@ const nodeLocation = reader.getContent(spineIndex).getCurrentNodeLocation(type);
 ```js
 reader.debugNodeLocation = true;
 reader.getContent(spineIndex).showNodeLocationIfDebug();
+```
+
+### 엘리먼트 숨기기
+
+```js
+reader.getContent(spineIndex).setHidden(hidden, element or id);
 ```
 
 ### 본문 검색하기
