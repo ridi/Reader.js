@@ -128,7 +128,7 @@ export default class Content extends _Content {
    * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {string}
    */
-  getNodeLocationOfCurrentPage(type = NodeLocation.Type.TOP) {
+  getCurrentNodeLocation(type = NodeLocation.Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
     const notFound = new NodeLocation(-1, -1, type).toString();

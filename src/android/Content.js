@@ -133,7 +133,7 @@ export default class Content extends _Content {
   /**
    * @param {string} type Type.Top or Type.BOTTOM
    */
-  getNodeLocationOfCurrentPage(type = NodeLocation.Type.TOP) {
+  getCurrentNodeLocation(type = NodeLocation.Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
 

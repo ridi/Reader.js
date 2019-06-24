@@ -199,7 +199,7 @@ const offset = reader.getContent(spineIndex).getOffsetFromNodeLocation(nodeLocat
 - `마지막 페이지 동기화 정확도 향상`을 위해 사용한다.
 
 ```js
-const nodeLocation = reader.getContent(spineIndex).getNodeLocationOfCurrentPage(type);
+const nodeLocation = reader.getContent(spineIndex).getCurrentNodeLocation(type);
 ```
 
 ### `nodeLocation` 디버깅하기
@@ -284,6 +284,12 @@ sel.getSerializedRange();
 sel.getRectList();
 sel.getText();
 sel.getAbsoluteRectListCoord(); // 네이티브용
+```
+
+### `Rect`의 페이지 구하기
+
+```js
+const page = reader.getContent(spineIndex).getPageFromRect(rect);
 ```
 
 ## 개발환경
