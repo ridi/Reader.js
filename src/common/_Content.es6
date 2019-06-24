@@ -1,6 +1,8 @@
 import _Object from './_Object';
 import _Util from './_Util';
 
+const makeId = (i => (prefix) => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
+
 export default class _Content extends _Object {
   /**
    * @returns {HTMLElement}
@@ -76,25 +78,63 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {Number} x
-   * @param {Number} y
+   * @param {HTMLElement} element
    * @returns {String}
    */
-  getImagePathFromPoint(x, y) {
-    const el = document.elementFromPoint(x, y);
-    return (el && el.nodeName === 'IMG') ? (el.src || 'null') : 'null';
+  generateId(element) {
+    const prefix = element.nodeName;
+    const id = element.classList.value.split(' ').find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
+    element.classList.remove(id);
+    element.classList.add(id);
+    return id;
+  }
+
+  /**
+   * @param {Boolean} hidden
+   * @param {HTMLElement|String} any
+   */
+  setHidden(hidden, any) {
+    let el;
+    if (typeof any === 'string') {
+      [el] = document.getElementsByClassName(any);
+      if (!el) {
+        el = document.getElementById(any);
+      }
+    } else {
+      el = any;
+    }
+    if (el) {
+      el.style.visibility = hidden ? 'hidden' : '';
+    }
   }
 
   /**
    * @param {Number} x
    * @param {Number} y
-   * @returns {String}
+   * @returns {Object}
    */
-  getSvgElementFromPoint(x, y) {
+  getImageFromPoint(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (el && el.nodeName === 'IMG') {
+      return {
+        id: this.generateId(el),
+        element: el,
+        src: el.src || 'null',
+        rect: el.getAdjustedBoundingClientRect(),
+      };
+    }
+    return null;
+  }
+
+  /**
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {Object}
+   */
+  getSvgFromPoint(x, y) {
     let el = document.elementFromPoint(x, y);
     while (el && el.nodeName !== 'HTML' && el.nodeName !== 'BODY') {
-      el = el.parentElement;
-      if (el.nodeName === 'SVG') {
+      if (el.nodeName.toLowerCase() === 'svg') { // SVGElement는 nodeName이 대문자가 아니다.
         let prefix = '<svg';
 
         const attrs = el.attributes;
@@ -111,10 +151,16 @@ export default class _Content extends _Object {
           svgEl.appendChild(nodes[j].cloneNode(true));
         }
 
-        return `${prefix}${svgEl.innerHTML}</svg>`;
+        return {
+          id: this.generateId(el),
+          element: el,
+          html: `${prefix}${svgEl.innerHTML}</svg>`,
+          rect: el.getAdjustedBoundingClientRect(),
+        };
       }
+      el = el.parentElement;
     }
-    return 'null';
+    return null;
   }
 
   /**
