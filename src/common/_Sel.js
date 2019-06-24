@@ -473,6 +473,6 @@ export default class _Sel {
    * @returns {string}
    */
   getAbsoluteRectListCoord() {
-    return this._reader.rectsToAbsolute(this.getRectList()).trim().toCoord();
+    return this._reader.rectListToAbsolute(this.getRectList()).trim().toCoord();
   }
 }

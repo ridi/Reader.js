@@ -74,7 +74,7 @@ export default class _Reader {
    * @param {Context} context
    */
   constructor(context) {
-    this._injectMethod();
+    this._injectMethodIfOnce();
     this._wrapper = document.documentElement;
     this.context = context;
     this.debugNodeLocation = false;
@@ -126,14 +126,14 @@ export default class _Reader {
   /**
    * @private
    */
-  _injectMethod() {
-    const injectIfNeeded = (target, name, value) => {
+  _injectMethodIfOnce() {
+    const inject = (target, name, value) => {
       if (!target[name]) {
         target[name] = value;
       }
     };
 
-    injectIfNeeded(Range.prototype, 'getTextRectList', function getTextRectList() {
+    inject(Range.prototype, 'getTextRectList', function getTextRectList() {
       const {
         startContainer,
         startOffset,
@@ -186,11 +186,11 @@ export default class _Reader {
       return rectList;
     });
 
-    injectIfNeeded(Range.prototype, 'toSerializedString', function toSerializedString(root) {
+    inject(Range.prototype, 'toSerializedString', function toSerializedString(root) {
       return rangy.serializeRange(this, true, root);
     });
 
-    injectIfNeeded(Range, 'fromSerializedString', (string, root) => {
+    inject(Range, 'fromSerializedString', (string, root) => {
       const range = rangy.deserializeRange(string, root);
       const newRange = document.createRange();
       newRange.setStart(range.startContainer, range.startOffset);
@@ -204,14 +204,14 @@ export default class _Reader {
     try { rectCls.push(ClientRect) } catch (e) {} // eslint-disable-line
     rectCls.forEach((cls) => {
       if (cls) {
-        injectIfNeeded(cls.prototype, 'toRect', function toRect() {
+        inject(cls.prototype, 'toRect', function toRect() {
           return new Rect(this);
         });
       }
     });
 
     const listCls = document.documentElement.getClientRects().constructor;
-    injectIfNeeded(listCls.prototype, 'toRectList', function toRectList() {
+    inject(listCls.prototype, 'toRectList', function toRectList() {
       return new RectList(...RectList.from(this, rect => rect.toRect()));
     });
   }
@@ -253,7 +253,7 @@ export default class _Reader {
    * @param {RectList|DOMRectList|ClientRectList} rects
    * @returns {RectList}
    */
-  rectsToAbsolute(rects) {
+  rectListToAbsolute(rects) {
     if (!(rects instanceof RectList)) {
       rects = RectList.from(rects, rect => rect.toRect());
     }
@@ -348,7 +348,9 @@ export default class _Reader {
     const end = endOffset;
     const newEnd = Math.min(newStart + post, endContainer.length);
 
+    // FIXME: pre가 startContainer를 벗어날 경우 확장하도록
     range.setStart(startContainer, newStart);
+    // FIXME: post가 endContainer를 벗어날 경우 확장하도록
     range.setEnd(endContainer, newEnd);
 
     const result = range.toString();

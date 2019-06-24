@@ -102,7 +102,7 @@ export default class Content extends _Content {
 
   /**
    * @param {Rect} rect
-   * @param {HTMLElement} element
+   * @param {?HTMLElement} element
    * @returns {?number}
    */
   getPageFromRect(rect, element) {
@@ -168,7 +168,7 @@ export default class Content extends _Content {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rectListCoord = this._reader.rectsToAbsolute(range.getClientRects()).trim().toCoord();
+        const rectListCoord = this._reader.rectListToAbsolute(range.getClientRects()).trim().toCoord();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         const canUseFootnote = href.match(/^file:\/\//gm) !== null &&

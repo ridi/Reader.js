@@ -102,7 +102,7 @@ export default class Content extends _Content {
 
   /**
    * @param {Rect} rect
-   * @param {HTMLElement} element
+   * @param {?HTMLElement} element
    * @returns {?number}
    */
   getPageFromRect(rect, element) {
@@ -153,7 +153,7 @@ export default class Content extends _Content {
    */
   getRectListFromSerializedRange(index, serializedRange) {
     const rectList = super.getRectListFromSerializedRange(serializedRange);
-    const rectListCoord = this._reader.rectsToAbsolute(rectList).toCoord();
+    const rectListCoord = this._reader.rectListToAbsolute(rectList).toCoord();
     android.onRectListOfSerializedRange(index, serializedRange, rectListCoord);
   }
 
@@ -173,7 +173,7 @@ export default class Content extends _Content {
 
         const { context, pageYOffset, curPage } = this._reader;
 
-        const rectListCoord = this._reader.rectsToAbsolute(range.getClientRects()).trim().toCoord();
+        const rectListCoord = this._reader.rectListToAbsolute(range.getClientRects()).trim().toCoord();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&

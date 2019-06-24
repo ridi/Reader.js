@@ -74,7 +74,7 @@ export default class Content extends _Content {
 
   /**
    * @param {Rect} rect
-   * @param {HTMLElement} element
+   * @param {?HTMLElement} element
    * @returns {?number}
    */
   getPageFromRect(rect, element) {

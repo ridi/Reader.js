@@ -388,7 +388,7 @@ class _Content {
 
   /**
    * @param {Rect} rect
-   * @param {HTMLElement} element
+   * @param {?HTMLElement} element
    * @returns {?number} zero-based page number
    */
   getPageFromRect(/* rect, element */) {

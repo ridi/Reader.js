@@ -101,7 +101,7 @@ const content = reader.getContent(spineIndex or spineRef);
 
 ```js
 const rect = reader.rectToAbsolute(rect);
-const rectList = reader.rectsToAbsolute(rectList);
+const rectList = reader.rectListToAbsolute(rectList);
 ```
 
 ### 이미지 보정
