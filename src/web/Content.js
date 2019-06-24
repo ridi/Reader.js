@@ -12,7 +12,7 @@ export default class Content extends _Content {
    * @private
    */
   _createSel() {
-    return new Sel(this._reader);
+    return new Sel(this);
   }
 
   /**
