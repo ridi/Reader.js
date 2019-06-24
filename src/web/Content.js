@@ -101,7 +101,7 @@ export default class Content extends _Content {
     const notFound = new NodeLocation(-1, -1, type);
 
     const location = this._findNodeLocation(startOffset, endOffset, type);
-    this.showNodeLocationIfDebug();
+    this._reader._showNodeLocationIfDebug();
     if (!location) {
       return notFound;
     }

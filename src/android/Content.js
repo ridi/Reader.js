@@ -138,7 +138,7 @@ export default class Content extends _Content {
     const endOffset = this._context.pageUnit;
 
     const location = this._findNodeLocation(startOffset, endOffset, type);
-    this.showNodeLocationIfDebug();
+    this._reader._showNodeLocationIfDebug();
     if (!location) {
       android.onNodeLocationOfCurrentPageNotFound();
       return;

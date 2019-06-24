@@ -4,6 +4,9 @@ import RectList from './RectList';
 
 const { DOCUMENT_POSITION_PRECEDING, DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINED_BY } = Node;
 
+const HIGHLIGHT_ID = 'node-location-highlight';
+const HIGHLIGHT_MIN_WIDTH = 3;
+
 /**
  * @class _Reader
  * @private @property {HTMLElement} _wrapper
@@ -91,6 +94,8 @@ export default class _Reader {
    * @param {?HTMLElement} wrapper
    */
   setContents(refs, wrapper) {
+    this.lastNodeLocationRect = null;
+    this._hideNodeLocation();
     this._wrapper = wrapper || document.documentElement;
     this._contents = [];
     refs.forEach((ref) => {
@@ -253,6 +258,46 @@ export default class _Reader {
       rects = RectList.from(rects, rect => rect.toRect());
     }
     return rects.map(rect => this.rectToAbsolute(rect));
+  }
+
+  /**
+   * @private
+   */
+  _hideNodeLocation() {
+    const span = document.getElementById(HIGHLIGHT_ID);
+    if (span) {
+      span.setAttribute('style', 'display: none !important');
+    }
+  }
+
+  /**
+   * @private
+   */
+  _showNodeLocationIfDebug() {
+    if (!this.debugNodeLocation || this.lastNodeLocationRect === null) {
+      return;
+    }
+
+    const id = HIGHLIGHT_ID;
+    let span = document.getElementById(id);
+    if (!span) {
+      span = document.createElement('span');
+      span.setAttribute('id', id);
+      document.body.appendChild(span);
+    }
+
+    const rect = this.lastNodeLocationRect;
+    rect[this.context.isScrollMode ? 'top' : 'left'] += this.pageOffset;
+    span.style.cssText =
+      'position: absolute !important;' +
+      'background-color: red !important;' +
+      `left: ${rect.left}px !important;` +
+      `top: ${rect.top}px !important;` +
+      `width: ${(rect.width || HIGHLIGHT_MIN_WIDTH)}px !important;` +
+      `height: ${rect.height}px !important;` +
+      'display: block !important;' +
+      'opacity: 0.4 !important;' +
+      'z-index: 99 !important;';
   }
 
   /**

@@ -6,9 +6,6 @@ const { SHOW_TEXT, SHOW_ELEMENT } = NodeFilter;
 
 const { Type } = NodeLocation;
 
-const HIGHLIGHT_ID = 'node-location-highlight';
-const HIGHLIGHT_MIN_WIDTH = 3;
-
 const TOUCH_POINT_TOLERANCE = 12;
 const TOUCH_POINT_STRIDE = 6;
 
@@ -595,33 +592,6 @@ class _Content {
     }
 
     return null;
-  }
-
-  showNodeLocationIfDebug() {
-    if (!this._reader.debugNodeLocation || this._reader.lastNodeLocationRect === null) {
-      return;
-    }
-
-    const id = HIGHLIGHT_ID;
-    let span = document.getElementById(id);
-    if (!span) {
-      span = document.createElement('span');
-      span.setAttribute('id', id);
-      document.body.appendChild(span);
-    }
-
-    const rect = this._reader.lastNodeLocationRect;
-    rect[this._context.isScrollMode ? 'top' : 'left'] += this._reader.pageOffset;
-    span.style.cssText =
-      'position: absolute !important;' +
-      'background-color: red !important;' +
-      `left: ${rect.left}px !important;` +
-      `top: ${rect.top}px !important;` +
-      `width: ${(rect.width || HIGHLIGHT_MIN_WIDTH)}px !important;` +
-      `height: ${rect.height}px !important;` +
-      'display: block !important;' +
-      'opacity: 0.4 !important;' +
-      'z-index: 99 !important;';
   }
 
   /**
