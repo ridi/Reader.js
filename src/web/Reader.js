@@ -7,6 +7,16 @@ import Content from './Content';
  */
 export default class Reader extends _Reader {
   /**
+   * @returns {number}
+   */
+  get pageXOffset() { return this._wrapper.parentElement.scrollLeft; }
+
+  /**
+   * @returns {number}
+   */
+  get pageYOffset() { return this._wrapper.parentElement.scrollTop; }
+
+  /**
    * @param {HTMLElement} ref
    * @returns {Content}
    * @private
