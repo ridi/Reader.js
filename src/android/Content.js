@@ -103,7 +103,7 @@ export default class Content extends _Content {
   /**
    * @param {Rect} rect
    * @param {?HTMLElement} element
-   * @returns {?number}
+   * @returns {?number} zero-based page number
    */
   getPageFromRect(rect, element) {
     if (rect === null) {

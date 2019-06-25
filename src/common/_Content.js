@@ -451,7 +451,7 @@ class _Content {
   /**
    * @param {Rect} rect
    * @param {?HTMLElement} element
-   * @returns {?number} zero-based page number
+   * @returns {?number}
    */
   getPageFromRect(/* rect, element */) {
     return null;
@@ -520,7 +520,13 @@ class _Content {
     try {
       const range = Range.fromSerializedString(serializedRange, this.ref);
       const rectList = range.getClientRects().toRectList();
-      return this.getPageFromRect(rectList[0]);
+      if (rectList.length > 0) {
+        if (this.context.isScrollMode) {
+          return rectList[0].top + this.pageYOffset;
+        }
+        return this.getPageFromRect(rectList[0]);
+      }
+      return null;
     } catch (e) {
       return null;
     }

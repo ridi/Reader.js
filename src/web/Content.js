@@ -2,6 +2,8 @@ import _Content from '../common/_Content';
 import NodeLocation from '../common/NodeLocation';
 import Sel from './Sel';
 
+const { Type } = NodeLocation;
+
 /**
  * @class Content
  * @extends _Content
@@ -75,7 +77,7 @@ export default class Content extends _Content {
   /**
    * @param {Rect} rect
    * @param {?HTMLElement} element
-   * @returns {?number}
+   * @returns {?number} one-based page number
    */
   getPageFromRect(rect, element) {
     if (rect === null) {
@@ -88,14 +90,63 @@ export default class Content extends _Content {
     const direction = this._getOffsetDirectionFromElement(element);
     const origin = rect[direction] + pageOffset;
     const pageUnit = direction === 'left' ? pageWidthUnit : pageHeightUnit;
-    return Math.floor(origin / pageUnit);
+    return Math.floor(origin / pageUnit) + 1;
+  }
+
+  /**
+   * anchor의 페이지를 구한다.
+   * 페이지를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} anchor
+   * @returns {?number} one-based page number
+   */
+  getPageFromAnchor(anchor) {
+    return this._getOffsetFromAnchor(anchor, (rect, element) => {
+      if (rect.left === null || rect.top === null) {
+        return null;
+      }
+      return this.getPageFromRect(rect, element);
+    });
+  }
+
+  /**
+   * serializedRange(rangy.js 참고)의 페이지를 구한다.
+   * 페이지를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string} serializedRange
+   * @returns {?number} one-based page number
+   */
+  getPageFromSerializedRange(serializedRange) {
+    const offset = this.getOffsetFromSerializedRange(serializedRange);
+    const { isScrollMode, pageHeightUnit } = this._context;
+    if (isScrollMode && offset !== null) {
+      return Math.floor(offset / pageHeightUnit) + 1;
+    }
+    return offset;
+  }
+
+  /**
+   * NodeLocation의 페이지를 구한다.
+   * 페이지를 찾을 수 없을 경우 null을 반환한다.
+   *
+   * @param {string|NodeLocation} location
+   * @param {string} type Type.TOP or Type.BOTTOM
+   * @returns {?number} one-based page number
+   */
+  getOffsetFromNodeLocation(location, type = Type.TOP) {
+    const offset = this.getOffsetFromNodeLocation(location, type);
+    const { isScrollMode, pageHeightUnit } = this._context;
+    if (isScrollMode && offset !== null) {
+      return Math.floor(offset / pageHeightUnit) + 1;
+    }
+    return offset;
   }
 
   /**
    * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {NodeLocation}
    */
-  getCurrentNodeLocation(type = NodeLocation.Type.TOP) {
+  getCurrentNodeLocation(type = Type.TOP) {
     const startOffset = 0;
     const endOffset = this._context.pageUnit;
     const notFound = new NodeLocation(-1, -1, type);
