@@ -187,7 +187,7 @@ class _Content {
   /**
    * @typedef {object} Svg
    * @property {string} id
-   * @property {HTMLSVGElement} element
+   * @property {SVGElement} element
    * @property {string} html
    * @property {Rect} rect
    */
