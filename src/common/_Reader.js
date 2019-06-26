@@ -363,7 +363,7 @@ export default class _Reader {
   /**
    * @returns {RectList}
    */
-  getRectListOfSearchResult() {
+  getRectListFromSearchResult() {
     return getSelection()
       .getRangeAt(0)
       .getClientRects()
@@ -373,7 +373,7 @@ export default class _Reader {
   /**
    * @returns {number} zero-based page number
    */
-  getPageOfSearchResult() {
+  getPageFromSearchResult() {
     const range = getSelection().getRangeAt(0);
     return this.contents
       .find(content => content.ref.compareDocumentPosition(range.startContainer) & DOCUMENT_POSITION_CONTAINED_BY)
