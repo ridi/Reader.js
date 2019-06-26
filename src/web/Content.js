@@ -76,10 +76,9 @@ export default class Content extends _Content {
 
   /**
    * @param {Rect} rect
-   * @param {?HTMLElement} element
    * @returns {?number} one-based page number
    */
-  getPageFromRect(rect, element) {
+  getPageFromRect(rect) {
     if (rect === null) {
       return null;
     }
@@ -87,7 +86,7 @@ export default class Content extends _Content {
     const { pageOffset } = this._reader;
     const { pageWidthUnit, pageHeightUnit } = this._context;
 
-    const direction = this._getOffsetDirectionFromElement(element);
+    const direction = this._context.isScrollMode ? 'top' : 'left';
     const origin = rect[direction] + pageOffset;
     const pageUnit = direction === 'left' ? pageWidthUnit : pageHeightUnit;
     return Math.floor(origin / pageUnit) + 1;
