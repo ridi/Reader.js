@@ -462,7 +462,7 @@ class _Content {
    * @returns {?HTMLElement}
    */
   _getElementById(id) {
-    if (this._reader.contents.length > 1) {
+    if (this._reader.contents.length > 1 || id) {
       return this._ref.querySelector(`#${id}`);
     }
     return document.getElementById(id);
@@ -683,6 +683,10 @@ class _Content {
    * @returns {?number}
    */
   getOffsetFromNodeLocation(location, type = Type.TOP) {
+    if (location === null) {
+      return null;
+    }
+
     if (location instanceof NodeLocation) {
       location = location.toString();
     }
