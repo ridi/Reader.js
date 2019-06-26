@@ -458,13 +458,24 @@ class _Content {
   }
 
   /**
+   * @param {string} id
+   * @returns {?HTMLElement}
+   */
+  _getElementById(id) {
+    if (this._reader.contents.length > 1) {
+      return this._ref.querySelector(`#${id}`);
+    }
+    return document.getElementById(id);
+  }
+
+  /**
    * @param {string} anchor
    * @param {function} block
    * @returns {number}
    * @private
    */
   _getOffsetFromAnchor(anchor, block) {
-    const element = document.getElementById(anchor);
+    const element = this._getElementById(anchor);
     if (element) {
       const iterator = Util.createTextNodeIterator(element);
       const node = iterator.nextNode();
