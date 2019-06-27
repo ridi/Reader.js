@@ -532,7 +532,7 @@ class _Content {
       const range = Range.fromSerializedString(serializedRange, this.ref);
       const rectList = range.getClientRects().toRectList().toAbsolute();
       if (rectList.length > 0) {
-        if (this.context.isScrollMode) {
+        if (this._context.isScrollMode) {
           return rectList[0].top;
         }
         return this.getPageFromRect(rectList[0]);
