@@ -110,16 +110,15 @@ export default class Content extends _Content {
       return null;
     }
 
-    const { calcPageForDoublePageMode, pageOffset } = this._reader;
     const { pageWidthUnit, pageHeightUnit } = this._context;
 
     const direction = this._getOffsetDirectionFromElement(element);
-    const origin = rect[direction] + pageOffset;
+    const origin = rect[direction];
     const pageUnit = direction === 'left' ? pageWidthUnit : pageHeightUnit;
     const offset = origin / pageUnit;
     const fOffset = Math.floor(offset);
 
-    if (calcPageForDoublePageMode) {
+    if (this._reader.calcPageForDoublePageMode) {
       const rOffset = Math.round(offset);
       if (fOffset === rOffset) {
         return fOffset;
@@ -153,8 +152,7 @@ export default class Content extends _Content {
    */
   getRectListFromSerializedRange(index, serializedRange) {
     const rectList = super.getRectListFromSerializedRange(serializedRange);
-    const rectListCoord = this._reader.rectListToAbsolute(rectList).toCoord();
-    android.onRectListOfSerializedRange(index, serializedRange, rectListCoord);
+    android.onRectListOfSerializedRange(index, serializedRange, rectList.toCoord());
   }
 
   /**
@@ -173,7 +171,6 @@ export default class Content extends _Content {
 
         const { context, pageYOffset, curPage } = this._reader;
 
-        const rectListCoord = this._reader.rectListToAbsolute(range.getClientRects()).trim().toCoord();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         let canUseFootnote = href.match(/^file:\/\//gm) !== null &&
@@ -192,6 +189,7 @@ export default class Content extends _Content {
           }
         }
 
+        const rectListCoord = range.getClientRects().toRectList().trim().toAbsolute().toCoord();
         android.onLinkPressed(href, rectListCoord, canUseFootnote, footnoteType >= 3.0 ? text : null);
         return;
       }

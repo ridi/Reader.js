@@ -89,6 +89,15 @@ export default class Rect {
   }
 
   /**
+   * Reader가 생성될 때 구현
+   *
+   * @returns {Rect}
+   */
+  toAbsolute() {
+    return null;
+  }
+
+  /**
    * @returns {string}
    */
   toCoord() {

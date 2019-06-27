@@ -459,7 +459,7 @@ export default class _Sel {
    * @returns {RectList}
    */
   getRectList() {
-    return this.getRange().getTextRectList();
+    return this.getRange().getTextRectList().trim().toAbsolute();
   }
 
   /**
@@ -467,12 +467,5 @@ export default class _Sel {
    */
   getText() {
     return this.getRange().toString();
-  }
-
-  /**
-   * @returns {string}
-   */
-  getAbsoluteRectListCoord() {
-    return this._reader.rectListToAbsolute(this.getRectList()).trim().toCoord();
   }
 }

@@ -74,7 +74,7 @@ export default class _Reader {
    * @param {Context} context
    */
   constructor(context) {
-    this._injectMethodIfOnce();
+    this._injectMethod();
     this._wrapper = document.documentElement;
     this.context = context;
     this.debugNodeLocation = false;
@@ -126,9 +126,9 @@ export default class _Reader {
   /**
    * @private
    */
-  _injectMethodIfOnce() {
-    const inject = (target, name, value) => {
-      if (!target[name]) {
+  _injectMethod() {
+    const inject = (target, name, value, force = false) => {
+      if (force || !target[name]) {
         target[name] = value;
       }
     };
@@ -214,6 +214,20 @@ export default class _Reader {
     inject(listCls.prototype, 'toRectList', function toRectList() {
       return new RectList(...RectList.from(this, rect => rect.toRect()));
     });
+
+    const reader = this;
+    inject(Rect.prototype, 'toAbsolute', function toAbsolute() {
+      if (reader.context.isScrollMode) {
+        this.top += reader.pageYOffset;
+      } else {
+        this.left += reader.pageXOffset;
+      }
+      return this;
+    }, true);
+
+    inject(RectList.prototype, 'toAbsolute', function toAbsolute() {
+      return this.map(rect => rect.toAbsolute());
+    });
   }
 
   /**
@@ -230,34 +244,6 @@ export default class _Reader {
       document.getElementsByTagName('head')[0].appendChild(viewport);
     }
     viewport.content = value;
-  }
-
-  /**
-   * @param {Rect|DOMRect|ClientRect} rect
-   * @returns {Rect}
-   */
-  rectToAbsolute(rect) {
-    if (!(rect instanceof Rect)) {
-      rect = new Rect(rect);
-    }
-    const inset = { top: this.pageYOffset, left: this.pageXOffset };
-    if (this.context.isScrollMode) {
-      rect.top += inset.top;
-    } else {
-      rect.left += inset.left;
-    }
-    return rect;
-  }
-
-  /**
-   * @param {RectList|DOMRectList|ClientRectList} rects
-   * @returns {RectList}
-   */
-  rectListToAbsolute(rects) {
-    if (!(rects instanceof RectList)) {
-      rects = RectList.from(rects, rect => rect.toRect());
-    }
-    return rects.map(rect => this.rectToAbsolute(rect));
   }
 
   /**
@@ -377,6 +363,6 @@ export default class _Reader {
     const range = getSelection().getRangeAt(0);
     return this.contents
       .find(content => content.ref.compareDocumentPosition(range.startContainer) & DOCUMENT_POSITION_CONTAINED_BY)
-      .getPageFromRect(this.getRectListOfSearchResult()[0]);
+      .getPageFromRect(this.getRectListFromSearchResult()[0]);
   }
 }

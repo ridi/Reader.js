@@ -6,6 +6,7 @@ module.exports = {
     'import/extensions': 0,
     'import/no-unresolved': 0,
     'max-len': ['warn', 120],
+    'newline-per-chained-call': ['error', { 'ignoreChainWithDepth': 5 }],
     'no-cond-assign': 0,
     'no-continue': 0,
     'no-bitwise': 0,

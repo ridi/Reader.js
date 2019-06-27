@@ -110,13 +110,12 @@ export default class Content extends _Content {
       return null;
     }
 
-    const { pageOffset } = this._reader;
     const { pageWidthUnit, pageHeightUnit, isScrollMode } = this._context;
 
     const direction = this._getOffsetDirectionFromElement(element);
     const pageUnit = direction === 'left' ? pageWidthUnit : pageHeightUnit;
-    let page = Math.floor((rect[direction] + pageOffset) / pageUnit);
 
+    let page = Math.floor((rect[direction]) / pageUnit);
     if (!isScrollMode && rect.top < 0) {
       page += Math.floor(rect.top / pageHeightUnit);
     }
@@ -168,7 +167,7 @@ export default class Content extends _Content {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rectListCoord = this._reader.rectListToAbsolute(range.getClientRects()).trim().toCoord();
+        const rectListCoord = range.getClientRects().toRectList().trim().toAbsolute().toCoord();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         const canUseFootnote = href.match(/^file:\/\//gm) !== null &&

@@ -95,15 +95,6 @@ reader.setContents([spineRefs], spineWrapperRef);
 const content = reader.getContent(spineIndex or spineRef);
 ```
 
-### `Rect`, `RectList`를 절대값으로 바꾸기
-
-- `Reader` 내에서 얻은 `Rect`, `RectList`는 `viewport`를 기준으로 계산된 상대값이기 때문에 상황에 따라서는 절대값으로 변환이 필요하다.
-
-```js
-const rect = reader.rectToAbsolute(rect);
-const rectList = reader.rectListToAbsolute(rectList);
-```
-
 ### 이미지 보정
 
 - 랜더링 이후 이미지의 크기나 비율이 원본과 다를 경우 일그러지거나 다른 페이지로 이어지게 되는 등의 문제를 보정해준다.
@@ -289,7 +280,6 @@ sel.getRange();
 sel.getSerializedRange();
 sel.getRectList();
 sel.getText();
-sel.getAbsoluteRectListCoord(); // 네이티브용
 ```
 
 ### `Rect`의 페이지 구하기

@@ -81,15 +81,10 @@ export default class Content extends _Content {
   getPageFromRect(rect) {
     if (rect === null) {
       return null;
+    } else if (this._context.isScrollMode) {
+      return Math.floor(rect.top / this._context.pageHeightUnit) + 1;
     }
-
-    const { pageOffset } = this._reader;
-    const { pageWidthUnit, pageHeightUnit } = this._context;
-
-    const direction = this._context.isScrollMode ? 'top' : 'left';
-    const origin = rect[direction] + pageOffset;
-    const pageUnit = direction === 'left' ? pageWidthUnit : pageHeightUnit;
-    return Math.floor(origin / pageUnit) + 1;
+    return Math.floor(rect.left / this._context.pageWidthUnit) + 1;
   }
 
   /**

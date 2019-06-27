@@ -27,7 +27,7 @@ export default class Sel extends _Sel {
    */
   expandIntoNextPage() {
     if (super.expandIntoNextPage()) {
-      return this.getAbsoluteRectListCoord();
+      return this.getRectList().toCoord();
     }
     return '';
   }
@@ -39,7 +39,7 @@ export default class Sel extends _Sel {
    */
   start(x, y) {
     if (super.start(x, y)) {
-      return this.getAbsoluteRectListCoord();
+      return this.getRectList().toCoord();
     }
     return '';
   }
@@ -51,7 +51,7 @@ export default class Sel extends _Sel {
    */
   expandIntoUpper(x, y) {
     if (super.expandIntoUpper(x, y)) {
-      return this.getAbsoluteRectListCoord();
+      return this.getRectList().toCoord();
     }
     return '';
   }
@@ -63,7 +63,7 @@ export default class Sel extends _Sel {
    */
   expandIntoLower(x, y) {
     if (super.expandIntoLower(x, y)) {
-      return this.getAbsoluteRectListCoord();
+      return this.getRectList().toCoord();
     }
     return '';
   }

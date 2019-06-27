@@ -485,19 +485,19 @@ class _Content {
         range.selectNodeContents(node);
 
         const { display } = window.getComputedStyle(element);
-        const rectList = range.getClientRects().toRectList();
+        const rectList = range.getClientRects().toRectList().toAbsolute();
         if (rectList.length) {
           return block(rectList[0], element);
         } else if (display === 'none') {
           element.style.display = 'block';
-          const rect = element.getBoundingClientRect().toRect();
+          const rect = element.getBoundingClientRect().toRect().toAbsolute();
           element.style.display = 'none';
           return block(rect, element);
         }
       }
 
       // 텍스트 노드 없는 태그 자체에 anchor가 걸려있으면
-      return block(element.getBoundingClientRect().toRect(), element);
+      return block(element.getBoundingClientRect().toRect().toAbsolute(), element);
     }
     return block({ left: null, top: null }, null);
   }
@@ -513,7 +513,7 @@ class _Content {
   getOffsetFromAnchor(anchor) {
     return this._getOffsetFromAnchor(anchor, (rect, element) => {
       if (this._context.isScrollMode) {
-        return rect.top === null ? null : rect.top + this._reader.pageYOffset;
+        return rect.top === null ? null : rect.top;
       }
       return rect.left === null ? null : this.getPageFromRect(rect, element);
     });
@@ -530,10 +530,10 @@ class _Content {
   getOffsetFromSerializedRange(serializedRange) {
     try {
       const range = Range.fromSerializedString(serializedRange, this.ref);
-      const rectList = range.getClientRects().toRectList();
+      const rectList = range.getClientRects().toRectList().toAbsolute();
       if (rectList.length > 0) {
         if (this.context.isScrollMode) {
-          return rectList[0].top + this.pageYOffset;
+          return rectList[0].top;
         }
         return this.getPageFromRect(rectList[0]);
       }
@@ -548,7 +548,7 @@ class _Content {
    * @returns {RectList}
    */
   getRectListFromSerializedRange(serializedRange) {
-    return Range.fromSerializedString(serializedRange, this.ref).getTextRectList().trim();
+    return Range.fromSerializedString(serializedRange, this.ref).getTextRectList().trim().toAbsolute();
   }
 
   /**

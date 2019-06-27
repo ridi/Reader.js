@@ -598,7 +598,7 @@ export default class _SpeechHelper {
       nodeIndex: chunk.getStartNodeIndex(),
       wordIndex: chunk.getStartWordIndex(),
       text: chunk.utterance.text,
-      rectListCoord: this._reader.rectListToAbsolute(chunk.getRectList(true)).trim().toCoord(),
+      rectListCoord: chunk.getRectList(true).trim().toAbsolute().toCoord(),
     };
   }
 

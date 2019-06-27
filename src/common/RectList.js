@@ -26,6 +26,15 @@ export default class RectList extends Array {
   }
 
   /**
+   * Reader가 생성될 때 구현부가 정해진다.
+   *
+   * @returns {RectList}
+   */
+  toAbsolute() {
+    return null;
+  }
+
+  /**
    * @returns {string}
    */
   toCoord() {
