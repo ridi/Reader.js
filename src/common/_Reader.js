@@ -224,10 +224,6 @@ export default class _Reader {
       }
       return this;
     }, true);
-
-    inject(RectList.prototype, 'toAbsolute', function toAbsolute() {
-      return this.map(rect => rect.toAbsolute());
-    });
   }
 
   /**

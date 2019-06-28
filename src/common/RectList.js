@@ -31,7 +31,7 @@ export default class RectList extends Array {
    * @returns {RectList}
    */
   toAbsolute() {
-    return null;
+    return this.map(rect => rect.toAbsolute());
   }
 
   /**
