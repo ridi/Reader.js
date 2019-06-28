@@ -89,7 +89,7 @@ export default class Rect {
   }
 
   /**
-   * Reader가 생성될 때 구현
+   * Reader가 생성될 때 구현부가 정해진다.
    *
    * @returns {Rect}
    */

@@ -350,10 +350,7 @@ export default class _Reader {
    * @returns {RectList}
    */
   getRectListFromSearchResult() {
-    return getSelection()
-      .getRangeAt(0)
-      .getClientRects()
-      .toRectList();
+    return getSelection().getRangeAt(0).getClientRects().toRectList().toAbsolute();
   }
 
   /**
