@@ -17,6 +17,11 @@ export default class Reader extends _Reader {
   get pageYOffset() { return this._wrapper.parentElement.scrollTop; }
 
   /**
+   * @returns {number} one-based page number
+   */
+  get curPage() { return super.curPage + 1; }
+
+  /**
    * @param {HTMLElement} ref
    * @returns {Content}
    * @private
