@@ -302,7 +302,7 @@ export default class _Reader {
    * @returns {?string} serializedRange
    */
   searchText(keyword) {
-    if (window.find(keyword, 0)) { // Case insensitive
+    if (window.find(keyword, false)) { // Case insensitive
       const range = getSelection().getRangeAt(0);
       const target = range.startContainer;
       const { ref } =
@@ -319,7 +319,7 @@ export default class _Reader {
    * @param {number} post
    * @returns {string}
    */
-  textAroundSearchResult(pre, post) {
+  getSurroundingTextForSearchResult(pre = 10, post = 100) {
     const range = getSelection().getRangeAt(0);
     const {
       startContainer,

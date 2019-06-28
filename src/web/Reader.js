@@ -24,4 +24,28 @@ export default class Reader extends _Reader {
   _createContent(ref) {
     return new Content(ref, this);
   }
+
+  /**
+   * @typedef {object} SearchResult
+   * @property {string} serializedString
+   * @property {rectList} RectList
+   * @property {string} text
+   * @property {number} page
+   */
+  /**
+   * @param {string} keyword
+   * @returns {?SearchResult}
+   */
+  searchText(keyword) {
+    const serializedString = super.searchText(keyword);
+    if (serializedString) {
+      return {
+        serializedString,
+        rectList: this.getRectListFromSearchResult(),
+        text: this.getSurroundingTextForSearchResult(),
+        page: this.getPageFromSearchResult(),
+      };
+    }
+    return null;
+  }
 }

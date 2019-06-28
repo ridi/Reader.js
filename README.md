@@ -214,17 +214,30 @@ reader.getContent(spineIndex).setHidden(hidden, element or id);
 	- 한번 호출할 때 매칭되는 검색 결과 하나를 반환한다.
 	- 더 이상 매칭되는 검색 결과가 없는 경우 `null`을 반환한다.
 - `reader.searchText`의 반환값이 `null`이 아닐 때 다음 메소드를 사용할 수 있다.
-	- `reader.textAroundSearchResult`: 검색 결과의 전/후 일부 문자열을 구한다. (키워드 포함)
+	- `reader.getSurroundingTextForSearchResult`: 검색 결과의 전/후 일부 문자열을 구한다. (키워드 포함)
 	- `reader.getRectListFromSearchResult`: 검색 결과를 하이라이트하기 위한 `Rect`를 구한다.
 	- `reader.getPageFromSearchResult`: 검색 결과가 위치한 제로 베이스 페이지를 구한다.
 - `검색 기능`을 구현할 때 사용한다.
 
 ```js
+// Android, iOS
 let serializedRange = null;
 while ((serializedRange = reader.searchText(keyword)) !== null) {
-  const text = reader.textAroundSearchResult(10, 100);
+  const text = reader.getSurroundingTextForSearchResult(10, 100);
   const rectList = reader.getRectListFromSearchResult();
   const page = reader.getPageFromSearchResult();
+}
+```
+```js
+// Web
+let result = null;
+while ((result = reader.searchText(keyword)) !== null) {
+  const {
+    serializedRange,
+    rectList,
+    text,
+    page,
+  } = result;
 }
 ```
 
