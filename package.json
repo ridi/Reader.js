@@ -23,6 +23,7 @@
     "publish": "cd ./dist/ && npm publish --access=public"
   },
   "devDependencies": {
+    "@babel/runtime": "^7.4.5",
     "@ridi/eslint-config": "^3.0.0",
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.24.1",
