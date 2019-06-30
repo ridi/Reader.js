@@ -83,7 +83,7 @@ export default class _Content extends _Object {
    */
   generateId(element) {
     const prefix = element.nodeName;
-    const id = element.classList.value.split(' ').find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
+    const id = Array.from(element.classList).find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
     element.classList.remove(id);
     element.classList.add(id);
     return id;
