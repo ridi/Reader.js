@@ -100,8 +100,8 @@ export default class Rect {
   /**
    * @returns {string}
    */
-  toCoord() {
-    return `${this.left},${this.top},${this.width},${this.height},`;
+  toJsonString() {
+    return JSON.stringify(this.toObject());
   }
 
   /**

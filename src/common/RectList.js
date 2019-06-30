@@ -37,7 +37,7 @@ export default class RectList extends Array {
   /**
    * @returns {string}
    */
-  toCoord() {
-    return this.map(rect => rect.toCoord()).join('');
+  toJsonString() {
+    return JSON.stringify(this.map(rect => rect.toObject()));
   }
 }

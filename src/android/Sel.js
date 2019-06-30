@@ -42,9 +42,9 @@ export default class Sel extends _Sel {
 
   expandIntoNextPage() {
     if (super.expandIntoNextPage()) {
-      const coord = this.getRectList().toCoord();
-      if (coord.length) {
-        android.onSelectionChangeIntoNextPage(coord);
+      const string = this.getRectList().toJsonString();
+      if (string.length) {
+        android.onSelectionChangeIntoNextPage(string);
       }
     }
   }
@@ -55,9 +55,9 @@ export default class Sel extends _Sel {
    */
   start(x, y) {
     if (super.start(x, y)) {
-      const coord = this.getRectList().toCoord();
-      if (coord.length) {
-        android.onStartSelectionMode(coord);
+      const string = this.getRectList().toJsonString();
+      if (string.length) {
+        android.onStartSelectionMode(string);
       }
     }
   }
@@ -68,9 +68,9 @@ export default class Sel extends _Sel {
    */
   expandIntoUpper(x, y) {
     if (super.expandIntoUpper(x, y)) {
-      const coord = this.getRectList().toCoord();
-      if (coord.length) {
-        android.onSelectionChanged(coord, this.getText());
+      const string = this.getRectList().toJsonString();
+      if (string.length) {
+        android.onSelectionChanged(string, this.getText());
       }
     }
   }
@@ -81,9 +81,9 @@ export default class Sel extends _Sel {
    */
   expandIntoLower(x, y) {
     if (super.expandIntoLower(x, y)) {
-      const coord = this.getRectList().toCoord();
-      if (coord.length) {
-        android.onSelectionChanged(coord, this.getText());
+      const string = this.getRectList().toJsonString();
+      if (string.length) {
+        android.onSelectionChanged(string, this.getText());
       }
     }
   }

@@ -587,7 +587,7 @@ export default class _SpeechHelper {
    * @property {number} nodeIndex
    * @property {number} wordIndex
    * @property {string} text
-   * @property {string} rectListCoord
+   * @property {string} rectListString
    */
   /**
    * @param {SpeechChunk} chunk
@@ -598,7 +598,7 @@ export default class _SpeechHelper {
       nodeIndex: chunk.getStartNodeIndex(),
       wordIndex: chunk.getStartWordIndex(),
       text: chunk.utterance.text,
-      rectListCoord: chunk.getRectList(true).trim().toAbsolute().toCoord(),
+      rectListString: chunk.getRectList(true).trim().toAbsolute().toJsonString(),
     };
   }
 

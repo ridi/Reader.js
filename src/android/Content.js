@@ -152,7 +152,7 @@ export default class Content extends _Content {
    */
   getRectListFromSerializedRange(index, serializedRange) {
     const rectList = super.getRectListFromSerializedRange(serializedRange);
-    android.onRectListOfSerializedRange(index, serializedRange, rectList.toCoord());
+    android.onRectListOfSerializedRange(index, serializedRange, rectList.toJsonString());
   }
 
   /**
@@ -189,8 +189,8 @@ export default class Content extends _Content {
           }
         }
 
-        const rectListCoord = range.getClientRects().toRectList().trim().toAbsolute().toCoord();
-        android.onLinkPressed(href, rectListCoord, canUseFootnote, footnoteType >= 3.0 ? text : null);
+        const rectListString = range.getClientRects().toRectList().trim().toAbsolute().toJsonString();
+        android.onLinkPressed(href, rectListString, canUseFootnote, footnoteType >= 3.0 ? text : null);
         return;
       }
     }

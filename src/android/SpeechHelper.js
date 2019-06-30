@@ -18,7 +18,7 @@ export default class SpeechHelper extends _SpeechHelper {
         info.nodeIndex,
         info.wordIndex,
         info.text,
-        info.rectListCoord,
+        info.rectListString,
         isMakingTemporalChunk,
         addAtFirst,
       );
