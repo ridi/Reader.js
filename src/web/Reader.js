@@ -12,11 +12,6 @@ export default class Reader extends _Reader {
   get pageXOffset() { return this._wrapper.parentElement.scrollLeft; }
 
   /**
-   * @returns {number}
-   */
-  get pageYOffset() { return this._wrapper.parentElement.scrollTop; }
-
-  /**
    * @returns {number} one-based page number
    */
   get curPage() { return super.curPage + 1; }
