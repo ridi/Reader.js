@@ -140,25 +140,20 @@ class _Content {
       }
 
       const iterator = Util.createNodeIterator(this.ref, SHOW_ELEMENT);
-      const elements = [];
-      let node;
-      while ((node = iterator.nextNode())) {
-        if (find(node)) {
-          elements.push(node);
+      let topElement = null;
+      let element;
+      while ((element = iterator.nextNode())) {
+        if (find(element)) {
+          if (topElement) {
+            const result = topElement.compareDocumentPosition(element);
+            if (result & DOCUMENT_POSITION_FOLLOWING || result & DOCUMENT_POSITION_CONTAINED_BY) {
+              topElement = element;
+            }
+          } else {
+            topElement = element;
+          }
         }
       }
-
-      if (elements.length === 0) {
-        return null;
-      }
-
-      let topElement = elements[0];
-      elements.slice(1).forEach((element) => {
-        const result = topElement.compareDocumentPosition(element);
-        if (result & DOCUMENT_POSITION_FOLLOWING || result & DOCUMENT_POSITION_CONTAINED_BY) {
-          topElement = element;
-        }
-      });
 
       return topElement;
     }
