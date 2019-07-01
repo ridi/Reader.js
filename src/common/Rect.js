@@ -5,7 +5,20 @@ export default class Rect {
   /**
    * @returns {boolean}
    */
-  get isZero() { return this.left === 0 && this.top === 0 && this.right === 0 && this.bottom === 0; }
+  get isZero() { return this.left === 0 && this.top === 0 && this.width === 0 && this.height === 0; }
+
+  /**
+   * @returns {number}
+   */
+  get left() { return this._left; }
+
+  /**
+   * @param {number} newLeft
+   */
+  set left(newLeft) {
+    this.width = Math.max(this.right - newLeft, 0);
+    this._left = newLeft;
+  }
 
   /**
    * @returns {number}
@@ -13,9 +26,48 @@ export default class Rect {
   get right() { return this.left + this.width; }
 
   /**
+   * @param {number} newRight
+   */
+  set right(newRight) {
+    this.width = Math.max(newRight - this.left, 0);
+  }
+
+  /**
+   * @returns {number}
+   */
+  get top() { return this._top; }
+
+  /**
+   * @param {number} newTop
+   */
+  set top(newTop) {
+    this.height = Math.max(this.bottom - newTop, 0);
+    this._top = newTop;
+  }
+
+  /**
    * @returns {number}
    */
   get bottom() { return this.top + this.height; }
+
+  /**
+   * @param {number} newBottom
+   */
+  set bottom(newBottom) {
+    this.height = Math.max(newBottom - this.top, 0);
+  }
+
+  /**
+   * @returns {number}
+   */
+  get x() { return this.left; }
+
+  /**
+   * @param {number} newX
+   */
+  set x(newX) {
+    this.left = newX;
+  }
 
   /**
    * @returns {number}
@@ -31,6 +83,18 @@ export default class Rect {
    * @returns {number}
    */
   get maxX() { return this.left + this.width; }
+
+  /**
+   * @returns {number}
+   */
+  get y() { return this.top; }
+
+  /**
+   * @param {number} newY
+   */
+  set y(newY) {
+    this.top = newY;
+  }
 
   /**
    * @returns {number}
@@ -52,19 +116,15 @@ export default class Rect {
    */
   constructor(rect) {
     if (rect) {
-      this.left = rect.left || 0;
-      this.top = rect.top || 0;
+      this.left = rect.left || rect.x || 0;
+      this.top = rect.top || rect.y || 0;
       this.width = rect.width || 0;
       this.height = rect.height || 0;
-      this.x = rect.x || 0;
-      this.y = rect.y || 0;
     } else {
       this.left = 0;
       this.top = 0;
       this.width = 0;
       this.height = 0;
-      this.x = 0;
-      this.y = 0;
     }
   }
 
@@ -73,8 +133,8 @@ export default class Rect {
    * @returns {boolean}
    */
   equals(rect) {
-    return this.left === (rect.left || 0) &&
-      this.top === (rect.top || 0) &&
+    return this.left === (rect.left || rect.x || 0) &&
+      this.top === (rect.top || rect.y || 0) &&
       this.width === (rect.width || 0) &&
       this.height === (rect.height || 0);
   }
@@ -86,6 +146,19 @@ export default class Rect {
    */
   contains(x, y) {
     return this.left <= x && x <= this.right && this.top <= y && y <= this.bottom;
+  }
+
+  /**
+   * @param {number} width
+   * @param {number} height
+   * @returns {Rect}
+   */
+  inset(width = 0, height = 0) {
+    this.left -= width / 2;
+    this.right += width / 2;
+    this.top -= height / 2;
+    this.bottom += height / 2;
+    return this;
   }
 
   /**

@@ -380,8 +380,7 @@ export default class _Sel {
           if (/^\s*$/.test(textNode.nodeValue)) {
             return false;
           }
-          const rectList = textNode.parentElement.getClientRects().toRectList();
-          return rectList.find(rect => rect.contains(x, y)) !== undefined;
+          return textNode.parentElement.getBoundingClientRect().toRect().contains(x, y);
         });
       }
 
@@ -390,12 +389,13 @@ export default class _Sel {
         const range = document.createRange();
         range.selectNodeContents(node);
 
+        const lineHeight = Util.getStylePropertyIntValue(node.parentElement, 'lineHeight');
         const { length } = range.toString();
         for (let i = 0; i < length - 1; i++) {
           range.setStart(range.startContainer, i);
           range.setEnd(range.endContainer, i + 1);
           const rect = range.getBoundingClientRect().toRect();
-          if (rect.contains(x, y)) {
+          if (rect.inset(0, lineHeight).contains(x, y)) {
             range.expand(unit);
             return range;
           }
