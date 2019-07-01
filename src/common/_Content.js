@@ -1,7 +1,7 @@
 import NodeLocation from './NodeLocation';
 import Util from './Util';
 
-const { TEXT_NODE, ELEMENT_NODE } = Node;
+const { TEXT_NODE, ELEMENT_NODE, DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINED_BY } = Node;
 const { SHOW_TEXT, SHOW_ELEMENT } = NodeFilter;
 
 const { Type } = NodeLocation;
@@ -140,14 +140,27 @@ class _Content {
       }
 
       const iterator = Util.createNodeIterator(this.ref, SHOW_ELEMENT);
-      let element;
-      while ((element = iterator.nextNode())) {
-        if (find(element)) {
-          return element;
+      const elements = [];
+      let node;
+      while ((node = iterator.nextNode())) {
+        if (find(node)) {
+          elements.push(node);
         }
       }
 
-      return null;
+      if (elements.length === 0) {
+        return null;
+      }
+
+      let topElement = elements[0];
+      elements.slice(1).forEach((element) => {
+        const result = topElement.compareDocumentPosition(element);
+        if (result & DOCUMENT_POSITION_FOLLOWING || result & DOCUMENT_POSITION_CONTAINED_BY) {
+          topElement = element;
+        }
+      });
+
+      return topElement;
     }
 
     let result = document.elementFromPoint(x, y);
@@ -463,7 +476,7 @@ class _Content {
    */
   _getElementById(id) {
     if (this._reader.contents.length > 1 || id) {
-      return this._ref.querySelector(`#${id}`);
+      return this.ref.querySelector(`#${id}`);
     }
     return document.getElementById(id);
   }
