@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - None.
 
+## [1.0.34 (2019-07-01)]
+
+### Added
+
+- [안드] `Array.from` polyfill 추가
+
+### Fixed
+
+- [공통] 구 버전 브라우저에서 `generateId` 호출 시 발생하는 스크립트 오류 수정
+
 ## [1.0.33 (2019-06-24)]
 
 ### Changed
@@ -228,7 +238,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.33...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.34...HEAD
+[1.0.34 (2019-07-01)]: https://github.com/ridi/Reader.js/compare/1.0.33...1.0.34
 [1.0.33 (2019-06-24)]: https://github.com/ridi/Reader.js/compare/1.0.32...1.0.33
 [1.0.32 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.31...1.0.32
 [1.0.31 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.30...1.0.31

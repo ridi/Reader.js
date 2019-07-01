@@ -26,6 +26,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/plugin-transform-classes": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
+    "@babel/runtime": "^7.4.5",
     "@ridi/eslint-config": "^3.0.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^16.1.0",
