@@ -32,7 +32,7 @@ export default class Reader extends _Reader {
 
   /**
    * @typedef {object} SearchResult
-   * @property {string} serializedString
+   * @property {string} serializedRange
    * @property {rectList} RectList
    * @property {string} text
    * @property {number} page
@@ -42,10 +42,10 @@ export default class Reader extends _Reader {
    * @returns {?SearchResult}
    */
   searchText(keyword) {
-    const serializedString = super.searchText(keyword);
-    if (serializedString) {
+    const serializedRange = super.searchText(keyword);
+    if (serializedRange) {
       return {
-        serializedString,
+        serializedRange,
         rectList: this.getRectListFromSearchResult(),
         text: this.getSurroundingTextForSearchResult(),
         page: this.getPageFromSearchResult(),

@@ -529,7 +529,7 @@ class _Content {
    */
   getOffsetFromSerializedRange(serializedRange) {
     try {
-      const range = Range.fromSerializedString(serializedRange, this.ref);
+      const range = Range.fromSerializedRange(serializedRange, this.ref);
       const rectList = range.getClientRects().toRectList().toAbsolute();
       if (rectList.length > 0) {
         if (this._context.isScrollMode) {
@@ -548,7 +548,7 @@ class _Content {
    * @returns {RectList}
    */
   getRectListFromSerializedRange(serializedRange) {
-    return Range.fromSerializedString(serializedRange, this.ref).getTextRectList().trim().toAbsolute();
+    return Range.fromSerializedRange(serializedRange, this.ref).getTextRectList().trim().toAbsolute();
   }
 
   /**

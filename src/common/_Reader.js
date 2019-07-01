@@ -186,11 +186,11 @@ export default class _Reader {
       return rectList;
     });
 
-    inject(Range.prototype, 'toSerializedString', function toSerializedString(root) {
+    inject(Range.prototype, 'toSerializedRange', function toSerializedRange(root) {
       return rangy.serializeRange(this, true, root);
     });
 
-    inject(Range, 'fromSerializedString', (string, root) => {
+    inject(Range, 'fromSerializedRange', (string, root) => {
       const range = rangy.deserializeRange(string, root);
       const newRange = document.createRange();
       newRange.setStart(range.startContainer, range.startOffset);
@@ -304,7 +304,7 @@ export default class _Reader {
       const { ref } =
         this.contents.find(content => content.ref.compareDocumentPosition(target) & DOCUMENT_POSITION_CONTAINED_BY);
       if (ref) {
-        return range.toSerializedString(ref);
+        return range.toSerializedRange(ref);
       }
     }
     return null;

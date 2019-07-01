@@ -452,7 +452,7 @@ export default class _Sel {
    * @returns {string}
    */
   getSerializedRange() {
-    return this.getRange().toSerializedString(this._content.ref);
+    return this.getRange().toSerializedRange(this._content.ref);
   }
 
   /**
