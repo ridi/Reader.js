@@ -63,8 +63,8 @@ export default class Reader extends _Reader {
     let adjustOffset = offset;
     if (this.context.isScrollMode) {
       const height = this.context.pageHeightUnit;
-      const paddingTop = Util.getStylePropertyIntValue(this._wrapper, 'padding-top');
-      const paddingBottom = Util.getStylePropertyIntValue(this._wrapper, 'padding-bottom');
+      const paddingTop = Util.getStylePropertyValue(this._wrapper, 'padding-top');
+      const paddingBottom = Util.getStylePropertyValue(this._wrapper, 'padding-bottom');
       const maxOffset = this.totalHeight - height - paddingBottom;
       const diff = maxOffset - adjustOffset;
       if (adjustOffset > paddingTop && diff < height && diff > 0) {
@@ -111,7 +111,7 @@ export default class Reader extends _Reader {
    */
   _calcExtraPageCount() {
     const height = this.context.pageHeightUnit;
-    const marginBottom = Util.getStylePropertyIntValue(this._wrapper, 'margin-bottom');
+    const marginBottom = Util.getStylePropertyValue(this._wrapper, 'margin-bottom');
     return marginBottom / (this.context.isDoublePageMode ? height * 2 : height);
   }
 

@@ -417,7 +417,7 @@ class _Content {
     if (width > baseWidth || height > baseHeight) {
       const top = this._context.isScrollMode ? 0 : element.offsetTop;
       const margin =
-        top + Util.getStylePropertiesIntValue(element, ['line-height', 'margin-bottom', 'padding-bottom']);
+        top + Util.getStylePropertyValues(element, ['line-height', 'margin-bottom', 'padding-bottom']);
       const vmin = Math.min(baseWidth, baseHeight) / 2;
       let adjustHeight = Math.max((baseHeight - margin) * maxHeight, vmin);
       let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;

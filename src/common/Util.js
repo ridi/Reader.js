@@ -89,12 +89,12 @@ export default class Util {
    * @param {string} property
    * @returns {number}
    */
-  static getStylePropertyIntValue(target, property) {
+  static getStylePropertyValue(target, property) {
     let style = target;
     if (target.nodeType) {
       style = window.getComputedStyle(target);
     }
-    return parseInt(style[property], 10) || 0;
+    return parseFloat(style[property]) || 0;
   }
 
   /**
@@ -102,7 +102,7 @@ export default class Util {
    * @param {string[]} properties
    * @returns {number}
    */
-  static getStylePropertiesIntValue(target, properties) {
+  static getStylePropertyValues(target, properties) {
     let style = target;
     if (target.nodeType) {
       style = window.getComputedStyle(target);
