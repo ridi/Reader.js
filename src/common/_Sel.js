@@ -389,13 +389,14 @@ export default class _Sel {
         const range = document.createRange();
         range.selectNodeContents(node);
 
-        const lineHeight = Util.getStylePropertyIntValue(node.parentElement, 'lineHeight');
+        const fontSize = Util.getStylePropertyValue(node.parentElement, 'fontSize');
+        const lineHeight = Util.getStylePropertyValue(node.parentElement, 'lineHeight');
         const { length } = range.toString();
         for (let i = 0; i < length - 1; i++) {
           range.setStart(range.startContainer, i);
           range.setEnd(range.endContainer, i + 1);
           const rect = range.getBoundingClientRect().toRect();
-          if (rect.inset(0, lineHeight).contains(x, y)) {
+          if (rect.inset(0, 0, 0, Math.max(lineHeight - fontSize, 0)).contains(x, y)) {
             range.expand(unit);
             return range;
           }
