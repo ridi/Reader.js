@@ -217,10 +217,13 @@ export default class _Reader {
 
     const reader = this;
     inject(Rect.prototype, 'toAbsolute', function toAbsolute() {
+      const { pageXOffset, pageYOffset } = reader;
       if (reader.context.isScrollMode) {
-        this.top += reader.pageYOffset;
+        this.top += pageYOffset;
+        this.bottom += pageYOffset;
       } else {
-        this.left += reader.pageXOffset;
+        this.left += pageXOffset;
+        this.right += pageXOffset;
       }
       return this;
     }, true);

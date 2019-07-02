@@ -40,4 +40,11 @@ export default class RectList extends Array {
   toJsonString() {
     return JSON.stringify(this.map(rect => rect.toObject()));
   }
+
+  /**
+   * @returns {object[]}
+   */
+  toArray() {
+    return this.map(rect => rect.toObject());
+  }
 }

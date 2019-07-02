@@ -5,57 +5,17 @@ export default class Rect {
   /**
    * @returns {boolean}
    */
-  get isZero() { return this.left === 0 && this.top === 0 && this.width === 0 && this.height === 0; }
+  get isZero() { return this.left === 0 && this.top === 0 && this.right === 0 && this.bottom === 0; }
 
   /**
    * @returns {number}
    */
-  get left() { return this._left; }
-
-  /**
-   * @param {number} newLeft
-   */
-  set left(newLeft) {
-    this.width = Math.max(this.right - newLeft, 0);
-    this._left = newLeft;
-  }
+  get width() { return Math.max(this.right - this.left, 0); }
 
   /**
    * @returns {number}
    */
-  get right() { return this.left + this.width; }
-
-  /**
-   * @param {number} newRight
-   */
-  set right(newRight) {
-    this.width = Math.max(newRight - this.left, 0);
-  }
-
-  /**
-   * @returns {number}
-   */
-  get top() { return this._top; }
-
-  /**
-   * @param {number} newTop
-   */
-  set top(newTop) {
-    this.height = Math.max(this.bottom - newTop, 0);
-    this._top = newTop;
-  }
-
-  /**
-   * @returns {number}
-   */
-  get bottom() { return this.top + this.height; }
-
-  /**
-   * @param {number} newBottom
-   */
-  set bottom(newBottom) {
-    this.height = Math.max(newBottom - this.top, 0);
-  }
+  get height() { return Math.max(this.bottom - this.top, 0); }
 
   /**
    * @returns {number}
@@ -118,13 +78,13 @@ export default class Rect {
     if (rect) {
       this.left = rect.left || rect.x || 0;
       this.top = rect.top || rect.y || 0;
-      this.width = rect.width || 0;
-      this.height = rect.height || 0;
+      this.right = rect.right || this.left + (rect.width || 0);
+      this.bottom = rect.bottom || this.top + (rect.height || 0);
     } else {
       this.left = 0;
       this.top = 0;
-      this.width = 0;
-      this.height = 0;
+      this.right = 0;
+      this.bottom = 0;
     }
   }
 
@@ -149,15 +109,27 @@ export default class Rect {
   }
 
   /**
-   * @param {number} width
-   * @param {number} height
+   * @param {number} widthOrLeftOrAll
+   * @param {number} heightOrTop
+   * @param {number} right
+   * @param {number} bottom
    * @returns {Rect}
    */
-  inset(width = 0, height = 0) {
-    this.left -= width / 2;
-    this.right += width / 2;
-    this.top -= height / 2;
-    this.bottom += height / 2;
+  inset(widthOrLeftOrAll, heightOrTop, right, bottom) {
+    if (widthOrLeftOrAll === undefined) {
+      return this;
+    } else if (heightOrTop === undefined && right === undefined && bottom === undefined) {
+      const inset = widthOrLeftOrAll;
+      return this.inset(inset, inset, inset, inset);
+    } else if (right === undefined && bottom === undefined) {
+      const width = widthOrLeftOrAll;
+      const height = heightOrTop;
+      return this.inset(width / 2, height / 2, width / 2, height / 2);
+    }
+    this.left -= widthOrLeftOrAll; // left
+    this.right += heightOrTop; // top
+    this.top -= right;
+    this.bottom += bottom || 0;
     return this;
   }
 
@@ -181,15 +153,20 @@ export default class Rect {
    * @returns {object}
    */
   toObject() {
+    const {
+      left, top, right, bottom,
+      width, height,
+      x, y,
+    } = this;
     return {
-      left: this.left,
-      top: this.top,
-      right: this.right,
-      bottom: this.bottom,
-      width: this.width,
-      height: this.height,
-      x: this.x,
-      y: this.y,
+      left,
+      top,
+      right,
+      bottom,
+      width,
+      height,
+      x,
+      y,
     };
   }
 }
