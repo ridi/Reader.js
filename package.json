@@ -1,6 +1,6 @@
 {
   "name": "@ridi/reader.js",
-  "version": "2.0.0-alpha.23",
+  "version": "2.0.0-alpha.24",
   "description": "리디북스 EPUB 뷰어용(앱/웹) JS 라이브러리",
   "author": "Ridibooks Viewer Team <viewer.team@ridi.com>",
   "keywords": [
