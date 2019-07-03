@@ -25,11 +25,12 @@ export default class _Content extends _Object {
   get images() { return this.wrapper.getElementsByTagName('IMG'); }
 
   /**
+   * @param {Reader} reader
    * @param {HTMLElement} wrapper
    */
-  constructor(wrapper) {
+  constructor(reader, wrapper) {
     super();
-
+    this._reader = reader;
     this._wrapper = wrapper;
     this.updateNodes();
   }
@@ -106,6 +107,18 @@ export default class _Content extends _Object {
     if (el) {
       el.style.visibility = hidden ? 'hidden' : '';
     }
+  }
+
+  /**
+   * @param {string} id
+   * @returns {MutableClientRect}
+   */
+  getRectFromElementId(id) {
+    let [el] = document.getElementsByClassName(id);
+    if (!el) {
+      el = document.getElementById(id);
+    }
+    return el ? el.getAdjustedBoundingClientRect() : null;
   }
 
   /**

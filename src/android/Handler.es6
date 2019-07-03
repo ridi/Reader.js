@@ -47,26 +47,16 @@ export default class Handler extends _Handler {
    * @param {Number} y
    */
   processImageZoomEvent(x, y) {
-    const { content, context, pageYOffset, pageXOffset } = this.reader;
-    const rectToAbsolute = (rect) => {
-      const mutableRect = rect;
-      if (context.isScrollMode) {
-        mutableRect.top += pageYOffset;
-      } else {
-        mutableRect.left += pageXOffset;
-      }
-      return mutableRect;
-    };
-
+    const { content } = this.reader;
     const point = this.reader.adjustPoint(x, y);
     let result = content.getImageFromPoint(point.x, point.y);
     if (result) {
-      const { left, top, width, height } = rectToAbsolute(result.rect);
+      const { left, top, width, height } = this.reader.rectToAbsolute(result.rect);
       android.onImageFound(result.src, result.id, left, top, width, height);
     } else {
       result = content.getSvgFromPoint(point.x, point.y);
       if (result) {
-        const { left, top, width, height } = rectToAbsolute(result.rect);
+        const { left, top, width, height } = this.reader.rectToAbsolute(result.rect);
         android.onSvgFound(result.html, result.id, left, top, width, height);
       }
     }

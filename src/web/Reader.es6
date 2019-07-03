@@ -26,7 +26,7 @@ export default class Reader extends _Reader {
    */
   constructor(wrapper, context, curPage = 0) {
     super(wrapper, context);
-    this._content = new Content(wrapper);
+    this._content = new Content(this, wrapper);
     const chrome = new Chrome(this, curPage);
     if (chrome.version) {
       this._chrome = chrome;

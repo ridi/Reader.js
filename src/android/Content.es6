@@ -3,8 +3,8 @@ import _Content from '../common/_Content';
 export default class Content extends _Content {
   get src() { return this._src; }
 
-  constructor(wrapper, src) {
-    super(wrapper);
+  constructor(reader, wrapper, src) {
+    super(reader, wrapper);
     this._src = src;
   }
 
@@ -71,5 +71,18 @@ export default class Content extends _Content {
     }
 
     return result;
+  }
+
+  /**
+   * @param {string} id
+   */
+  getRectFromElementId(id) {
+    const rect = super.getRectFromElementId(id);
+    if (rect) {
+      const { left, top, width, height } = this._reader.rectToAbsolute(rect);
+      android.onElementRectFound(left, top, width, height);
+    } else {
+      android.onElementRectNotFound();
+    }
   }
 }

@@ -583,6 +583,20 @@ export default class _Reader extends _Object {
   }
 
   /**
+   * @param {MutableClientRect} rect
+   * @returns {MutableClientRect}
+   */
+  rectToAbsolute(rect) {
+    const mutableRect = rect;
+    if (this.context.isScrollMode) {
+      mutableRect.top += this.pageYOffset;
+    } else {
+      mutableRect.left += this.pageXOffset;
+    }
+    return mutableRect;
+  }
+
+  /**
    * @param {MutableClientRect[]} rects
    * @param {Boolean} absolute
    * @returns {String}
