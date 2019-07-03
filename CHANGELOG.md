@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.35 (2019-07-03)]
+
+### Added
+
+- [공통] 이미지 크게보기 인터렉션 개선을 위한 기능 확장
+
 ## [1.0.34 (2019-07-01)]
 
 ### Added
@@ -238,7 +244,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.34...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.35...HEAD
+[1.0.35 (2019-07-03)]: https://github.com/ridi/Reader.js/compare/1.0.34...1.0.35
 [1.0.34 (2019-07-01)]: https://github.com/ridi/Reader.js/compare/1.0.33...1.0.34
 [1.0.33 (2019-06-24)]: https://github.com/ridi/Reader.js/compare/1.0.32...1.0.33
 [1.0.32 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.31...1.0.32
