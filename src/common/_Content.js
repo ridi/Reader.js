@@ -606,11 +606,11 @@ class _Content {
       range.selectNodeContents(node);
 
       let rect = range.getBoundingClientRect().toRect();
-      if (rect.isZero) {
+      if (rect.isEmpty) {
         if (node.nodeName === 'IMG') {
           range.selectNode(node);
           rect = range.getBoundingClientRect().toRect();
-          if (rect.isZero) {
+          if (rect.isEmpty) {
             continue;
           }
         } else {
@@ -713,11 +713,11 @@ class _Content {
     range.selectNodeContents(node);
 
     let rect = range.getBoundingClientRect().toRect();
-    if (rect.isZero) {
+    if (rect.isEmpty) {
       if (node.nodeName === 'IMG') {
         range.selectNode(node);
         rect = range.getBoundingClientRect().toRect();
-        if (rect.isZero) {
+        if (rect.isEmpty) {
           return null;
         }
       } else {

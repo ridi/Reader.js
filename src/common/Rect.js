@@ -8,6 +8,11 @@ export default class Rect {
   get isZero() { return this.left === 0 && this.top === 0 && this.right === 0 && this.bottom === 0; }
 
   /**
+   * @returns {boolean}
+   */
+  get isEmpty() { return this.left >= this.right || this.top >= this.bottom; }
+
+  /**
    * @returns {number}
    */
   get width() { return Math.max(this.right - this.left, 0); }
@@ -72,6 +77,21 @@ export default class Rect {
   get maxY() { return this.top + this.height; }
 
   /**
+   * @typedef {object} Point
+   * @property {number} x
+   * @property {number} y
+   */
+  /**
+   * @returns {Point} point
+   */
+  get center() {
+    return {
+      x: this.left + (this.width / 2),
+      y: this.top + (this.height / 2),
+    };
+  }
+
+  /**
    * @param {?DOMRect|?ClientRect|?Rect|?object} rect
    */
   constructor(rect) {
@@ -93,19 +113,33 @@ export default class Rect {
    * @returns {boolean}
    */
   equals(rect) {
-    return this.left === (rect.left || rect.x || 0) &&
-      this.top === (rect.top || rect.y || 0) &&
-      this.width === (rect.width || 0) &&
-      this.height === (rect.height || 0);
+    rect = new Rect(rect);
+    return this.left === rect.left &&
+      this.top === rect.top &&
+      this.width === rect.width &&
+      this.height === rect.height;
   }
 
   /**
-   * @param {number} x
+   * @param {number|DOMRect|ClientRect|Rect|object} xOrRect
    * @param {number} y
    * @returns {boolean}
    */
-  contains(x, y) {
-    return this.left <= x && x <= this.right && this.top <= y && y <= this.bottom;
+  contains(xOrRect, y) {
+    if (this.isEmpty) {
+      return false;
+    }
+    if (typeof xOrRect !== 'number') {
+      const rect = new Rect(xOrRect);
+      if (rect.isEmpty) {
+        return false;
+      }
+      return this.left <= rect.left &&
+        this.top <= rect.top &&
+        this.right >= rect.right &&
+        this.bottom >= rect.bottom;
+    }
+    return this.left <= xOrRect && xOrRect <= this.right && this.top <= y && y <= this.bottom;
   }
 
   /**
@@ -127,10 +161,26 @@ export default class Rect {
       return this.inset(width / 2, height / 2, width / 2, height / 2);
     }
     this.left -= widthOrLeftOrAll; // left
-    this.right += heightOrTop; // top
-    this.top -= right;
+    this.top += heightOrTop; // top
+    this.right -= right;
     this.bottom += bottom || 0;
     return this;
+  }
+
+  /**
+   * @param {DOMRect|ClientRect|Rect|object} rect
+   * @returns {Rect}
+   */
+  intersection(rect) {
+    rect = new Rect(rect);
+    const left = Math.max(this.left, rect.left);
+    const top = Math.max(this.top, rect.top);
+    const right = Math.min(this.right, rect.right);
+    const bottom = Math.min(this.bottom, rect.bottom);
+    if (left < right && top < bottom) {
+      return new Rect({ left, top, right, bottom });
+    }
+    return new Rect();
   }
 
   /**

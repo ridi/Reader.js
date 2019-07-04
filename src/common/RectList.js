@@ -12,7 +12,7 @@ export default class RectList extends Array {
     if (typeof xOrRect === 'number' && y !== undefined) {
       return this.find(rect => rect.contains(xOrRect, y)) !== undefined;
     }
-    return this.find(rect => rect.equals(xOrRect)) !== undefined;
+    return this.find(rect => rect.contains(xOrRect)) !== undefined;
   }
 
   /**
