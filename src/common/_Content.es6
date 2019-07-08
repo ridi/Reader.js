@@ -1,8 +1,6 @@
 import _Object from './_Object';
 import _Util from './_Util';
 
-const makeId = (i => (prefix) => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
-
 export default class _Content extends _Object {
   /**
    * @returns {HTMLElement}
@@ -82,12 +80,10 @@ export default class _Content extends _Object {
    * @param {HTMLElement} element
    * @returns {String}
    */
-  generateId(element) {
-    const prefix = element.nodeName;
-    const id = Array.from(element.classList).find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
-    element.classList.remove(id);
-    element.classList.add(id);
-    return id;
+  getElementId(element) {
+    const range = document.createRange();
+    range.selectNode(element);
+    return rangy.serializeRange(range, true, this.body);
   }
 
   /**
@@ -97,9 +93,15 @@ export default class _Content extends _Object {
   setHidden(hidden, any) {
     let el;
     if (typeof any === 'string') {
-      [el] = document.getElementsByClassName(any);
+      try {
+        const range = rangy.deserializeRange(any, this.body);
+        if (range) {
+          el = range.startContainer;
+        }
+      } catch (e) {} // eslint-disable-line no-empty
       if (!el) {
-        el = document.getElementById(any);
+        const [first] = document.getElementsByClassName(any);
+        el = first || document.getElementById(any);
       }
     } else {
       el = any;
@@ -110,15 +112,15 @@ export default class _Content extends _Object {
   }
 
   /**
-   * @param {string} id
-   * @returns {MutableClientRect}
+   * @param {String} id
+   * @returns {MutableClientRect[]}
    */
   getRectFromElementId(id) {
-    let [el] = document.getElementsByClassName(id);
-    if (!el) {
-      el = document.getElementById(id);
-    }
-    return el ? el.getAdjustedBoundingClientRect() : null;
+    let range;
+    try {
+      range = rangy.deserializeRange(id, this.body);
+    } catch (e) {} // eslint-disable-line no-empty
+    return range ? range.startContainer.getAdjustedBoundingClientRect() : null;
   }
 
   /**
@@ -130,7 +132,7 @@ export default class _Content extends _Object {
     const el = document.elementFromPoint(x, y);
     if (el && el.nodeName === 'IMG') {
       return {
-        id: this.generateId(el),
+        id: this.getElementId(el),
         element: el,
         src: el.src || 'null',
         rect: el.getAdjustedBoundingClientRect(),
@@ -165,7 +167,7 @@ export default class _Content extends _Object {
         }
 
         return {
-          id: this.generateId(el),
+          id: this.getElementId(el),
           element: el,
           html: `${prefix}${svgEl.innerHTML}</svg>`,
           rect: el.getAdjustedBoundingClientRect(),
