@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.36 (2019-07-08)]
+
+### Changed
+
+- [공통] rangy를 이용해 엘리먼트를 식별하도록 수정
+
 ## [1.0.35 (2019-07-03)]
 
 ### Added
@@ -244,7 +250,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.35...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.36...HEAD
+[1.0.36 (2019-07-08)]: https://github.com/ridi/Reader.js/compare/1.0.35...1.0.36
 [1.0.35 (2019-07-03)]: https://github.com/ridi/Reader.js/compare/1.0.34...1.0.35
 [1.0.34 (2019-07-01)]: https://github.com/ridi/Reader.js/compare/1.0.33...1.0.34
 [1.0.33 (2019-06-24)]: https://github.com/ridi/Reader.js/compare/1.0.32...1.0.33
