@@ -82,7 +82,7 @@ export default class _Content extends _Object {
    */
   getElementId(element) {
     const range = document.createRange();
-    range.selectNode(element);
+    range.selectNodeContents(element);
     return rangy.serializeRange(range, true, this.body);
   }
 
