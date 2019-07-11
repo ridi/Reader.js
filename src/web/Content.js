@@ -127,7 +127,7 @@ export default class Content extends _Content {
    * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {?number} one-based page number
    */
-  getOffsetFromNodeLocation(location, type = Type.TOP) {
+  getPageFromNodeLocation(location, type = Type.TOP) {
     const offset = this.getOffsetFromNodeLocation(location, type);
     const { isScrollMode, pageHeightUnit } = this._context;
     if (isScrollMode && offset !== null) {
