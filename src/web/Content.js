@@ -138,7 +138,7 @@ export default class Content extends _Content {
 
   /**
    * @param {string} type Type.TOP or Type.BOTTOM
-   * @returns {NodeLocation}
+   * @returns {string}
    */
   getCurrentNodeLocation(type = Type.TOP) {
     const startOffset = 0;
@@ -148,7 +148,7 @@ export default class Content extends _Content {
     const location = this._findNodeLocation(startOffset, endOffset, type);
     this._reader._showNodeLocationIfDebug();
     if (!location) {
-      return notFound;
+      return notFound.toString();
     }
 
     return location;
