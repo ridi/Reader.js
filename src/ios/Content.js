@@ -128,8 +128,8 @@ export default class Content extends _Content {
    * @returns {string}
    */
   getCurrentNodeLocation(type = NodeLocation.Type.TOP) {
-    const startOffset = 0;
-    const endOffset = this._context.pageUnit;
+    const startOffset = this._reader.pageOffset;
+    const endOffset = startOffset + this._context.pageUnit;
     const notFound = new NodeLocation(-1, -1, type).toString();
 
     // 앱이 백그라운드 상태일 때는 계산하지 않는다.

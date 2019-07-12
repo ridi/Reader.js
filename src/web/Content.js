@@ -1,6 +1,7 @@
 import _Content from '../common/_Content';
 import NodeLocation from '../common/NodeLocation';
 import Sel from './Sel';
+import Util from '../common/Util';
 
 const { Type } = NodeLocation;
 
@@ -141,14 +142,17 @@ export default class Content extends _Content {
    * @returns {string}
    */
   getCurrentNodeLocation(type = Type.TOP) {
-    const startOffset = 0;
-    const endOffset = this._context.pageUnit;
-    const notFound = new NodeLocation(-1, -1, type);
+    const screenWidth = Util.getStylePropertyValue(document.documentElement, 'width');
+    const contentWidth = Util.getStylePropertyValue(this._ref, 'width');
+    const leftMargin = (screenWidth - contentWidth) / 2;
+    const startOffset = this._reader.pageOffset + leftMargin;
+    const endOffset = startOffset + this._context.pageUnit;
+    const notFound = new NodeLocation(-1, -1, type).toString();
 
     const location = this._findNodeLocation(startOffset, endOffset, type);
     this._reader._showNodeLocationIfDebug();
     if (!location) {
-      return notFound.toString();
+      return notFound;
     }
 
     return location;

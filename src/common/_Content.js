@@ -605,11 +605,11 @@ class _Content {
       const range = document.createRange();
       range.selectNodeContents(node);
 
-      let rect = range.getBoundingClientRect().toRect();
+      let rect = range.getBoundingClientRect().toRect().toAbsolute();
       if (rect.isEmpty) {
         if (node.nodeName === 'IMG') {
           range.selectNode(node);
-          rect = range.getBoundingClientRect().toRect();
+          rect = range.getBoundingClientRect().toRect().toAbsolute();
           if (rect.isEmpty) {
             continue;
           }
@@ -642,7 +642,7 @@ class _Content {
             } catch (e) {
               return null;
             }
-            const rectList = range.getClientRects().toRectList();
+            const rectList = range.getClientRects().toRectList().toAbsolute();
             if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
               if (rectIndex < 0) {
                 this._reader.lastNodeLocationRect = prev.rect;
@@ -660,7 +660,7 @@ class _Content {
           offset += (word.length + 1);
         }
       } else if (node.nodeName === 'IMG') {
-        const rectList = range.getClientRects().toRectList();
+        const rectList = range.getClientRects().toRectList().toAbsolute();
         if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
           if (rectIndex < 0) {
             this._reader.lastNodeLocationRect = prev.rect;
@@ -712,11 +712,11 @@ class _Content {
     const range = document.createRange();
     range.selectNodeContents(node);
 
-    let rect = range.getBoundingClientRect().toRect();
+    let rect = range.getBoundingClientRect().toRect().toAbsolute();
     if (rect.isEmpty) {
       if (node.nodeName === 'IMG') {
         range.selectNode(node);
-        rect = range.getBoundingClientRect().toRect();
+        rect = range.getBoundingClientRect().toRect().toAbsolute();
         if (rect.isEmpty) {
           return null;
         }
@@ -732,7 +732,7 @@ class _Content {
 
     if (node.nodeName === 'IMG' && wordIndex === 0) {
       if (this._context.isScrollMode) {
-        return Math.max((rect.top + this._reader.pageYOffset) - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
+        return Math.max(rect.top - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
       }
       return page;
     }
@@ -756,22 +756,23 @@ class _Content {
       return null;
     }
 
-    rect = range.getBoundingClientRect().toRect();
+    const relativeRect = range.getBoundingClientRect().toRect();
+    rect = relativeRect.toAbsolute();
     page = this.getPageFromRect(rect);
     if (page === null || this._reader.totalSize <= this._context.pageUnit * page) {
       return null;
     }
 
-    if (rect.left < 0 || (page + 1) * this._context.pageUnit < rect.left + rect.width) {
+    if (this._context.isScrollMode) {
+      return Math.max(rect.top - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
+    }
+
+    if (relativeRect.left < 0 || (page + 1) * this._context.pageUnit < rect.maxX) {
       if (rect.width < this._context.pageUnit) {
         page += 1;
       } else {
         page += Math.floor(rect.width / this._context.pageUnit);
       }
-    }
-
-    if (this._context.isScrollMode) {
-      return Math.max((rect.top + this._reader.pageYOffset) - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
     }
     return page;
   }
