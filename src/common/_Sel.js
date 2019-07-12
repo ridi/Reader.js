@@ -27,12 +27,16 @@ export default class _Sel {
   }
 
   /**
+   * @returns {Context}
+   */
+  get _context() { return this._reader.context; }
+
+  /**
    * @param {Content} content
    */
   constructor(content) {
     this._reader = content._reader;
     this._content = content;
-    this._context = this._reader.context;
     this._startContainer = null;
     this._startOffset = null;
     this._endContainer = null;

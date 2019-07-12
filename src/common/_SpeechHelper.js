@@ -115,12 +115,16 @@ export default class _SpeechHelper {
   get chunks() { return this._chunks; }
 
   /**
+   * @returns {Context}
+   */
+  get _context() { return this._reader.context; }
+
+  /**
    * @param {Content} content
    */
   constructor(content) {
     this._reader = content._reader;
     this._content = content;
-    this._context = this._reader.context;
     this._reserveNodesCountMagic = 40; // 30 미만의 값으로 줄일 경우 끊김 현상이 발생할 수 있다.
     this._makeChunksInterval = 100;
     this._lastMinNodeIndex = -1;

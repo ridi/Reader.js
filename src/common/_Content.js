@@ -49,13 +49,17 @@ class _Content {
   get images() { return Array.from(this.ref.getElementsByTagName('IMG')); }
 
   /**
+   * @returns {Context}
+   */
+  get _context() { return this._reader.context; }
+
+  /**
    * @param {HTMLElement} element
    * @param {Reader} reader
    */
   constructor(element, reader) {
     this._ref = element;
     this._reader = reader;
-    this._context = reader.context;
     this._sel = this._createSel();
     this._speechHelper = this._createSpeechHelper();
     this._nodes = null;
