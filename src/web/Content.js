@@ -145,8 +145,10 @@ export default class Content extends _Content {
     const screenWidth = Util.getStylePropertyValue(document.documentElement, 'width');
     const contentWidth = Util.getStylePropertyValue(this._ref, 'width');
     const leftMargin = (screenWidth - contentWidth) / 2;
-    const startOffset = this._reader.pageOffset + leftMargin;
-    const endOffset = startOffset + this._context.pageUnit;
+
+    const { isScrollMode, pageUnit } = this._context;
+    const startOffset = this._reader.pageOffset + (isScrollMode ? 0 : leftMargin);
+    const endOffset = startOffset + pageUnit;
     const notFound = new NodeLocation(-1, -1, type).toString();
 
     const location = this._findNodeLocation(startOffset, endOffset, type);
