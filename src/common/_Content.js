@@ -597,6 +597,7 @@ class _Content {
    */
   _findNodeLocation(startOffset, endOffset, type = Type.TOP) {
     const { nodes } = this;
+    const { isScrollMode } = this._context;
 
     // 현재 페이지에 위치한 노드 정보를 임시로 저장한 것으로 BottomNodeLocation을 구할 때 사용한다.
     let prev = null;
@@ -619,8 +620,8 @@ class _Content {
       }
 
       // node가 여러 페이지에 걸쳐있을 때 현재 페이지도 포함하고 있는지.
-      const origin = this._context.isScrollMode ? rect.maxY : rect.maxX;
-      if (rect.width === 0 || origin < startOffset) {
+      const origin = isScrollMode ? rect.maxY : rect.maxX;
+      if (origin < startOffset) {
         continue;
       }
 
@@ -652,7 +653,7 @@ class _Content {
               return new NodeLocation(nodeIndex, Math.min(wordIndex + rectIndex, words.length - 1), type).toString();
             }
             rectList.reverse().forEach((rect) => { // eslint-disable-line
-              if (rect.left < endOffset) {
+              if (rect[isScrollMode ? 'bottom' : 'top'] < endOffset) {
                 prev = { location: new NodeLocation(nodeIndex, wordIndex, type), rect };
               }
             });
@@ -671,7 +672,7 @@ class _Content {
           return new NodeLocation(nodeIndex, 0, type).toString();
         }
         rectList.reverse().forEach((rect) => { // eslint-disable-line
-          if (rect.left < endOffset) {
+          if (rect[isScrollMode ? 'bottom' : 'top'] < endOffset) {
             prev = { location: new NodeLocation(nodeIndex, 0, type), rect };
           }
         });
