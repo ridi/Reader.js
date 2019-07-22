@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.38 (2019-07-22)]
+
+### Fixed
+
+- [공통] Chrome 52에서 Rect/Point 보정을 하지 않도록
+
 ## [1.0.37 (2019-07-09)]
 
 ### Fixed
@@ -256,7 +262,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.37...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.38...HEAD
+[1.0.38 (2019-07-22)]: https://github.com/ridi/Reader.js/compare/1.0.37...1.0.38
 [1.0.37 (2019-07-09)]: https://github.com/ridi/Reader.js/compare/1.0.36...1.0.37
 [1.0.36 (2019-07-08)]: https://github.com/ridi/Reader.js/compare/1.0.35...1.0.36
 [1.0.35 (2019-07-03)]: https://github.com/ridi/Reader.js/compare/1.0.34...1.0.35
