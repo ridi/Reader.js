@@ -11,7 +11,8 @@ export default class Chrome extends _Object {
    * @returns {Boolean}
    */
   get isCursed() {
-    return this.isAndroid && (this.version === 47 || (this.version >= 49 && this.version < 61));
+    return this.isAndroid &&
+      (this.version === 47 || (this.version >= 49 && this.version < 61 && this.version !== 52));
   }
 
   /**
