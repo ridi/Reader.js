@@ -304,14 +304,20 @@ export default class _Reader {
   searchText(keyword) {
     if (window.find(keyword, false)) { // Case insensitive
       const range = getSelection().getRangeAt(0);
-      const target = range.startContainer;
-      const { ref } =
-        this.contents.find(content => content.ref.compareDocumentPosition(target) & DOCUMENT_POSITION_CONTAINED_BY);
-      if (ref) {
-        return range.toSerializedRange(ref);
+      if (range.toString().length > 0) {
+        const target = range.startContainer;
+        const { ref } =
+          this.contents.find(content => content.ref.compareDocumentPosition(target) & DOCUMENT_POSITION_CONTAINED_BY);
+        if (ref) {
+          return range.toSerializedRange(ref);
+        }
       }
     }
     return null;
+  }
+
+  resetSearch() {
+    getSelection().removeAllRanges();
   }
 
   /**
