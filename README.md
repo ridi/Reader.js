@@ -2,8 +2,8 @@
 
 > Javascript library for RIDI EPUB Viewer written in ECMAScript 6
 
+[![Build Status](https://travis-ci.com/ridi/Reader.js.svg?branch=master)](https://travis-ci.com/ridi/Reader.js)
 [![npm version](https://badge.fury.io/js/%40ridi%2Freader.js.svg)](https://badge.fury.io/js/%40ridi%2Freader.js)
-[![Build Status](https://travis-ci.org/ridi/Reader.js.svg?branch=master)](https://travis-ci.org/ridi/Reader.js)
 
 ## Install
 
