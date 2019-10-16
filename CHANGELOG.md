@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.39 (2019-10-16)]
+
+### Fixed
+
+- [iOS] iOS13에서 이어서 선택하기/칠하기가 오작동하는 문제 수정
+
 ## [1.0.38 (2019-07-22)]
 
 ### Fixed
