@@ -248,6 +248,16 @@ export default class _Sel extends _Object {
 
   /**
    * @param {Range} range
+   * @returns {Number}
+   * @private
+   */
+  _clientLeftOfRangeForCheckingNextPageContinuable(range) {
+    const rect = range.getAdjustedBoundingClientRect();
+    return Math.floor(rect.left + (rect.width / 2));
+  }
+
+  /**
+   * @param {Range} range
    * @returns {Boolean}
    * @private
    */

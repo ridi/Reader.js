@@ -2,15 +2,6 @@ import _Sel from '../common/_Sel';
 
 export default class Sel extends _Sel {
   /**
-   * @param {Range} range
-   * @returns {Number}
-   * @private
-   */
-  _clientLeftOfRangeForCheckingNextPageContinuable(range) {
-    return range.getAdjustedBoundingClientRect().left;
-  }
-
-  /**
    * @returns {Number}
    */
   getUpperBound() {
