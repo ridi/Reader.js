@@ -396,11 +396,16 @@ export default class _Sel {
         const fontSize = Util.getStylePropertyValue(node.parentElement, 'fontSize');
         const lineHeight = Util.getStylePropertyValue(node.parentElement, 'lineHeight');
         const { length } = range.toString();
-        for (let i = 0; i < length - 1; i++) {
+        for (let i = 0; i < length; i++) {
           range.setStart(range.startContainer, i);
-          range.setEnd(range.endContainer, i + 1);
-          const rect = range.getBoundingClientRect().toRect();
-          if (rect.inset(0, 0, 0, Math.max(lineHeight - fontSize, 0)).contains(x, y)) {
+          range.setEnd(range.endContainer, Math.min(i + 1, length));
+          const rect = range.getBoundingClientRect()
+            .toRect()
+            .inset(0, 0, 0, Math.max(lineHeight - fontSize, 0));
+          if (rect.contains(x, y)) {
+            range.expand(unit);
+            return range;
+          } else if (i === length - 1 && rect.minY < y && y < rect.maxY) {
             range.expand(unit);
             return range;
           }
