@@ -381,11 +381,11 @@ export default class _Sel {
       if (caretIterator) {
         caretIterator.previousNode();
       } else {
-        caretIterator = Util.createTextNodeIterator(this._content.ref, (textNode) => {
-          if (/^\s*$/.test(textNode.nodeValue)) {
-            return false;
-          }
-          return textNode.parentElement.getBoundingClientRect().toRect().contains(x, y);
+        caretIterator = Util.createTextNodeIterator(this._content.ref, (textNode) => { // eslint-disable-line
+          return textNode.parentElement
+            .getBoundingClientRect()
+            .toRect()
+            .contains(x, y);
         });
       }
 
@@ -400,13 +400,21 @@ export default class _Sel {
         for (let i = 0; i < length; i++) {
           range.setStart(range.startContainer, i);
           range.setEnd(range.endContainer, Math.min(i + 1, length));
+          if (/^\s*$/.test(range.toString())) {
+            continue;
+          }
+
           const rect = range.getBoundingClientRect()
             .toRect()
             .inset(0, 0, 0, Math.max(lineHeight - fontSize, 0));
           if (rect.contains(x, y)) {
             range.expand(unit);
             return range;
-          } else if (i === length - 1 && rect.minY < y && y < rect.maxY) {
+          }
+
+          if (i === length - 1 &&
+            node.parentElement.getBoundingClientRect().toRect().contains(x, y) &&
+            rect.minY < y && y < rect.maxY) {
             range.expand(unit);
             return range;
           }
