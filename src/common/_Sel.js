@@ -42,6 +42,7 @@ export default class _Sel {
     this._endContainer = null;
     this._endOffset = null;
     this._isOverflowed = false;
+    this._maxLength = content._context.maxSelectionLength;
     this._continueContainer = null;
     this._continueOffset = null;
   }
