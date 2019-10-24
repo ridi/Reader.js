@@ -3,8 +3,6 @@ import Util from '../common/Util';
 
 const { DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_PRECEDING, TEXT_NODE } = Node;
 
-let caretIterator = null;
-
 /**
  * @class _Sel
  * @private @property {Reader} _reader
@@ -45,6 +43,7 @@ export default class _Sel {
     this._maxLength = content._context.maxSelectionLength;
     this._continueContainer = null;
     this._continueOffset = null;
+    this._caretIterator = null;
   }
 
   /**
@@ -378,10 +377,10 @@ export default class _Sel {
    */
   _caretRangeFromPoint(x, y, unit = 'word') {
     if (this._context.isSameDomAsUi) {
-      if (caretIterator) {
-        caretIterator.previousNode();
+      if (this._caretIterator) {
+        this._caretIterator.previousNode();
       } else {
-        caretIterator = Util.createTextNodeIterator(this._content.ref, (textNode) => { // eslint-disable-line
+        this._caretIterator = Util.createTextNodeIterator(this._content.ref, (textNode) => { // eslint-disable-line
           return textNode.parentElement
             .getBoundingClientRect()
             .toRect()
@@ -390,7 +389,7 @@ export default class _Sel {
       }
 
       let node;
-      while ((node = caretIterator.nextNode())) {
+      while ((node = this._caretIterator.nextNode())) {
         const range = document.createRange();
         range.selectNodeContents(node);
 
@@ -420,7 +419,7 @@ export default class _Sel {
           }
         }
       }
-      caretIterator = null;
+      this._caretIterator = null;
       return null;
     }
     return document.caretRangeFromPoint(x, y);
