@@ -35,12 +35,16 @@ export default class _Sel {
   constructor(content) {
     this._reader = content._reader;
     this._content = content;
+    this._maxLength = content._context.maxSelectionLength;
+    this._init();
+  }
+
+  _init() {
     this._startContainer = null;
     this._startOffset = null;
     this._endContainer = null;
     this._endOffset = null;
     this._isOverflowed = false;
-    this._maxLength = content._context.maxSelectionLength;
     this._continueContainer = null;
     this._continueOffset = null;
     this._caretIterator = null;
@@ -185,6 +189,10 @@ export default class _Sel {
     this._endOffset = this._continueOffset;
 
     return true;
+  }
+
+  end() {
+    this._init();
   }
 
   /**
