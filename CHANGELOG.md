@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.41 (2020-01-06)]
+
+### Fixed
+
+- [안드] 폰트 로딩이 끝나지 않은 상태에서 페이지 이동 시 항상 스파인의 첫 페이지로 이동하게 되는 문제 수정
+
 ## [1.0.40 (2019-11-04)]
 
 ## [1.0.39 (2019-10-16)]
@@ -270,7 +276,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.40...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.41...HEAD
+[1.0.41 (2020-01-06)]: https://github.com/ridi/Reader.js/compare/1.0.40...1.0.41
 [1.0.40 (2019-11-04)]: https://github.com/ridi/Reader.js/compare/1.0.39...1.0.40
 [1.0.39 (2019-10-16)]: https://github.com/ridi/Reader.js/compare/1.0.38...1.0.39
 [1.0.38 (2019-07-22)]: https://github.com/ridi/Reader.js/compare/1.0.37...1.0.38
