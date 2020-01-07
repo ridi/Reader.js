@@ -256,7 +256,7 @@ export default class _Sel {
 
     while (start > 0) {
       if (/^\s/.test(range.toString())) {
-        range.setStart(startContainer, start += 1);
+        range.setStart(startContainer, Math.min(start + 1, containerValueLength));
         break;
       }
       start -= 1;
@@ -265,7 +265,7 @@ export default class _Sel {
 
     while (origin < containerValueLength) {
       if (/\s$/.test(range.toString())) {
-        range.setEnd(endContainer, origin -= 1);
+        range.setEnd(endContainer, Math.max(origin - 1, 0));
         break;
       }
       origin += 1;
