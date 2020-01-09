@@ -412,7 +412,10 @@ export default class _Sel {
         this._caretIterator.previousNode();
       } else {
         this._caretIterator = Util.createTextNodeIterator(this._content.ref, (textNode) => { // eslint-disable-line
-          return textNode.parentElement
+          const range = document.createRange();
+          range.selectNode(textNode);
+          const rect = range.getBoundingClientRect().toRect();
+          return !rect.isEmpty && textNode.parentElement
             .getBoundingClientRect()
             .toRect()
             .contains(x, y);
@@ -430,23 +433,33 @@ export default class _Sel {
         for (let i = 0; i < length; i++) {
           range.setStart(range.startContainer, i);
           range.setEnd(range.endContainer, Math.min(i + 1, length));
-          if (/^\s*$/.test(range.toString())) {
+
+          const rects = range.getClientRects().toRectList();
+          if (rects.length === 0) {
             continue;
           }
 
-          const rect = range.getBoundingClientRect()
-            .toRect()
+          const rect = rects[rects.length - 1]
             .inset(0, 0, 0, Math.max(lineHeight - fontSize, 0));
           if (rect.contains(x, y)) {
             range.expand(unit);
             return range;
           }
 
-          if (i === length - 1 &&
-            node.parentElement.getBoundingClientRect().toRect().contains(x, y) &&
-            rect.minY < y && y < rect.maxY) {
-            range.expand(unit);
-            return range;
+          if (i === length - 1 && rect.minY < y && y < rect.maxY) {
+            const nextNode = this._caretIterator.nextNode();
+            this._caretIterator.previousNode();
+            if (nextNode) {
+              const nextRange = document.createRange();
+              nextRange.selectNodeContents(node);
+              if (rect.maxY < nextRange.getBoundingClientRect().toRect().minY) {
+                range.expand(unit);
+                return range;
+              }
+            } else {
+              range.expand(unit);
+              return range;
+            }
           }
         }
       }
