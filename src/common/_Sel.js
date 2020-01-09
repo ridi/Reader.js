@@ -241,8 +241,6 @@ export default class _Sel {
    * @private
    */
   _expandRangeByWord(range) {
-    const { startContainer, endContainer } = range;
-
     // FIXME: SpeechUtil 의존성 제거
     const tables = [SpeechUtil.chineseCodeTable(), SpeechUtil.japaneseCodeTable()];
     if (SpeechUtil.getContainCharRegex(tables).test(range.toString())) {
@@ -250,26 +248,51 @@ export default class _Sel {
       return;
     }
 
-    const containerValueLength = startContainer.nodeValue.length;
-    let start = range.startOffset;
-    let origin = start;
-
-    while (start > 0) {
+    let { startContainer } = range;
+    let offset = range.startOffset;
+    while (offset >= 0) {
+      const { textContent } = startContainer;
+      const previousSibling = startContainer.previousSibling || startContainer.parentNode.previousSibling;
       if (/^\s/.test(range.toString())) {
-        range.setStart(startContainer, Math.min(start + 1, containerValueLength));
+        range.setStart(startContainer, Math.min(offset + 1, textContent.length));
         break;
       }
-      start -= 1;
-      range.setStart(startContainer, start);
+      offset -= 1;
+      if (offset < 0) {
+        if (previousSibling !== null) {
+          startContainer = startContainer.childNodes.length > 0
+            ? startContainer.childNodes[startContainer.childNodes.length - 1]
+            : previousSibling;
+          offset = startContainer.textContent.length;
+        } else {
+          break;
+        }
+      }
+      range.setStart(startContainer, offset);
     }
 
-    while (origin < containerValueLength) {
+    let { endContainer } = range;
+    offset = range.endOffset;
+    while (offset <= endContainer.textContent.length) {
+      const { textContent } = endContainer;
+      const nextSibling = endContainer.nextSibling || endContainer.parentNode.nextSibling;
       if (/\s$/.test(range.toString())) {
-        range.setEnd(endContainer, Math.max(origin - 1, 0));
+        range.setEnd(endContainer, offset);
         break;
       }
-      origin += 1;
-      range.setEnd(endContainer, origin);
+      offset += 1;
+      if (offset > textContent.length) {
+        if (nextSibling !== null) {
+          endContainer = nextSibling;
+          offset = 0;
+          if (endContainer.childNodes.length) {
+            [endContainer] = endContainer.childNodes;
+          }
+        } else {
+          break;
+        }
+      }
+      range.setEnd(endContainer, offset);
     }
   }
 
