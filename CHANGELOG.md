@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.42 (2020-03-12)]
+
+### Fixed
+
+- [iOS] 이미지 크게보기 인터렉션 개선을 위한 기능 확장
+
 ## [1.0.41 (2020-01-06)]
 
 ### Fixed
@@ -276,7 +282,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.41...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.42...HEAD
+[1.0.42 (2020-03-12)]: https://github.com/ridi/Reader.js/compare/1.0.41...1.0.42
 [1.0.41 (2020-01-06)]: https://github.com/ridi/Reader.js/compare/1.0.40...1.0.41
 [1.0.40 (2019-11-04)]: https://github.com/ridi/Reader.js/compare/1.0.39...1.0.40
 [1.0.39 (2019-10-16)]: https://github.com/ridi/Reader.js/compare/1.0.38...1.0.39
