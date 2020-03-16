@@ -1,5 +1,6 @@
 import _Object from './_Object';
 import _Util from './_Util';
+import MutableClientRect from './MutableClientRect';
 
 export default class _Content extends _Object {
   /**
@@ -113,14 +114,38 @@ export default class _Content extends _Object {
 
   /**
    * @param {String} id
+   * @param {Number} x
+   * @param {Number} y
    * @returns {MutableClientRect[]}
    */
-  getRectFromElementId(id) {
-    let range;
+  getRectFromElementId(id, x, y) { // eslint-disable-line no-unused-vars
     try {
-      range = rangy.deserializeRange(id, this.body);
-    } catch (e) {} // eslint-disable-line no-empty
-    return range ? range.startContainer.getAdjustedBoundingClientRect() : null;
+      const range = rangy.deserializeRange(id, this.body);
+      const rects = range.startContainer.getAdjustedClientRects();
+      let [rect] = rects;
+      if (rects.length === 1) return rect;
+      rect = rects.reduce((result, item) => {
+        const mutable = result;
+        const { left, right, top, height } = item;
+        if (left <= x && x < right) {
+          mutable.left = left;
+          mutable.top = top;
+        } else if (left >= 0 && x === undefined) {
+          x = left; // eslint-disable-line no-param-reassign
+          mutable.left = left;
+          mutable.top = top;
+        }
+        mutable.height += height;
+        return mutable;
+      }, new MutableClientRect({ left: rect.left, top: rect.top, width: rect.width }));
+
+      rect.right = rect.left + rect.width;
+      rect.bottom = rect.top + rect.height;
+
+      return rect;
+    } catch (e) {
+      return null;
+    }
   }
 
   /**
@@ -131,11 +156,12 @@ export default class _Content extends _Object {
   getImageFromPoint(x, y) {
     const el = document.elementFromPoint(x, y);
     if (el && el.nodeName === 'IMG') {
+      const id = this.getElementId(el);
       return {
-        id: this.getElementId(el),
+        id,
         element: el,
         src: el.src || 'null',
-        rect: el.getAdjustedBoundingClientRect(),
+        rect: this.getRectFromElementId(id, x, y),
       };
     }
     return null;

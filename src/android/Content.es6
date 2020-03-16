@@ -75,14 +75,16 @@ export default class Content extends _Content {
 
   /**
    * @param {string} id
+   * @returns {?MutableClientRect}
    */
   getRectFromElementId(id) {
     const rect = super.getRectFromElementId(id);
     if (rect) {
       const { left, top, width, height } = this._reader.rectToAbsolute(rect);
       android.onElementRectFound(left, top, width, height);
-    } else {
-      android.onElementRectNotFound();
+      return rect;
     }
+    android.onElementRectNotFound();
+    return null;
   }
 }
