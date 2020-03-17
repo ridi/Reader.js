@@ -128,16 +128,18 @@ export default class _Content extends _Object {
         const mutable = result;
         const { left, right, top, height } = item;
         if (left <= x && x < right) {
-          mutable.left = left;
-          mutable.top = top;
+          mutable.left += left;
+          mutable.top += top;
         } else if (left >= 0 && x === undefined) {
           x = left; // eslint-disable-line no-param-reassign
-          mutable.left = left;
-          mutable.top = top;
+          mutable.left += left;
+          mutable.top += top;
+        } else if (left < 0) {
+          mutable.top -= height;
         }
         mutable.height += height;
         return mutable;
-      }, new MutableClientRect({ left: rect.left, top: rect.top, width: rect.width }));
+      }, new MutableClientRect({ width: rect.width }));
 
       rect.right = rect.left + rect.width;
       rect.bottom = rect.top + rect.height;
