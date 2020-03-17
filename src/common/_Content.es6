@@ -135,7 +135,7 @@ export default class _Content extends _Object {
           mutable.left += left;
           mutable.top += top;
         } else if (left < 0) {
-          mutable.top -= height
+          mutable.top -= height;
         }
         mutable.height += height;
         return mutable;
