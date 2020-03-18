@@ -81,7 +81,8 @@ export default class Content extends _Content {
     if (rect) {
       const { left, top, width, height } = this._reader.rectToAbsolute(rect);
       android.onElementRectFound(left, top, width, height);
+    } else {
+      android.onElementRectNotFound();
     }
-    android.onElementRectNotFound();
   }
 }
