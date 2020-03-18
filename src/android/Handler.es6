@@ -51,12 +51,12 @@ export default class Handler extends _Handler {
     const point = this.reader.adjustPoint(x, y);
     let result = content.getImageFromPoint(point.x, point.y);
     if (result) {
-      const { left, top, width, height } = result.rect;
+      const { left, top, width, height } = this.reader.rectToAbsolute(result.rect);
       android.onImageFound(result.src, result.id, left, top, width, height);
     } else {
       result = content.getSvgFromPoint(point.x, point.y);
       if (result) {
-        const { left, top, width, height } = result.rect;
+        const { left, top, width, height } = this.reader.rectToAbsolute(result.rect);
         android.onSvgFound(result.html, result.id, left, top, width, height);
       }
     }
