@@ -71,9 +71,8 @@ export default class Content extends _Content {
   getRectFromElementId(id) {
     const rect = super.getRectFromElementId(id);
     if (rect) {
-      const { left, top, width, height } = this._reader.rectToAbsolute(rect);
-      return `${left},${top},${width},${height}`;
+      return this._reader.rectToAbsolute(rect);
     }
-    return '0,0,0,0';
+    return null;
   }
 }
