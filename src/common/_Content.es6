@@ -194,11 +194,12 @@ export default class _Content extends _Object {
           svgEl.appendChild(nodes[j].cloneNode(true));
         }
 
+        const id = this.getElementId(el);
         return {
-          id: this.getElementId(el),
+          id,
           element: el,
           html: `${prefix}${svgEl.innerHTML}</svg>`,
-          rect: el.getAdjustedBoundingClientRect(),
+          rect: this.getRectFromElementId(id, x, y),
         };
       }
       el = el.parentElement;
