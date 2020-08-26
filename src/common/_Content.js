@@ -1,5 +1,5 @@
 import NodeLocation from './NodeLocation';
-import MutableClientRect from './MutableClientRect';
+import Rect from './Rect';
 import Util from './Util';
 
 const { TEXT_NODE, ELEMENT_NODE, DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINED_BY } = Node;
@@ -101,7 +101,7 @@ class _Content {
    * @param {String} id
    * @param {Number} x
    * @param {Number} y
-   * @returns {MutableClientRect[]}
+   * @returns {Rect}
    */
   getRectFromElementId(id, x, y) { // eslint-disable-line no-unused-vars
     try {
@@ -124,7 +124,7 @@ class _Content {
         }
         mutable.height += height;
         return mutable;
-      }, new MutableClientRect({ width: rect.width }));
+      }, new Rect({ width: rect.width }));
 
       rect.right = rect.left + rect.width;
       rect.bottom = rect.top + rect.height;

@@ -210,7 +210,7 @@ export default class Content extends _Content {
 
   /**
    * @param {string} id
-   * @returns {?MutableClientRect}
+   * @returns {?Rect}
    */
   getRectFromElementId(id) {
     const rect = super.getRectFromElementId(id);
