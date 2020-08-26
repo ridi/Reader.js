@@ -70,7 +70,7 @@ class _Content {
    */
   _getNodes() {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 수정 시 마지막 페이지 동기화가 오작동할 수 있다.
-    const filter = 
+    const filter =
       node => node.nodeType === TEXT_NODE || (node.nodeType === ELEMENT_NODE && node.nodeName.toLowerCase() === 'img');
     const iterator = Util.createNodeIterator(this.ref, SHOW_TEXT | SHOW_ELEMENT, filter);
     const nodes = [];

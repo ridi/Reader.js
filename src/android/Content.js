@@ -131,7 +131,6 @@ export default class Content extends _Content {
 
   /**
    * @param {string} id
-   * @returns {?MutableClientRect}
    */
   findRectFromElementId(id) {
     const rect = this.getRectFromElementId(id);
