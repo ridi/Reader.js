@@ -366,7 +366,7 @@ export default class _Sel {
     }
 
     range.setEndAfter(range.endContainer);
-    if (range.endContainer.nodeName === 'BODY') {
+    if (range.endContainer.nodeName.toLowerCase() === 'body') {
       // case: 4
       // body
       //   p

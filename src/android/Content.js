@@ -90,7 +90,7 @@ export default class Content extends _Content {
     if (result.size.dWidth === 0 || result.size.dHeight === 0) {
       let target = element.parentElement;
       do {
-        if (target.nodeName.match(/H[0-9]/)) {
+        if (target.nodeName.match(/^H[0-9]$/i)) {
           result.position = 'absolute';
           break;
         }

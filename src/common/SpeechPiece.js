@@ -102,7 +102,7 @@ export default class SpeechPiece {
           }
         });
       }
-    } else if (this._node.nodeName === 'IMG') {
+    } else if (this._node.nodeName.toLowerCase() === 'img') {
       this._text = this._node.alt || '';
     }
   }
@@ -126,12 +126,12 @@ export default class SpeechPiece {
       } else {
         do {
           // 주석 링크는 읽지 않는다
-          if (el.nodeName === 'A' && this._text.match(Util.getFootnoteRegex()) !== null) {
+          if (el.nodeName.toLowerCase() === 'a' && this._text.match(Util.getFootnoteRegex()) !== null) {
             valid = false;
             break;
           }
           // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
-          if (!(valid = (['RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
+          if (!(valid = (['rt', 'rp', 'sub', 'sup', 'img'].indexOf(el.nodeName.toLowerCase()) === -1))) {
             break;
           }
         } while ((el = el.parentNode));
@@ -154,7 +154,7 @@ export default class SpeechPiece {
       let sibling = node[checkNextSibling ? 'nextSibling' : 'previousSibling'];
       // 위의 예시에서 <p><br></p> 이렇게 br이 다른 element 안에 있을 수도 있다.
       while (sibling) {
-        if (sibling.nodeName === 'BR') {
+        if (sibling.nodeName.toLowerCase() === 'br') {
           return true;
         }
 
@@ -179,9 +179,9 @@ export default class SpeechPiece {
     const regex = SpeechUtil.getWhitespaceAndNewLineRegex(null, `{${this.length},}`);
     let only = this.text.match(regex) !== null;
     if (only) {
-      only = this._node.parentElement.nodeName !== 'SPAN';
+      only = this._node.parentElement.nodeName.toLowerCase() !== 'span';
       if (pNode !== null) {
-        only = pNode.nodeName !== 'SPAN';
+        only = pNode.nodeName.toLowerCase() !== 'span';
       }
     }
     return only;

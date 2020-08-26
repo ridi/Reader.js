@@ -70,7 +70,8 @@ class _Content {
    */
   _getNodes() {
     // 주의! NodeLocation의 nodeIndex에 영향을 주는 부분으로 수정 시 마지막 페이지 동기화가 오작동할 수 있다.
-    const filter = node => node.nodeType === TEXT_NODE || (node.nodeType === ELEMENT_NODE && node.nodeName === 'IMG');
+    const filter = 
+      node => node.nodeType === TEXT_NODE || (node.nodeType === ELEMENT_NODE && node.nodeName.toLowerCase() === 'img');
     const iterator = Util.createNodeIterator(this.ref, SHOW_TEXT | SHOW_ELEMENT, filter);
     const nodes = [];
     let node;
@@ -291,7 +292,7 @@ class _Content {
   _getLinkFromNode(node) {
     while (node) {
       const { nodeName, href, attributes } = node;
-      if (node && nodeName === 'A') {
+      if (node && nodeName.toLowerCase() === 'a') {
         return { node, href, type: (attributes['epub:type'] || { value: '' }).value };
       }
       node = node.parentNode;
@@ -656,7 +657,7 @@ class _Content {
 
       let rect = range.getBoundingClientRect().toRect().toAbsolute();
       if (rect.isEmpty) {
-        if (node.nodeName === 'IMG') {
+        if (node.nodeName.toLowerCase() === 'img') {
           range.selectNode(node);
           rect = range.getBoundingClientRect().toRect().toAbsolute();
           if (rect.isEmpty) {
@@ -708,7 +709,7 @@ class _Content {
           }
           offset += (word.length + 1);
         }
-      } else if (node.nodeName === 'IMG') {
+      } else if (node.nodeName.toLowerCase() === 'img') {
         const rectList = range.getClientRects().toRectList().toAbsolute();
         if ((rectIndex = this._findRectIndex(rectList, startOffset, endOffset, type)) !== null) {
           if (rectIndex < 0) {
@@ -763,7 +764,7 @@ class _Content {
 
     let rect = range.getBoundingClientRect().toRect().toAbsolute();
     if (rect.isEmpty) {
-      if (node.nodeName === 'IMG') {
+      if (node.nodeName.toLowerCase() === 'img') {
         range.selectNode(node);
         rect = range.getBoundingClientRect().toRect().toAbsolute();
         if (rect.isEmpty) {
@@ -779,7 +780,7 @@ class _Content {
       return null;
     }
 
-    if (node.nodeName === 'IMG' && wordIndex === 0) {
+    if (node.nodeName.toLowerCase() === 'img' && wordIndex === 0) {
       if (this._context.isScrollMode) {
         return Math.max(rect.top - (type === Type.BOTTOM ? this._context.pageUnit : 0), 0);
       }
