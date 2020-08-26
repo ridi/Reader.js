@@ -98,9 +98,9 @@ class _Content {
   }
 
   /**
-   * @param {String} id
-   * @param {Number} x
-   * @param {Number} y
+   * @param {string} id
+   * @param {number} x
+   * @param {number} y
    * @returns {Rect}
    */
   getRectFromElementId(id, x, y) { // eslint-disable-line no-unused-vars
