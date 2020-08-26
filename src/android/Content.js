@@ -130,6 +130,20 @@ export default class Content extends _Content {
   }
 
   /**
+   * @param {string} id
+   * @returns {?MutableClientRect}
+   */
+  findRectFromElementId(id) {
+    const rect = this.getRectFromElementId(id);
+    if (rect) {
+      const { left, top, width, height } = rect.toAbsolute();
+      android.onElementRectFound(left, top, width, height);
+    } else {
+      android.onElementRectNotFound();
+    }
+  }
+
+  /**
    * @param {string} type Type.Top or Type.BOTTOM
    */
   getCurrentNodeLocation(type = NodeLocation.Type.TOP) {

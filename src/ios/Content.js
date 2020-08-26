@@ -207,4 +207,16 @@ export default class Content extends _Content {
     }
     location.href = `${baseUrl}toggleFullscreen`;
   }
+
+  /**
+   * @param {string} id
+   * @returns {?MutableClientRect}
+   */
+  getRectFromElementId(id) {
+    const rect = super.getRectFromElementId(id);
+    if (rect) {
+      return rect.toAbsolute();
+    }
+    return null;
+  }
 }

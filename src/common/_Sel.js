@@ -205,6 +205,16 @@ export default class _Sel {
 
   /**
    * @param {Range} range
+   * @returns {number}
+   * @private
+   */
+  _clientLeftOfRangeForCheckingNextPageContinuable(range) {
+    const rect = range.getBoundingClientRect().toRect();
+    return Math.floor(rect.left + rect.width);
+  }
+
+  /**
+   * @param {Range} range
    * @returns {boolean}
    * @private
    */

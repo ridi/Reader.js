@@ -9,6 +9,50 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - None.
 
+## [1.0.42 (2020-03-12)]
+
+### Fixed
+
+- [iOS] 이미지 크게보기 인터렉션 개선을 위한 기능 확장
+
+## [1.0.41 (2020-01-06)]
+
+### Fixed
+
+- [안드] 폰트 로딩이 끝나지 않은 상태에서 페이지 이동 시 항상 스파인의 첫 페이지로 이동하게 되는 문제 수정
+
+## [1.0.40 (2019-11-04)]
+
+## [1.0.39 (2019-10-16)]
+
+### Fixed
+
+- [iOS] iOS13에서 이어서 선택하기/칠하기가 오작동하는 문제 수정
+
+## [1.0.38 (2019-07-22)]
+
+### Fixed
+
+- [공통] Chrome 52에서 Rect/Point 보정을 하지 않도록
+
+## [1.0.37 (2019-07-09)]
+
+### Fixed
+
+- [공통] rangy를 이용해 엘리먼트를 식별할 때 대상 엘리먼트가 아니라 부모 엘리먼트를 식별하는 문제 수정
+
+## [1.0.36 (2019-07-08)]
+
+### Changed
+
+- [공통] rangy를 이용해 엘리먼트를 식별하도록 수정
+
+## [1.0.35 (2019-07-03)]
+
+### Added
+
+- [공통] 이미지 크게보기 인터렉션 개선을 위한 기능 확장
+
 ## [1.0.34 (2019-07-01)]
 
 ### Added
@@ -238,7 +282,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.34...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.42...HEAD
+[1.0.42 (2020-03-12)]: https://github.com/ridi/Reader.js/compare/1.0.41...1.0.42
+[1.0.41 (2020-01-06)]: https://github.com/ridi/Reader.js/compare/1.0.40...1.0.41
+[1.0.40 (2019-11-04)]: https://github.com/ridi/Reader.js/compare/1.0.39...1.0.40
+[1.0.39 (2019-10-16)]: https://github.com/ridi/Reader.js/compare/1.0.38...1.0.39
+[1.0.38 (2019-07-22)]: https://github.com/ridi/Reader.js/compare/1.0.37...1.0.38
+[1.0.37 (2019-07-09)]: https://github.com/ridi/Reader.js/compare/1.0.36...1.0.37
+[1.0.36 (2019-07-08)]: https://github.com/ridi/Reader.js/compare/1.0.35...1.0.36
+[1.0.35 (2019-07-03)]: https://github.com/ridi/Reader.js/compare/1.0.34...1.0.35
 [1.0.34 (2019-07-01)]: https://github.com/ridi/Reader.js/compare/1.0.33...1.0.34
 [1.0.33 (2019-06-24)]: https://github.com/ridi/Reader.js/compare/1.0.32...1.0.33
 [1.0.32 (2018-10-17)]: https://github.com/ridi/Reader.js/compare/1.0.31...1.0.32

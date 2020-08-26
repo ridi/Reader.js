@@ -1,4 +1,5 @@
 import NodeLocation from './NodeLocation';
+import MutableClientRect from './MutableClientRect';
 import Util from './Util';
 
 const { TEXT_NODE, ELEMENT_NODE, DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINED_BY } = Node;
@@ -8,8 +9,6 @@ const { Type } = NodeLocation;
 
 const TOUCH_POINT_TOLERANCE = 12;
 const TOUCH_POINT_STRIDE = 6;
-
-const makeId = (i => (prefix) => { return `${prefix}${(++i)}`; })(0); // eslint-disable-line
 
 /**
  * @class _Content
@@ -98,15 +97,51 @@ class _Content {
   }
 
   /**
+   * @param {String} id
+   * @param {Number} x
+   * @param {Number} y
+   * @returns {MutableClientRect[]}
+   */
+  getRectFromElementId(id, x, y) { // eslint-disable-line no-unused-vars
+    try {
+      const range = rangy.deserializeRange(id, this.body);
+      const rects = range.startContainer.getClientRects().toRectList();
+      let [rect] = rects;
+      if (rects.length === 1) return rect;
+      rect = rects.reduce((result, item) => {
+        const mutable = result;
+        const { left, right, top, height } = item;
+        if (left <= x && x < right) {
+          mutable.left += left;
+          mutable.top += top;
+        } else if (left >= 0 && x === undefined) {
+          x = left; // eslint-disable-line no-param-reassign
+          mutable.left += left;
+          mutable.top += top;
+        } else if (left < 0) {
+          mutable.top -= height;
+        }
+        mutable.height += height;
+        return mutable;
+      }, new MutableClientRect({ width: rect.width }));
+
+      rect.right = rect.left + rect.width;
+      rect.bottom = rect.top + rect.height;
+
+      return rect;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
    * @param {HTMLElement} element
    * @returns {string}
    */
   _generateId(element) {
-    const prefix = element.nodeName;
-    const id = Array.from(element.classList).find(item => item.match(new RegExp(`${prefix}*`))) || makeId(prefix);
-    element.classList.remove(id);
-    element.classList.add(id);
-    return id;
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return rangy.serializeRange(range, true, this.body);
   }
 
   /**
@@ -116,9 +151,15 @@ class _Content {
   setHidden(hidden, elementOrId) {
     let el;
     if (typeof elementOrId === 'string') {
-      [el] = document.getElementsByClassName(elementOrId);
+      try {
+        const range = rangy.deserializeRange(elementOrId, this.body);
+        if (range) {
+          el = range.startContainer;
+        }
+      } catch (e) {} // eslint-disable-line no-empty
       if (!el) {
-        el = document.getElementById(elementOrId);
+        const [first] = document.getElementsByClassName(elementOrId);
+        el = first || document.getElementById(elementOrId);
       }
     } else {
       el = elementOrId;
@@ -185,12 +226,13 @@ class _Content {
    */
   imageFromPoint(x, y) {
     const element = this.elementFromPoint(x, y, 'IMG');
+    const id = this._generateId(element);
     if (element && element.src) {
       return {
-        id: this._generateId(element),
+        id,
         element,
         src: element.src || 'null',
-        rect: element.getBoundingClientRect().toRect(),
+        rect: this.getRectFromElementId(id, x, y),
       };
     }
     return null;
@@ -223,11 +265,13 @@ class _Content {
       for (let j = 0; j < nodes.length; j += 1) {
         svgElement.appendChild(nodes[j].cloneNode(true));
       }
+
+      const id = this._generateId(svgElement);
       return {
-        id: this._generateId(svgElement),
+        id,
         element: svgElement,
         html: `${prefix}${svgElement.innerHTML}</svg>`,
-        rect: svgElement.getBoundingClientRect().toRect(),
+        rect: this.getRectFromElementId(id, x, y),
       };
     }
     return null;

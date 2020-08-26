@@ -71,7 +71,7 @@ export default class Reader extends _Reader {
         adjustOffset = maxOffset;
       }
       adjustOffset = Math.min(adjustOffset, maxOffset);
-    } else {
+    } else if (this.calcPageCount() > -1) {
       const width = this.context.pageWidthUnit;
       const maxPage = Math.max(this.calcPageCount() - this._calcExtraPageCount(), 0);
       adjustOffset = Math.min(adjustOffset, maxPage * width);
