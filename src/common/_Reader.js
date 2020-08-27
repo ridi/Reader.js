@@ -116,7 +116,7 @@ export default class _Reader {
    * @param {HTMLElement|number} key
    * @returns {?Content}
    */
-  getContent(key) {
+  getContent(key = 0) {
     if (typeof key === 'number') {
       return this.contents[key];
     }
