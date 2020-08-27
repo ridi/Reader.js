@@ -74,7 +74,7 @@ export default class _Reader {
    * @param {Context} context
    */
   constructor(context) {
-    this._injectMethod();
+    this.injectMethods();
     this._wrapper = document.documentElement;
     this.context = context;
     this.debugNodeLocation = false;
@@ -123,17 +123,8 @@ export default class _Reader {
     return this.contents.find(content => content.ref === key);
   }
 
-  /**
-   * @private
-   */
-  _injectMethod() {
-    const inject = (target, name, value, force = false) => {
-      if (force || !target[name]) {
-        target[name] = value;
-      }
-    };
-
-    inject(Range.prototype, 'getTextRectList', function getTextRectList() {
+  injectMethods() {
+    Util.injectMethod(Range.prototype, 'getTextRectList', function getTextRectList() {
       const {
         startContainer,
         startOffset,
@@ -186,11 +177,11 @@ export default class _Reader {
       return rectList;
     });
 
-    inject(Range.prototype, 'toSerializedRange', function toSerializedRange(root) {
+    Util.injectMethod(Range.prototype, 'toSerializedRange', function toSerializedRange(root) {
       return rangy.serializeRange(this, true, root);
     });
 
-    inject(Range, 'fromSerializedRange', (string, root) => {
+    Util.injectMethod(Range, 'fromSerializedRange', (string, root) => {
       const range = rangy.deserializeRange(string, root);
       const newRange = document.createRange();
       newRange.setStart(range.startContainer, range.startOffset);
@@ -204,19 +195,19 @@ export default class _Reader {
     try { rectCls.push(ClientRect) } catch (e) {} // eslint-disable-line
     rectCls.forEach((cls) => {
       if (cls) {
-        inject(cls.prototype, 'toRect', function toRect() {
+        Util.injectMethod(cls.prototype, 'toRect', function toRect() {
           return new Rect(this);
         });
       }
     });
 
     const listCls = document.documentElement.getClientRects().constructor;
-    inject(listCls.prototype, 'toRectList', function toRectList() {
+    Util.injectMethod(listCls.prototype, 'toRectList', function toRectList() {
       return new RectList(...RectList.from(this, rect => rect.toRect()));
     });
 
     const reader = this;
-    inject(Rect.prototype, 'toAbsolute', function toAbsolute() {
+    Util.injectMethod(Rect.prototype, 'toAbsolute', function toAbsolute() {
       const { pageXOffset, pageYOffset } = reader;
       if (reader.context.isScrollMode) {
         this.top += pageYOffset;

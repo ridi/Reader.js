@@ -1,6 +1,8 @@
 import _Reader from '../common/_Reader';
 import Content from './Content';
 import Context from '../common/Context';
+import Rect from '../common/Rect';
+import Util from '../common/Util';
 
 /**
  * @class Reader
@@ -23,6 +25,14 @@ export default class Reader extends _Reader {
    */
   _createContent(ref) {
     return new Content(ref, this);
+  }
+
+  injectMethods() {
+    super.injectMethods();
+
+    Util.injectMethod(Rect.prototype, 'toObject', function toObject() {
+      return [[this.left, this.top], [this.width, this.height]];
+    }, true);
   }
 
   /**

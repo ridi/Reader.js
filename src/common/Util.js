@@ -172,4 +172,16 @@ export default class Util {
 
     return val;
   }
+
+  /**
+   * @param {object} target
+   * @param {string} name
+   * @param {function} value
+   * @param {boolean} force
+   */
+  static injectMethod(target, name, value, force = false) {
+    if (force || !target[name]) {
+      target[name] = value;
+    }
+  }
 }

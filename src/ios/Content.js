@@ -167,17 +167,16 @@ export default class Content extends _Content {
         const range = document.createRange();
         range.selectNodeContents(link.node);
 
-        const rectListString = range.getClientRects().toRectList().trim().toAbsolute().toJsonString();
+        const rectList = range.getClientRects().toRectList().trim().toAbsolute().toArray();
         const footnoteType = type === 'noteref' ? 3.0 : 2.0;
         const text = link.node.textContent || '';
         const canUseFootnote = href.match(/^file:\/\//gm) !== null &&
           (text.trim().match(Util.getFootnoteRegex()) !== null || footnoteType >= 3.0);
         const payload = {
           link: encodeURIComponent(href),
-          rectListString,
+          rects: rectList,
           canUseFootnote,
-          rawX,
-          rawY,
+          rawOffset: [rawX, rawY],
         };
         if (footnoteType >= 3.0) {
           payload.title = encodeURIComponent(text);

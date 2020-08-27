@@ -602,7 +602,7 @@ export default class _SpeechHelper {
       nodeIndex: chunk.getStartNodeIndex(),
       wordIndex: chunk.getStartWordIndex(),
       text: chunk.utterance.text,
-      rectListString: chunk.getRectList(true).trim().toAbsolute().toJsonString(),
+      rectListString: chunk.getRectList(true).trim().toAbsolute().toArray(),
     };
   }
 
