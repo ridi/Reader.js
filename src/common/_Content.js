@@ -227,8 +227,8 @@ class _Content {
    */
   imageFromPoint(x, y) {
     const element = this.elementFromPoint(x, y, 'IMG');
-    const id = this._generateId(element);
     if (element && element.src) {
+      const id = this._generateId(element);
       return {
         id,
         element,
