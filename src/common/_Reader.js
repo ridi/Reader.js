@@ -289,13 +289,24 @@ export default class _Reader {
   }
 
   /**
+   * @returns {?Range}
+   * @private
+   */
+  _getSearchRange() {
+    if (getSelection().rangeCount > 0) {
+      return getSelection().getRangeAt(0);
+    }
+    return null;
+  }
+
+  /**
    * @param {string} keyword
    * @returns {?string} serializedRange
    */
   searchText(keyword) {
     if (window.find(keyword, false)) { // Case insensitive
-      const range = getSelection().getRangeAt(0);
-      if (range.toString().length > 0) {
+      const range = this._getSearchRange();
+      if (range && range.toString().length > 0) {
         const target = range.startContainer;
         const { ref } =
           this.contents.find(content => content.ref.compareDocumentPosition(target) & DOCUMENT_POSITION_CONTAINED_BY);
@@ -317,7 +328,9 @@ export default class _Reader {
    * @returns {string}
    */
   getSurroundingTextForSearchResult(pre = 10, post = 100) {
-    const range = getSelection().getRangeAt(0);
+    const range = this._getSearchRange();
+    if (!range) return '';
+
     const {
       startContainer,
       startOffset,
@@ -347,14 +360,17 @@ export default class _Reader {
    * @returns {RectList}
    */
   getRectListFromSearchResult() {
-    return getSelection().getRangeAt(0).getClientRects().toRectList().toAbsolute();
+    const range = this._getSearchRange();
+    if (!range) return new RectList();
+    return range.getClientRects().toRectList().toAbsolute();
   }
 
   /**
    * @returns {number} zero-based page number
    */
   getPageFromSearchResult() {
-    const range = getSelection().getRangeAt(0);
+    const range = this._getSearchRange();
+    if (!range) return -1;
     return this.contents
       .find(content => content.ref.compareDocumentPosition(range.startContainer) & DOCUMENT_POSITION_CONTAINED_BY)
       .getPageFromRect(this.getRectListFromSearchResult()[0]);
