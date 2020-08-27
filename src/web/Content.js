@@ -1,7 +1,7 @@
-import _Content from '../common/_Content';
 import NodeLocation from '../common/NodeLocation';
 import Sel from './Sel';
 import Util from '../common/Util';
+import _Content from '../common/_Content';
 
 const { Type } = NodeLocation;
 

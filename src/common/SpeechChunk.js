@@ -1,8 +1,8 @@
 import Logger from './Logger';
 import RectList from './RectList';
 import SpeechRange from './SpeechRange';
-import SpeechUtterance from './SpeechUtterance';
 import SpeechUtil from './SpeechUtil';
+import SpeechUtterance from './SpeechUtterance';
 
 /**
  * @class SpeechChunk

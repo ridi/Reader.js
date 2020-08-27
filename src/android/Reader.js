@@ -1,7 +1,7 @@
-import _Reader from '../common/_Reader';
 import Content from './Content';
 import Context from '../common/Context';
 import Util from '../common/Util';
+import _Reader from '../common/_Reader';
 
 const RETRY_REQUIRED = -1;
 

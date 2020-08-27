@@ -1,8 +1,8 @@
-import _Reader from '../common/_Reader';
 import Content from './Content';
 import Context from '../common/Context';
 import Rect from '../common/Rect';
 import Util from '../common/Util';
+import _Reader from '../common/_Reader';
 
 /**
  * @class Reader

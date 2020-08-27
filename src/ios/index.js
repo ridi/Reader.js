@@ -3,11 +3,9 @@ import NodeLocation from '../common/NodeLocation';
 import Reader from './Reader';
 import Rect from '../common/Rect';
 import RectList from '../common/RectList';
+import SpeechUtil from '../common/SpeechUtil'; // for UnitTests
+import SpeechUtterance from '../common/SpeechUtterance'; // for UnitTests
 import Util from '../common/Util';
-
-// for UnitTests
-import SpeechUtil from '../common/SpeechUtil';
-import SpeechUtterance from '../common/SpeechUtterance';
 
 export {
   Context,

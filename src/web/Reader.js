@@ -1,5 +1,5 @@
-import _Reader from '../common/_Reader';
 import Content from './Content';
+import _Reader from '../common/_Reader';
 
 /**
  * @class Reader

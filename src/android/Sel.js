@@ -1,5 +1,5 @@
-import _Sel from '../common/_Sel';
 import Util from '../common/Util';
+import _Sel from '../common/_Sel';
 
 /**
  * @class Sel

@@ -1,6 +1,6 @@
 import Logger from './Logger';
-import SpeechPiece from './SpeechPiece';
 import SpeechChunk from './SpeechChunk';
+import SpeechPiece from './SpeechPiece';
 import SpeechRange from './SpeechRange';
 import SpeechUtil from './SpeechUtil';
 

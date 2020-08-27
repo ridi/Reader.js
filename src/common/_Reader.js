@@ -1,6 +1,6 @@
-import Util from '../common/Util';
 import Rect from './Rect';
 import RectList from './RectList';
+import Util from '../common/Util';
 
 const { DOCUMENT_POSITION_PRECEDING, DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINED_BY } = Node;
 

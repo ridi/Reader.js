@@ -5,6 +5,7 @@ module.exports = {
     'function-paren-newline': 0,
     'import/extensions': 0,
     'import/no-unresolved': 0,
+    'import/order': ['error', { groups: [['builtin', 'external', 'internal']], 'newlines-between': 'never' }],
     'max-len': ['warn', 120],
     'newline-per-chained-call': ['error', { 'ignoreChainWithDepth': 5 }],
     'no-cond-assign': 0,
@@ -14,6 +15,7 @@ module.exports = {
     'no-param-reassign': 0,
     'no-underscore-dangle': 0,
     'object-curly-newline': ['error', { 'multiline': true }],
+    'sort-imports': 2,
   },
   'env': {
     'browser': true
