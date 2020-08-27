@@ -251,6 +251,11 @@ export default class _Sel {
    * @private
    */
   _expandRangeByWord(range) {
+    let { startContainer } = range;
+    if (startContainer.nodeValue === null) {
+      return;
+    }
+
     // FIXME: SpeechUtil 의존성 제거
     const tables = [SpeechUtil.chineseCodeTable(), SpeechUtil.japaneseCodeTable()];
     if (SpeechUtil.getContainCharRegex(tables).test(range.toString())) {
@@ -258,7 +263,6 @@ export default class _Sel {
       return;
     }
 
-    let { startContainer } = range;
     let offset = range.startOffset;
     while (offset >= 0) {
       const { textContent } = startContainer;
@@ -287,7 +291,7 @@ export default class _Sel {
       const { textContent } = endContainer;
       const nextSibling = endContainer.nextSibling || endContainer.parentNode.nextSibling;
       if (/\s$/.test(range.toString())) {
-        range.setEnd(endContainer, offset);
+        range.setEnd(endContainer, Math.max(offset - 1, 0));
         break;
       }
       offset += 1;
