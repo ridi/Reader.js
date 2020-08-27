@@ -105,7 +105,7 @@ class _Content {
    */
   getRectFromElementId(id, x, y) { // eslint-disable-line no-unused-vars
     try {
-      const range = rangy.deserializeRange(id, this.body);
+      const range = Range.fromSerializedRange(id, this.ref);
       const rects = range.startContainer.getClientRects().toRectList();
       let [rect] = rects;
       if (rects.length === 1) return rect;
@@ -142,7 +142,7 @@ class _Content {
   _generateId(element) {
     const range = document.createRange();
     range.selectNodeContents(element);
-    return rangy.serializeRange(range, true, this.body);
+    return range.toSerializedRange(this.ref);
   }
 
   /**
@@ -153,7 +153,7 @@ class _Content {
     let el;
     if (typeof elementOrId === 'string') {
       try {
-        const range = rangy.deserializeRange(elementOrId, this.body);
+        const range = Range.fromSerializedRange(elementOrId, this.ref);
         if (range) {
           el = range.startContainer;
         }

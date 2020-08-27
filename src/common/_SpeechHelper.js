@@ -145,7 +145,7 @@ export default class _SpeechHelper {
    * @private
    */
   _serializedRangeToNodeLocation(serializedRange) {
-    const range = rangy.deserializeRange(serializedRange, this._content.ref);
+    const range = Range.fromSerializedRange(serializedRange, this._content.ref);
     if (range === null) {
       throw new Error('SpeechHelper: range is invalid.');
     }
