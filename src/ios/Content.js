@@ -132,12 +132,6 @@ export default class Content extends _Content {
     const endOffset = startOffset + this._context.pageUnit;
     const notFound = new NodeLocation(-1, -1, type).toString();
 
-    // 앱이 백그라운드 상태일 때는 계산하지 않는다.
-    // (백그라운드 상태에서는 scrollLeft 값을 신뢰할 수 없기 때문)
-    if (this._reader.isInBackground) {
-      return notFound;
-    }
-
     const location = this._findNodeLocation(startOffset, endOffset, type);
     this._reader._showNodeLocationIfDebug();
     if (!location) {

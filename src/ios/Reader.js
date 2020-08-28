@@ -7,17 +7,8 @@ import _Reader from '../common/_Reader';
 /**
  * @class Reader
  * @extends _Reader
- * @property {boolean} isInBackground
  */
 export default class Reader extends _Reader {
-  /**
-   * @param {Context} context
-   */
-  constructor(context) {
-    super(context);
-    this.isInBackground = false;
-  }
-
   /**
    * @param {HTMLElement} ref
    * @returns {Content}
