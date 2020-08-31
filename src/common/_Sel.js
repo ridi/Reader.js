@@ -45,6 +45,7 @@ export default class _Sel {
     this._endContainer = null;
     this._endOffset = null;
     this._isOverflowed = false;
+    this._isNextPageContinuable = false; // 다음 페이지로 이어서 셀렉션을 할 수 있는지(페이지 모드 전용)
     this._continueContainer = null;
     this._continueOffset = null;
     this._caretIterator = null;
@@ -181,12 +182,13 @@ export default class _Sel {
    * @returns {boolean}
    */
   expandIntoNextPage() {
-    if (!this.isExpandContinuableIntoNextPage) {
+    if (!this._isNextPageContinuable) {
       return false;
     }
 
     this._endContainer = this._continueContainer;
     this._endOffset = this._continueOffset;
+    this._isNextPageContinuable = false;
 
     return true;
   }
@@ -232,18 +234,21 @@ export default class _Sel {
           if (/\s/.test(clonedRange.toString())) {
             end += 1;
           } else if (this._clientLeftOfRangeForCheckingNextPageContinuable(clonedRange) < upperBound) {
-            return false;
+            this._isNextPageContinuable = false;
+            return this._isNextPageContinuable;
           } else {
             this._expandRangeBySentence(clonedRange, upperBound * 2);
             this._continueContainer = clonedRange.endContainer;
             this._continueOffset = clonedRange.endOffset;
-            return true;
+            this._isNextPageContinuable = true;
+            return this._isNextPageContinuable;
           }
         }
         end = 0;
+        this._isNextPageContinuable = false;
       } while ((node = this._getNextTextNode(clonedRange)));
     }
-    return false;
+    return this._isNextPageContinuable;
   }
 
   /**
