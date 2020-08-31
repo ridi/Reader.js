@@ -329,11 +329,14 @@ export default class _Sel {
     }
 
     let end = range.endOffset;
-    while (end > origin) {
-      if (range.getBoundingClientRect().toRect().right <= expandBound) {
+    while (end >= origin) {
+      if (/\s$/.test(range.toString())) {
+        range.setEnd(range.endContainer, end -= 1);
+      } else if (range.getBoundingClientRect().toRect().right <= expandBound) {
         break;
+      } else {
+        range.setEnd(range.endContainer, end -= 1);
       }
-      range.setEnd(range.endContainer, end -= 1);
     }
   }
 
