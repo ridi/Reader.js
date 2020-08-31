@@ -263,8 +263,6 @@ export default class _Reader {
     }
 
     const rect = this.lastNodeLocationRect;
-    rect[this.context.isScrollMode ? 'top' : 'left'] -= this.pageOffset;
-    rect[this.context.isScrollMode ? 'bottom' : 'right'] -= this.pageOffset;
     span.style.cssText =
       'position: absolute !important;' +
       'background-color: red !important;' +
