@@ -45,7 +45,7 @@ class _Content {
   /**
    * @returns {HTMLElement[]} 콘텐츠(=스파인) 내 모든 이미지 엘리먼트를 반환한다.
    */
-  get images() { return Array.from(this.ref.getElementsByTagName('IMG')); }
+  get images() { return Array.from(this.ref.querySelectorAll('img')); }
 
   /**
    * @returns {Context}
@@ -226,7 +226,7 @@ class _Content {
    * @returns {?Image}
    */
   imageFromPoint(x, y) {
-    const element = this.elementFromPoint(x, y, 'IMG');
+    const element = this.elementFromPoint(x, y, 'img');
     if (element && element.src) {
       const id = this._generateId(element);
       return {
