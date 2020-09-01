@@ -255,7 +255,7 @@ class _Content {
     const element = this.elementFromPoint(x, y, 'SVG');
     if (element) {
       let prefix = '<svg';
-      const attrs = element.attributes;
+      const attrs = Array.from(element.attributes);
       attrs.forEach((attr) => {
         prefix += ` ${attr.nodeName}="${attr.nodeValue}"`;
       });
@@ -267,7 +267,7 @@ class _Content {
         svgElement.appendChild(nodes[j].cloneNode(true));
       }
 
-      const id = this._generateId(svgElement);
+      const id = this._generateId(element);
       return {
         id,
         element: svgElement,
