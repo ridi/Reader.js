@@ -64,7 +64,7 @@ export default class Reader extends _Reader {
     const element = elements[elements.length - 1];
     element.innerHTML = style;
 
-    const wrapperStyle = this._wrapper.style;
+    const wrapperStyle = this.getContent().ref.style;
     wrapperStyle['font-size'] = `${fontSize}%`;
 
     this.scrollTo(prevPage * this.context.pageUnit);
