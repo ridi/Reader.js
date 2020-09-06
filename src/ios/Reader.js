@@ -60,7 +60,7 @@ export default class Reader extends _Reader {
       Object.assign(context, { width, height, gap });
     });
 
-    const elements = document.getElementsByTagName('STYLE');
+    const elements = Array.from(document.querySelectorAll('style'));
     const element = elements[elements.length - 1];
     element.innerHTML = style;
 
