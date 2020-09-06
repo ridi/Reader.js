@@ -287,6 +287,13 @@ export default class _Reader {
   }
 
   /**
+   * @param {number} page
+   */
+  scrollToPage(page) {
+    this.scrollTo(page * this.context.pageUnit);
+  }
+
+  /**
    * @returns {?Range}
    * @private
    */
