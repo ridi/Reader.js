@@ -124,12 +124,17 @@ export default class Content extends _Content {
   }
 
   /**
+   * @param {number} offset pageOffset or scrollYOffset
    * @param {string} type Type.TOP or Type.BOTTOM
    * @returns {string}
    */
-  getCurrentNodeLocation(type = NodeLocation.Type.TOP) {
-    const startOffset = this._reader.pageOffset;
-    const endOffset = startOffset + this._context.pageUnit;
+  getCurrentNodeLocation(offset, type = NodeLocation.Type.TOP) {
+    const { pageUnit } = this._context;
+    let startOffset = offset;
+    if (!this._context.isScrollMode) {
+      startOffset = offset * pageUnit;
+    }
+    const endOffset = startOffset + pageUnit;
     const notFound = new NodeLocation(-1, -1, type).toString();
 
     const location = this._findNodeLocation(startOffset, endOffset, type);
