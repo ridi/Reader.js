@@ -263,8 +263,8 @@ export default class _SpeechHelper {
 
     this.playChunksByNodeLocation(nodeIndex, wordIndex);
 
-    const hasMoreAfterChunks = () => (this.processedNodeMaxIndex + 1 < this.nodes.length);
-    const hasMoreBeforeChunks = () => (this.processedNodeMinIndex - 1 >= 0);
+    const hasMoreAfterChunks = () => (this._lastMaxNodeIndex + 1 < this.nodes.length);
+    const hasMoreBeforeChunks = () => (this._lastMinNodeIndex - 1 >= 0);
     let generateMoreChunks = () => {};
     const scheduleTask = () => {
       if (hasMoreAfterChunks() || hasMoreBeforeChunks()) {
@@ -285,12 +285,12 @@ export default class _SpeechHelper {
       }
 
       if (hasMoreAfterChunks()) {
-        this.makeChunksByNodeLocation(this.processedNodeMaxIndex + 1);
+        this.makeChunksByNodeLocation(this._lastMaxNodeIndex + 1);
         this.didFinishMakePartialChunks(false, false);
       }
 
       if (hasMoreBeforeChunks()) {
-        this.makeChunksByNodeLocationReverse(this.processedNodeMinIndex - 1);
+        this.makeChunksByNodeLocationReverse(this._lastMinNodeIndex - 1);
         this.didFinishMakePartialChunks(false, true);
       }
 
