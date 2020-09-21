@@ -464,7 +464,9 @@ class _Content {
     const width = parseInt(cssWidth, 10) || size.dWidth;
     const height = parseInt(cssHeight, 10) || size.dHeight;
     if (width > baseWidth || height > baseHeight) {
-      const top = this._context.isScrollMode ? 0 : element.offsetTop;
+      const top = !this._context.isScrollMode && this._context.shouldConsiderVerticalMarginsWhenReviseImages
+        ? element.offsetTop % baseHeight
+        : 0;
       const margin =
         top + Util.getStylePropertyValues(element, ['line-height', 'margin-bottom', 'padding-bottom']);
       const vmin = Math.min(baseWidth, baseHeight) / 2;

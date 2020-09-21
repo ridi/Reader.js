@@ -56,6 +56,7 @@ export default class Context {
     this.isSameDomAsUi = false;
     this.shouldViewportInitialize = false;
     this.shouldTwoPageAsOneWhenDoublePageMode = false;
+    this.shouldConsiderVerticalMarginsWhenReviseImages = true;
     this.onMessage = message => Logger.info(message);
   }
 
