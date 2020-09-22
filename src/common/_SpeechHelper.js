@@ -393,14 +393,15 @@ export default class _SpeechHelper {
 
     const wordsInNode = node => (node ? (node.nodeValue || '').split(SpeechUtil.getSplitWordRegex()) : []);
 
-    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this._reserveNodesCountMagic);
     const maxNodeIndex = nodes.length - 1;
-    let minNodeIndex = Math.max(0, nodeIndex - reserveNodesCount);
     nodeIndex = (nodeIndex >= 0 ? Math.min(nodeIndex, maxNodeIndex) : maxNodeIndex);
 
     const maxWordIndex = wordsInNode(nodes[nodeIndex]).length - 1;
     let startWordIndex = 0;
     let endWordIndex = (wordIndex >= 0 ? Math.min(wordIndex, maxWordIndex) : maxWordIndex);
+
+    const reserveNodesCount = (isMakingTemporalChunk ? 0 : this._reserveNodesCountMagic);
+    let minNodeIndex = Math.max(0, nodeIndex - reserveNodesCount);
 
     const decrementMinIndex = () => { minNodeIndex = Math.max(minNodeIndex - 1, 0); };
     let pieceBuffer = [];
