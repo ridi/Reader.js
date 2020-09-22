@@ -530,7 +530,13 @@ export default class _SpeechHelper {
     // Debug Info
     const log = (caseNum, chunk) => {
       if (chunk) {
-        Logger.debug(`Case: ${caseNum}, Text: ${chunk.text}`);
+        const startNodeIndex = chunk.getStartNodeIndex();
+        const startWordIndex = chunk.getStartWordIndex();
+        const startLocation = `${startNodeIndex}#${startWordIndex}`;
+        const endNodeIndex = chunk.getEndNodeIndex();
+        const endWordIndex = chunk.getEndWordIndex();
+        const endLocation = `${endNodeIndex}#${endWordIndex}`;
+        Logger.debug(`Case: ${caseNum}, Range: ${startLocation} ~ ${endLocation}, Text: ${chunk.text}`);
       }
     };
 
