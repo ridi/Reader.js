@@ -37,57 +37,18 @@ export default class Content extends _Content {
   }
 
   /**
-   * @param {function} callback
-   */
-  reviseImages(callback) {
-    const { width: baseWidth, height: baseHeight } = this._context;
-    const results = [];
-
-    this.images.forEach((element) => {
-      const { width, height, position } = this._reviseImage(element, baseWidth, baseHeight);
-      if (width.length || height.length || position.length) {
-        results.push({ element, width, height, position });
-      }
-    });
-
-    results.forEach((result) => {
-      const { element, width, height, position } = result;
-      if (width.length) {
-        element.style.width = width;
-      }
-      if (height.length) {
-        element.style.height = height;
-      }
-      if (position.length) {
-        element.style.position = position;
-      }
-    });
-
-    if (callback) {
-      setTimeout(() => {
-        callback();
-      }, 0);
-    }
-  }
-
-  /**
    * @param {HTMLImageElement} element
-   * @param {number} baseWidth
-   * @param {number} baseHeight
-   * @returns {Image}
-   * @private
+   * @param {number} screenWidth
+   * @param {number} screenHeight
+   * @returns {ImageSizeMatrix}
    */
-  _reviseImage(element, baseWidth, baseHeight) {
-    const result = super._reviseImage(element, baseWidth, baseHeight);
+  reviseImage(element, screenWidth, screenHeight) {
+    const result = super.reviseImage(element, screenWidth, screenHeight);
 
-    //
-    // * 부모에 의한 크기 소멸 보정.
-    //   - Android 2.x~4.x에서 이미지 태그의 부모 중 h1~h5 태그가 있을 때
-    //    너비 또는 높이가 0으로 랜더링되는 현상을 방지한다.
-    //    (해당 증상이 발생하는 bookId=852000033, 커버 이미지)
-    //
-
-    if (result.size.dWidth === 0 || result.size.dHeight === 0) {
+    // Case 5. 부모에 의해 크기가 소멸한 경우
+    // - Android 2.x~4.x에서 이미지 태그의 부모 중 h1~h5 태그가 있을 때 너비 또는 높이가 0으로 랜더링된 것을 보정 (ex: 852000033, 커버)
+    const { renderSize } = result.matrix;
+    if (renderSize.width === 0 || renderSize.height === 0) {
       let target = element.parentElement;
       do {
         if (target.nodeName.match(/^H[0-9]$/i)) {
@@ -95,6 +56,7 @@ export default class Content extends _Content {
           break;
         }
       } while ((target = target.parentElement));
+      result.logger(5);
     }
 
     return result;

@@ -50,37 +50,111 @@ export default class Util {
 
   /**
    * @typedef {object} ImageSize
-   * @property {number} dWidth
-   * @property {number} dHeight
-   * @property {number} nWidth
-   * @property {number} nHeight
-   * @property {number} sWidth
-   * @property {number} sHeight
-   * @property {number} aWidth
-   * @property {number} aHeight
+   * @param {number} width
+   * @param {number} height
+   * @param {number} ratio
+   */
+  /**
+   * @typedef {object} ImageStyleValue
+   * @param {number|string|undefined} width
+   * @param {number|string|undefined} height
+   */
+  /**
+   * @typedef {object} ImageSizeMatrix
+   * @property {ImageSize} renderSize
+   * @property {ImageSize} originSize
+   * @property {ImageStyleValue} style
+   * @property {ImageStyleValue} attribute
+   * @property {boolean} isGreaterThanNaturalWidth
+   * @property {boolean} isGreaterThanNaturalHeight
+   * @property {function} calcRatio
    */
   /**
    * @param {HTMLImageElement} element
-   * @returns {ImageSize}
+   * @returns {ImageSizeMatrix}
    */
-  static getImageSize(element) {
+  static getImageSizeMatrix(element) {
+    const calcRatio = (width = 1, height = 1) => {
+      let n;
+      let m;
+      if (width > height) {
+        n = height;
+        m = width;
+      } else {
+        n = width;
+        m = height;
+      }
+      return (n / m) * 100;
+    };
+
+    // 랜더링된 크기
+    const renderSize = {
+      width: element.width,
+      height: element.height,
+      ratio: calcRatio(element.width, element.height),
+    };
+
+    // 원본 크기
+    const originSize = {
+      width: element.naturalWidth,
+      height: element.naturalHeight,
+      ratio: calcRatio(element.naturalWidth, element.naturalHeight),
+    };
+
+    // CSS에 명시된 크기
+    const style = {
+      width: Util.getMatchedCSSValue(element, 'width'),
+      height: Util.getMatchedCSSValue(element, 'height'),
+    };
+
+    // 엘리먼트 속성에 명시된 크기
     const attrs = element.attributes;
     const zeroAttr = document.createAttribute('size');
     zeroAttr.value = '0px';
+    const attribute = {
+      width: (attrs.width || zeroAttr).value,
+      height: (attrs.height || zeroAttr).value,
+    };
+
+    const isPercentValue = (value) => {
+      if (typeof value === 'string') {
+        return value.search(/%/);
+      }
+      return -1;
+    };
+
+    const isGreaterThan = (origin, target) => {
+      const value = parseInt(target, 10);
+      if (isNaN(value)) return 0;
+
+      if (isPercentValue(target) !== -1) {
+        if (value > 100) {
+          return 1;
+        } else if (value < 100) {
+          return -1;
+        }
+      } if (origin < value) {
+        return 1;
+      } else if (origin > value) {
+        return -1;
+      }
+
+      return 0;
+    };
+
+    const isGreaterThanNaturalWidth =
+      isGreaterThan(originSize.width, style.width) > 0 || isGreaterThan(originSize.width, attribute.width) > 0;
+    const isGreaterThanNaturalHeight =
+      isGreaterThan(originSize.height, style.height) > 0 || isGreaterThan(originSize.height, attribute.height) > 0;
 
     return {
-      // 화면에 맞춰 랜더링된 크기
-      dWidth: element.width,
-      dHeight: element.height,
-      // 원본 크기
-      nWidth: element.naturalWidth,
-      nHeight: element.naturalHeight,
-      // CSS에서 명시된 크기
-      sWidth: Util.getMatchedCSSValue(element, 'width'),
-      sHeight: Util.getMatchedCSSValue(element, 'height'),
-      // 엘리먼트 속성으로 명시된 크기
-      aWidth: (attrs.width || zeroAttr).value,
-      aHeight: (attrs.height || zeroAttr).value,
+      renderSize,
+      originSize,
+      style,
+      attribute,
+      isGreaterThanNaturalWidth,
+      isGreaterThanNaturalHeight,
+      calcRatio,
     };
   }
 

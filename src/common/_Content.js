@@ -1,3 +1,4 @@
+import Logger from './Logger';
 import NodeLocation from './NodeLocation';
 import Rect from './Rect';
 import Util from './Util';
@@ -48,6 +49,11 @@ class _Content {
   get images() { return Array.from(this.ref.querySelectorAll('img')); }
 
   /**
+   * @returns {boolean} 이미지 보정이 이뤄졌는지를 반환한다.
+   */
+  get isImagesRevised() { return this._isImagesRevised; }
+
+  /**
    * @returns {Context}
    */
   get _context() { return this._reader.context; }
@@ -62,6 +68,7 @@ class _Content {
     this._sel = this._createSel();
     this._speechHelper = this._createSpeechHelper();
     this._nodes = null;
+    this._isImagesRevised = false;
   }
 
   /**
@@ -329,121 +336,90 @@ class _Content {
   }
 
   /**
-   * @typedef {object} Image
+   * @typedef {object} ReviseImageMatrix
    * @property {HTMLImageElement} element
    * @property {string} width
    * @property {string} height
    * @property {string} position
-   * @property {ImageSize} size
+   * @property {ImageSizeMatrix} matrix
+   * @property {function} logger
    */
   /**
    * @param {HTMLImageElement} element
-   * @param {number} baseWidth
-   * @param {number} baseHeight
-   * @returns {Image}
-   * @private
+   * @param {number} screenWidth
+   * @param {number} screenHeight
+   * @returns {ReviseImageMatrix}
    */
-  _reviseImage(element, baseWidth, baseHeight) {
-    const isPercentValue = (value) => {
-      if (typeof value === 'string') {
-        return value.search(/%/);
-      }
-      return -1;
-    };
+  reviseImage(element, screenWidth, screenHeight) {
+    const matrix = Util.getImageSizeMatrix(element);
+    const {
+      calcRatio,
+      originSize,
+      renderSize,
+      style,
+      attribute,
+    } = matrix;
 
-    const compareSize = (size1, size2) => {
-      const intVal = parseInt(size1, 10);
-      if (!isNaN(intVal)) {
-        if (isPercentValue(size1) !== -1) {
-          if (intVal > 100) {
-            return 1;
-          } else if (intVal < 100) {
-            return -1;
-          }
-        } if (size2 < intVal) {
-          return 1;
-        } else if (size2 > intVal) {
-          return -1;
-        }
-      }
-      return 0;
-    };
-
-    const calcRate = (width = 1, height = 1) => {
-      let n;
-      let m;
-      if (width > height) {
-        n = height;
-        m = width;
-      } else {
-        n = width;
-        m = height;
-      }
-      return (n / m) * 100;
-    };
-
-    const maxHeight = 0.95;
-    const size = Util.getImageSize(element);
+    const position = '';
     let cssWidth = '';
     let cssHeight = '';
 
-    // 원본 사이즈가 없다는 것은 엑박이란 거다
-    if (size.nWidth === 0 || size.nHeight === 0) {
+    // Debug Info
+    const logger = (caseNum) => {
+      const src = element.src || '';
+      Logger.debug(`Case: ${caseNum}, src: ${src}`);
+      Logger.debug(`\tOrigin -> width: ${originSize.width}, height: ${originSize.height}`);
+      Logger.debug(`\tRender -> width: ${renderSize.width}, height: ${renderSize.height}`);
+      Logger.debug(`\tStyle -> width: ${style.width}, height: ${style.height}`);
+      Logger.debug(`\tAttribute -> width: ${attribute.width}, height: ${attribute.height}`);
+      Logger.debug(`\tAdjust -> width: ${cssWidth}, height: ${cssHeight}, position: ${position}`);
+    };
+
+    // Case 1. 원본 크기가 없는 경우 (=엑박)
+    if (originSize.width === 0 || originSize.height === 0) {
+      logger(1);
       return {
         element,
         width: cssWidth,
         height: cssHeight,
-        position: '',
-        size,
+        position,
+        matrix,
       };
     }
 
-    //
-    // * 너비와 높이 크기 보정(CSS 속성과 엘리먼트 속성 그리고 원본 사이즈를 이용한)
-    //   - CSS 속성 또는 엘리먼트 속성이 반영된 사이즈가 원본 사이즈보다 클 때 'initial'로 보정한다.
-    //     --> width 또는 height의 값이 100% 이상일 때.
-    //        (CP에서 원본 비율과 깨짐을 떠나서 단순히 여백 없이 출력하기 위해 100% 이상을 사용하더라)
-    //     --> 최종 계산된 width 또는 height의 값(px)이 원본 사이즈보다 클 때.
-    //   - CP에서 의도적으로 원본보다 크게 설정한 경우 난감하다.
-    //
-
-    if (compareSize(size.sWidth, size.nWidth) > 0 ||
-      compareSize(size.aWidth, size.nWidth) > 0) {
+    // Case 2. CSS 또는 이미지 태그 속성이 원본 이미지 보다 크게 설정된 경우 (feat. CP)
+    // - 대체값을 구하기 보다 웹 엔진이 맡기는 것이 빠르기 때문에 initial로 초기화
+    if (matrix.isGreaterThanNaturalWidth) {
       cssWidth = 'initial';
     }
-
-    if (compareSize(size.sHeight, size.nHeight) > 0 ||
-      compareSize(size.aHeight, size.nHeight) > 0) {
+    if (matrix.isGreaterThanNaturalHeight) {
       cssHeight = 'initial';
     }
+    if (cssWidth.length || cssHeight.length) {
+      logger(2);
+    }
 
-    //
-    // * 너비와 높이 비율 보정(원본 사이즈, 랜더링된 이미지 사이즈를 이용한)
-    //   - 원본 비율이 랜더링된 이미지 비율과 다를때 상황에 맞춰 보정을 한다.
-    //     --> 비율은 다르나 랜더링된 이미지의 너비 또는 높이가 원본보다 작을때 근사값으로 비율을 조정해준다.
-    //        다만, 근사값으로 조정한 사이즈가 화면 사이즈를 벗어나는 상황이라면 'initial'로 보정한다.
-    //     --> 비율도 다르고 랜더링된 이미지의 너비 또는 높이가 원본보다 클 때 'initial'로 보정한다.
-    //   - CP에서 의도적으로 비율을 깨버렸다면 매우 곤란하다.
-    //
-
+    // Case 3. 랜더링된 이미지 비율과 원본 비율이 맞지 않는 경우 (feat. CP)
+    // - 원본 보다 작으면 근사값으로 대체
+    // - 대체한 값이 화면 크기보다 크거나 원본 보다 크면 initial로 대체
     const diff = 1;
     let rate = 0;
-    if ((size.nWidth >= size.nHeight) !== (size.dWidth >= size.dHeight) ||
-      Math.abs(calcRate(size.nWidth, size.nHeight) - calcRate(size.dWidth, size.dHeight)) > diff) {
-      if (size.dWidth >= size.dHeight && size.dWidth < size.nWidth) {
-        rate = (calcRate(size.dWidth, size.nWidth) / 100);
-        if (size.dWidth < baseWidth && Math.round(size.nHeight * rate) < baseHeight) {
-          cssWidth = `${size.dWidth}px`;
-          cssHeight = `${Math.round(size.nHeight * rate)}px`;
+    if ((originSize.width >= originSize.height) !== (renderSize.width >= renderSize.height) ||
+      Math.abs(originSize.ratio - renderSize.ratio) > diff) {
+      if (renderSize.width >= renderSize.height && renderSize.width < originSize.width) {
+        rate = (calcRatio(renderSize.width, originSize.width) / 100);
+        if (renderSize.width < screenWidth && Math.round(originSize.height * rate) < screenHeight) {
+          cssWidth = `${renderSize.width}px`;
+          cssHeight = `${Math.round(originSize.height * rate)}px`;
         } else {
           cssWidth = 'initial';
           cssHeight = 'initial';
         }
-      } else if (size.dWidth < size.dHeight && size.dHeight < size.nHeight) {
-        rate = (calcRate(size.dHeight, size.nHeight) / 100);
-        if (Math.round(size.nWidth * rate) < baseWidth && size.dHeight < baseHeight) {
-          cssWidth = `${Math.round(size.nWidth * rate)}px`;
-          cssHeight = `${size.dHeight}px`;
+      } else if (renderSize.width < renderSize.height && renderSize.height < originSize.height) {
+        rate = (calcRatio(renderSize.height, originSize.height) / 100);
+        if (Math.round(originSize.width * rate) < screenWidth && renderSize.height < screenHeight) {
+          cssWidth = `${Math.round(originSize.width * rate)}px`;
+          cssHeight = `${renderSize.height}px`;
         } else {
           cssWidth = 'initial';
           cssHeight = 'initial';
@@ -452,41 +428,105 @@ class _Content {
         cssWidth = 'initial';
         cssHeight = 'initial';
       }
+      logger(3);
     }
 
-    //
-    // * 이미지 잘림 보정
-    //   - 보정된 이미지의 크기나 랜더링된 크기가 화면을 벗어날 경우 잘려보이기나 찌그러져 보이기 때문에 화면보다 작게 보정한다.
-    //   - 이미지에 붙은 여백, 줄간 때문에 다음 페이지에 빈 페이지가 생길 수 있기 때문에 모든 여백을 뺀다.
-    //   - 빼다보면 이미지가 너무 작아질 수 있는데 이를 막기 위해 vmin보다 작아지지 않도록 한다.
-    //
-
-    const width = parseInt(cssWidth, 10) || size.dWidth;
-    const height = parseInt(cssHeight, 10) || size.dHeight;
-    if (width > baseWidth || height > baseHeight) {
+    // Case 4. 보정된 크기나 랜더링된 크기가 화면을 벗어나는 경우
+    // - 이미지에 붙은 여백, 줄간 때문에 벗어나는 경우일 수 있어 모두 제외
+    // - 제외하다 보면 너무 작아질 수 있어 vmin으로 최소값을 보장
+    const maxHeight = 0.95;
+    const preferSize = {
+      width: parseInt(cssWidth, 10) || renderSize.width,
+      height: parseInt(cssHeight, 10) || renderSize.height,
+    };
+    if (preferSize.width > screenWidth || preferSize.height > screenHeight) {
       const top = !this._context.isScrollMode && this._context.shouldConsiderVerticalMarginsWhenReviseImages
-        ? element.offsetTop % baseHeight
-        : 0;
+        ? element.offsetTop % screenHeight : 0;
       const margin =
         top + Util.getStylePropertyValues(element, ['line-height', 'margin-bottom', 'padding-bottom']);
-      const vmin = Math.min(baseWidth, baseHeight) / 2;
-      let adjustHeight = Math.max((baseHeight - margin) * maxHeight, vmin);
-      let adjustWidth = (adjustHeight / size.nHeight) * size.nWidth;
-      if (adjustWidth > baseWidth) {
-        adjustHeight *= baseWidth / adjustWidth;
-        adjustWidth = baseWidth;
+      const vmin = Math.min(screenWidth, screenHeight) / 2;
+      let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin);
+      let adjustWidth = (adjustHeight / originSize.height) * originSize.width;
+      if (adjustWidth > screenWidth) {
+        adjustHeight *= screenWidth / adjustWidth;
+        adjustWidth = screenWidth;
       }
       cssWidth = `${adjustWidth}px`;
       cssHeight = `${adjustHeight}px`;
+      logger(4);
     }
 
     return {
       element,
       width: cssWidth,
       height: cssHeight,
-      position: '',
-      size,
+      position,
+      matrix,
+      logger,
     };
+  }
+
+  /**
+   * @param {function} callback
+   */
+  reviseImages(callback) {
+    if (this.isImagesRevised) {
+      callback();
+      return;
+    }
+
+    const { width: screenWidth, height: screenHeight } = this._context;
+    const processedList = [];
+    const elements = this.images;
+
+    const tryReviseImages = () => {
+      if (elements.length === processedList.length) {
+        const results = [];
+        processedList.forEach((element) => {
+          const { width, height, position } = this.reviseImage(element, screenWidth, screenHeight);
+          if (width.length || height.length || position.length) {
+            results.push({ element, width, height, position });
+          }
+        });
+
+        results.forEach((result) => {
+          const { element, width, height, position } = result;
+          if (width.length) {
+            element.style.width = width;
+          }
+          if (height.length) {
+            element.style.height = height;
+          }
+          if (position.length) {
+            element.style.position = position;
+          }
+        });
+
+        if (callback) {
+          setTimeout(() => {
+            this._isImagesRevised = true;
+            callback();
+          }, 0);
+        }
+      }
+    };
+
+    elements.forEach((element) => {
+      if (element.complete) {
+        processedList.push(element);
+      } else {
+        element.addEventListener('load', () => {
+          processedList.push(element);
+          tryReviseImages();
+        });
+        element.addEventListener('error', () => {
+          processedList.push(null);
+          tryReviseImages();
+        });
+      }
+    });
+
+    tryReviseImages();
   }
 
   /**

@@ -13,15 +13,6 @@ const RIDI_SCHEME = 'ridi+epub://';
  */
 export default class Content extends _Content {
   /**
-   * @param {HTMLElement} element
-   * @param {Reader} reader
-   */
-  constructor(element, reader) {
-    super(element, reader);
-    this.isImagesRevised = false;
-  }
-
-  /**
    * @returns {Sel}
    * @private
    */
@@ -35,69 +26,6 @@ export default class Content extends _Content {
    */
   _createSpeechHelper() {
     return new SpeechHelper(this);
-  }
-
-  /**
-   * @param {function} callback
-   */
-  reviseImages(callback) {
-    const { width: baseWidth, height: baseHeight } = this._context;
-    const processedList = [];
-    const elements = this.images;
-    const tryReviseImages = () => {
-      if (elements.length === processedList.length) {
-        const results = [];
-        processedList.forEach((element) => {
-          const { width, height, position } = this._reviseImage(element, baseWidth, baseHeight);
-          if (width.length || height.length || position.length) {
-            results.push({ element, width, height, position });
-          }
-        });
-
-        //
-        // * 보정된 스타일 반영.
-        //
-        results.forEach((result) => {
-          const { element, width, height, position } = result;
-          if (width.length) {
-            element.style.width = width;
-          }
-          if (height.length) {
-            element.style.height = height;
-          }
-          if (position.length) {
-            element.style.position = position;
-          }
-        });
-        this.isImagesRevised = true;
-
-        if (callback) {
-          setTimeout(() => {
-            callback();
-          }, 0);
-        }
-      }
-    };
-
-    this.isImagesRevised = false;
-
-    elements.forEach((element) => {
-      if (element.complete) {
-        processedList.push(element);
-      } else {
-        element.setAttribute('src', `${element.getAttribute('src')}?stamp=${Math.random()}`);
-        element.addEventListener('load', () => { // 이미지 로드 완료
-          processedList.push(element);
-          tryReviseImages();
-        });
-        element.addEventListener('error', () => { // 이미지 로드 실패
-          processedList.push(null);
-          tryReviseImages();
-        });
-      }
-    });
-
-    tryReviseImages();
   }
 
   /**
