@@ -434,18 +434,15 @@ class _Content {
     // Case 4. 보정된 크기나 랜더링된 크기가 화면을 벗어나는 경우
     // - 이미지에 붙은 여백, 줄간 때문에 벗어나는 경우일 수 있어 모두 제외
     // - 제외하다 보면 너무 작아질 수 있어 vmin으로 최소값을 보장
-    const maxHeight = 0.95;
+    const maxHeight = 0.97;
     const preferSize = {
       width: parseInt(cssWidth, 10) || renderSize.width,
       height: parseInt(cssHeight, 10) || renderSize.height,
     };
     if (preferSize.width > screenWidth || preferSize.height > screenHeight) {
-      const top = !this._context.isScrollMode && this._context.shouldConsiderVerticalMarginsWhenReviseImages
-        ? element.offsetTop % screenHeight : 0;
-      const margin =
-        top + Util.getStylePropertyValues(element, ['line-height', 'margin-bottom', 'padding-bottom']);
+      const bottom = Util.getStylePropertyValues(element, ['line-height', 'margin-bottom', 'padding-bottom']);
       const vmin = Math.min(screenWidth, screenHeight) / 2;
-      let adjustHeight = Math.max((screenHeight - margin) * maxHeight, vmin);
+      let adjustHeight = Math.max((screenHeight - bottom) * maxHeight, vmin);
       let adjustWidth = (adjustHeight / originSize.height) * originSize.width;
       if (adjustWidth > screenWidth) {
         adjustHeight *= screenWidth / adjustWidth;
