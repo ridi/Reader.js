@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.43 (2021-01-08)]
+
+### Fixed
+
+- [공통] CSS 파일에도 CORS가 적용된 웹엔진에서 듣기 기능이 동작하지 않을 수 있는 문제 수정
+
 ## [1.0.42 (2020-03-12)]
 
 ### Fixed
