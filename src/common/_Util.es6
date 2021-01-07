@@ -101,8 +101,13 @@ export default class _Util extends _Object {
     }
 
     // get matched rules
-    const rules = window.getMatchedCSSRules(el);
-    if (rules === null) {
+    let rules;
+    try {
+      rules = window.getMatchedCSSRules(el);
+      if (rules === null) {
+        return val;
+      }
+    } catch (e) {
       return val;
     }
 
