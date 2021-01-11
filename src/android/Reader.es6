@@ -245,6 +245,16 @@ export default class Reader extends _Reader {
     android.onNodeLocationOfCurrentPageFound(location);
   }
 
+  fixColumnCollapseIssue() {
+    const id = 'LayoutNG-last-sentence-missing-error-workaround'; // Chromium 86~88 with LayoutNG Fragment enabled.
+    let span = document.getElementById(id);
+    if (!span) {
+      span = document.createElement('span');
+      span.setAttribute('id', id);
+      document.body.appendChild(span);
+    }
+  }
+
   /**
    * @param {Number} width
    * @param {Number} height
