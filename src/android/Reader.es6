@@ -247,24 +247,6 @@ export default class Reader extends _Reader {
 
   /**
    * @param {Number} width
-   * @param {Number} gap
-   */
-  applyColumnProperty(width, gap) {
-    this.content.wrapper.setAttribute('style',
-      `-webkit-column-width: ${width}px !important; ` +
-      `-webkit-column-gap: ${gap}px !important;`);
-    let style = (this.content.body.attributes.style || { nodeValue: '' }).nodeValue;
-    const originStyle = style;
-    style += 'margin-top: -1px !important;';
-    this.content.body.setAttribute('style', style);
-    setTimeout(() => {
-      this.content.body.setAttribute('style', originStyle);
-      this._updateClientWidth();
-    }, 0);
-  }
-
-  /**
-   * @param {Number} width
    * @param {Number} height
    * @param {Number} gap
    * @param {String} style
