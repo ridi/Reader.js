@@ -9,12 +9,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.44 (2021-01-12)]
+
+### Fixed
+
+- [안드] 크롬 86~88에서 LayoutNGFragment 기능 활성화 시 마지막 페이지가 잘려보이거나 스파인 내 마지막 문장이 보이지 않는 문제 대응
+
 ## [1.0.43 (2021-01-08)]
 
 ### Fixed
 
 - [공통] CSS 파일에도 CORS가 적용된 웹엔진에서 듣기 기능이 동작하지 않을 수 있는 문제 수정
-
+gr
 ## [1.0.42 (2020-03-12)]
 
 ### Fixed
