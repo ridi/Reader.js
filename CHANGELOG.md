@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.45 (2021-02-15)]
+
+### Fixed
+
+- [안드] 크롬 86~89에서 LayoutNGFragment 기능 활성화 시 마지막 페이지가 잘려보이거나 스파인 내 마지막 문장이 보이지 않는 문제 추가 대응
+
 ## [1.0.44 (2021-01-12)]
 
 ### Fixed
