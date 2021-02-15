@@ -246,12 +246,12 @@ export default class Reader extends _Reader {
   }
 
   fixColumnCollapseIssue() {
-    const id = 'LayoutNG-last-sentence-missing-error-workaround'; // Chromium 86~88 with LayoutNG Fragment enabled.
-    let span = document.getElementById(id);
-    if (!span) {
-      span = document.createElement('span');
-      span.setAttribute('id', id);
-      document.body.appendChild(span);
+    const id = 'LayoutNG-last-sentence-missing-error-workaround'; // Chromium 86~89 with LayoutNG Fragment enabled.
+    let div = document.getElementById(id);
+    if (!div) {
+      div = document.createElement('div');
+      div.setAttribute('id', id);
+      document.body.appendChild(div);
     }
   }
 
