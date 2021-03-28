@@ -278,7 +278,7 @@ export default class _Sel {
       }
       offset -= 1;
       if (offset < 0) {
-        if (previousSibling !== null) {
+        if (previousSibling !== null && !/^\s/.test(previousSibling.textContent)) {
           startContainer = startContainer.childNodes.length > 0
             ? startContainer.childNodes[startContainer.childNodes.length - 1]
             : previousSibling;
@@ -301,7 +301,7 @@ export default class _Sel {
       }
       offset += 1;
       if (offset > textContent.length) {
-        if (nextSibling !== null) {
+        if (nextSibling !== null && !/^\s/.test(nextSibling.textContent)) {
           endContainer = nextSibling;
           offset = 0;
           if (endContainer.childNodes.length) {
