@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.46 (2021-05-18)]
+
+### Changed
+
+- [안드] 일부 브라우저에서 이미지 보정 시 이미지 로드는 끝난 걸로 나오지만 랜더링 크기를 알 수 없는 경우 원본 크기로 대체해 보정하도록
+
 ## [1.0.45 (2021-02-15)]
 
 ### Fixed
