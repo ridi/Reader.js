@@ -39,13 +39,17 @@ export default class _Util extends _Object {
     const zeroAttr = document.createAttribute('size');
     zeroAttr.value = '0px';
 
+    const nWidth = imgEl.naturalWidth;
+    const nHeight = imgEl.naturalHeight;
+
     return {
       // 화면에 맞춰 랜더링된 크기
-      dWidth: imgEl.width,
-      dHeight: imgEl.height,
+      // 브라우저 버전에 따라 0일 수 있는데 원본 크기로 대체한다
+      dWidth: imgEl.width || nWidth,
+      dHeight: imgEl.height || nHeight,
       // 원본 크기
-      nWidth: imgEl.naturalWidth,
-      nHeight: imgEl.naturalHeight,
+      nWidth,
+      nHeight,
       // CSS에서 명시된 크기
       sWidth: _Util.getMatchedCSSValue(imgEl, 'width'),
       sHeight: _Util.getMatchedCSSValue(imgEl, 'height'),
