@@ -46,4 +46,14 @@ export default class Reader extends _Reader {
     const wrapperStyle = this.getContent().ref.style;
     wrapperStyle['font-size'] = `${fontSize}%`;
   }
+
+  /**
+   * @param {number} top
+   * @param {number} bottom
+   */
+  changePadding(top, bottom) {
+    const wrapperStyle = this.getContent().ref.style;
+    wrapperStyle.setProperty('padding-top', `${top}px`, 'important');
+    wrapperStyle.setProperty('padding-bottom', `${bottom}px`, 'important');
+  }
 }
