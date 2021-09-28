@@ -499,12 +499,12 @@ class _Content {
           }
         });
 
-        if (callback) {
-          setTimeout(() => {
-            this._isImagesRevised = true;
+        setTimeout(() => {
+          this._isImagesRevised = true;
+          if (callback) {
             callback();
-          }, 0);
-        }
+          }
+        }, 0);
       }
     };
 
