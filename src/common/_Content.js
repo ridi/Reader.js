@@ -479,7 +479,7 @@ class _Content {
     const tryReviseImages = () => {
       if (elements.length === processedList.length) {
         const results = [];
-        processedList.forEach((element) => {
+        processedList.filter(element => element).forEach((element) => {
           const { width, height, position } = this.reviseImage(element, screenWidth, screenHeight);
           if (width.length || height.length || position.length) {
             results.push({ element, width, height, position });
