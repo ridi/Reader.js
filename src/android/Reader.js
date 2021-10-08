@@ -119,18 +119,8 @@ export default class Reader extends _Reader {
    * @returns {number}
    */
   calcPageCount() {
-    if (document.fonts) {
-      // https://drafts.csswg.org/css-font-loading/#dom-fontfaceloadstatus-loading
-      // 사용된 적이 없는 Font : unloaded
-      // 로딩중인 Font : loading
-      // 로딩된 Font : loaded
-      // 로딩 실패한 Font : error
-      // document.fonts.status, ready는 신뢰할 수 없으므로 아래와 같은 방법으로 체크
-      const fontFaceLoadingStatusList = [];
-      document.fonts.forEach(fontFace => fontFaceLoadingStatusList.push(fontFace.status));
-      if (fontFaceLoadingStatusList.indexOf('loading') >= 0) {
-        return RETRY_REQUIRED;
-      }
+    if (!this.getContent().isFontsLoaded) {
+      return RETRY_REQUIRED;
     }
 
     if (this.context.isScrollMode) {
