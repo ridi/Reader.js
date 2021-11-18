@@ -149,7 +149,7 @@ class _Content {
         } else if (left < 0) {
           mutable.top -= height;
         }
-        mutable.height += height;
+        mutable.bottom += height;
         return mutable;
       }, new Rect({ width: rect.width }));
 
