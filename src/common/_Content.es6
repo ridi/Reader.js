@@ -24,6 +24,26 @@ export default class _Content extends _Object {
   get images() { return this.wrapper.getElementsByTagName('IMG'); }
 
   /**
+   * @returns {boolean} 폰트 로드가 완료 되었는지를 반환한다.
+   */
+  get isFontsLoaded() {
+    if (document.fonts) {
+      // https://drafts.csswg.org/css-font-loading/#dom-fontfaceloadstatus-loading
+      // 사용된 적이 없는 폰트: unloaded
+      // 로딩중인 폰트: loading
+      // 로딩된 폰트: loaded
+      // 로딩 실패한 폰트: error
+      // document.fonts.status, ready는 신뢰할 수 없으므로 아래와 같은 방법으로 체크
+      const statusList = [];
+      document.fonts.forEach(fontFace => statusList.push(fontFace.status));
+      if (statusList.indexOf('loading') >= 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * @param {Reader} reader
    * @param {HTMLElement} wrapper
    */
