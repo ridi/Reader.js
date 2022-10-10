@@ -71,10 +71,22 @@ jobs:
         ssh-key: ${{ secrets.TEST_ACCESS_PRIVATE_KEY }}
         path: tests
 
-    - name: Set up test repo with run test
+    - name: Install node packages in tests
+      working-directory: tests
+      run: yarn install --frozen-lockfile
+
+    - name: Set up reader.js
+      working-directory: tests
+      run: cp -rf ../dist/** node_modules/@ridi/reader.js
+
+    - name: Run android test
+      working-directory: tests
       run: |
-        cd tests
-        yarn install --frozen-lockfile
-        yes | cp -rf ../dist/** node_modules/@ridi/reader.js
+        head -1 node_modules/@ridi/reader.js/android/index.js
         grunt --platform=android
+
+    - name: Run ios test
+      working-directory: tests
+      run: |
+        head -1 node_modules/@ridi/reader.js/ios/index.js
         grunt --platform=ios
