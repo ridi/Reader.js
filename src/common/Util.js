@@ -87,8 +87,8 @@ export default class Util {
       return (n / m) * 100;
     };
 
-    const naturalWidth = element.naturalWidth;
-    const naturalHeight = element.naturalHeight;
+    const { naturalWidth } = element;
+    const { naturalHeight } = element;
 
     // 랜더링된 크기
     const renderSize = {
@@ -209,7 +209,7 @@ export default class Util {
     // get matched rules
     let rules;
     try {
-      rules = window.getMatchedCSSRules(el);
+      rules = window.getMatchedCSSRules(element);
       if (rules === null) {
         return val;
       }
