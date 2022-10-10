@@ -87,18 +87,21 @@ export default class Util {
       return (n / m) * 100;
     };
 
+    const naturalWidth = element.naturalWidth;
+    const naturalHeight = element.naturalHeight;
+
     // 랜더링된 크기
     const renderSize = {
-      width: element.width,
-      height: element.height,
-      ratio: calcRatio(element.width, element.height),
+      width: element.width || naturalWidth,
+      height: element.height || naturalHeight,
+      ratio: calcRatio(element.width || naturalWidth, element.height || naturalHeight),
     };
 
     // 원본 크기
     const originSize = {
-      width: element.naturalWidth,
-      height: element.naturalHeight,
-      ratio: calcRatio(element.naturalWidth, element.naturalHeight),
+      width: naturalWidth,
+      height: naturalHeight,
+      ratio: calcRatio(naturalWidth, naturalHeight),
     };
 
     // CSS에 명시된 크기
@@ -204,8 +207,13 @@ export default class Util {
     }
 
     // get matched rules
-    const rules = window.getMatchedCSSRules(element);
-    if (rules === null) {
+    let rules;
+    try {
+      rules = window.getMatchedCSSRules(el);
+      if (rules === null) {
+        return val;
+      }
+    } catch (e) {
       return val;
     }
 

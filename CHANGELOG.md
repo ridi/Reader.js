@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - None.
 
+## [1.0.47 (2021-12-28)]
+
+### Added
+
+- [공통] 폰트 로드 완료 여부를 알 수 있는 `isFontsLoaded` 프로퍼티 추가
+
+## [1.0.46 (2021-05-18)]
+
+### Changed
+
+- [안드] 일부 브라우저에서 이미지 보정 시 이미지 로드는 끝난 걸로 나오지만 랜더링 크기를 알 수 없는 경우 원본 크기로 대체해 보정하도록
+
+## [1.0.45 (2021-02-15)]
+
+### Fixed
+
+- [안드] 크롬 86~89에서 LayoutNGFragment 기능 활성화 시 마지막 페이지가 잘려보이거나 스파인 내 마지막 문장이 보이지 않는 문제 추가 대응
+
+## [1.0.44 (2021-01-12)]
+
+### Fixed
+
+- [안드] 크롬 86~88에서 LayoutNGFragment 기능 활성화 시 마지막 페이지가 잘려보이거나 스파인 내 마지막 문장이 보이지 않는 문제 대응
+
+## [1.0.43 (2021-01-08)]
+
+### Fixed
+
+- [공통] CSS 파일에도 CORS가 적용된 웹엔진에서 듣기 기능이 동작하지 않을 수 있는 문제 수정
+
 ## [1.0.42 (2020-03-12)]
 
 ### Fixed
@@ -282,7 +312,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.42...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.47...HEAD
+[1.0.47 (2021-12-28)]: https://github.com/ridi/Reader.js/compare/1.0.46...1.0.47
+[1.0.46 (2021-05-18)]: https://github.com/ridi/Reader.js/compare/1.0.45...1.0.46
+[1.0.45 (2021-02-15)]: https://github.com/ridi/Reader.js/compare/1.0.44...1.0.45
+[1.0.44 (2021-01-12)]: https://github.com/ridi/Reader.js/compare/1.0.43...1.0.44
+[1.0.43 (2021-01-18)]: https://github.com/ridi/Reader.js/compare/1.0.42...1.0.43
 [1.0.42 (2020-03-12)]: https://github.com/ridi/Reader.js/compare/1.0.41...1.0.42
 [1.0.41 (2020-01-06)]: https://github.com/ridi/Reader.js/compare/1.0.40...1.0.41
 [1.0.40 (2019-11-04)]: https://github.com/ridi/Reader.js/compare/1.0.39...1.0.40

@@ -5,5 +5,3 @@ build
 dist
 .idea
 *.log
-package-lock.json
-yarn.lock
