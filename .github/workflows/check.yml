@@ -36,3 +36,36 @@ jobs:
 
     - name: Run lint
       run: yarn lint
+
+  run-test:
+    name: Run test
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Node ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Set up node_modules cache
+      uses: actions/cache@v2
+      id: node-cache
+      with:
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-modules-${{ secrets.CACHE_VERSION }}-${{ hashFiles('yarn.lock') }} }}
+
+    - name: Install node packages
+      if: steps.node-cache.outputs.cache-hit != 'true'
+      run: yarn install --frozen-lockfile
+
+    - name: Checkout test repo
+      uses: actions/checkout@v2
+      with:
+        repository: ridi/Reader.js-TTS-Unit-Test
+        ssh-key: ${{ secrets.TEST_ACCESS_PRIVATE_KEY }}
+
+    - name: Build
+      run: yarn build
