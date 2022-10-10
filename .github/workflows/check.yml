@@ -75,6 +75,6 @@ jobs:
       run: |
         cd tests
         yarn install --frozen-lockfile
-        yes | cp -rf ../Reader.js/dist/** node_modules/@ridi/reader.js
+        yes | cp -rf ../dist/** node_modules/@ridi/reader.js
         grunt --platform=android
         grunt --platform=ios
