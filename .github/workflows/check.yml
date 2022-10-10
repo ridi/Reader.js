@@ -69,10 +69,11 @@ jobs:
       with:
         repository: ridi/Reader.js-TTS-Unit-Test
         ssh-key: ${{ secrets.TEST_ACCESS_PRIVATE_KEY }}
+        path: tests
 
     - name: Set up test repo with run test
       run: |
-        cd Reader.js-TTS-Unit-Test
+        cd tests
         yarn install --frozen-lockfile
         yes | cp -rf ../Reader.js/dist/** node_modules/@ridi/reader.js
         grunt --platform=android
