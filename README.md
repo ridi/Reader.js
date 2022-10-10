@@ -8,7 +8,7 @@
 ## Install
 
 ```
-$ npm install @ridi/reader.js
+$ yarn install @ridi/reader.js
 ```
 
 ## Structure
@@ -29,8 +29,8 @@ $ npm install @ridi/reader.js
 ## Compatibility
 
 - iOS 8-12
-- Android 4-8 (API Level 14-26)
-- Chrome 30~64
+- Android 4-13 (API Level 14-33)
+- Chrome 30~89
 - Safari 9~11
 - IE 11
 
@@ -116,13 +116,13 @@ import { Reader, Context, Util } from '@ridi/reader.js/[android|ios|web]';
 You can install it with the following command:
 ```
 $ git clone git@github.com:ridi/Reader.js.git
-$ make setup
+$ yarn install --frozen-lockfile
 ```
 
 ### Build
 
 You can build it with the following command in Reader.js folder:
 ```
-$ npm run [build|watch]
+$ yarn [build|watch]
 ```
 > [grunt-cli](https://github.com/gruntjs/grunt-cli) is required to build Reader.js
