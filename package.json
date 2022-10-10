@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "lint": "eslint --ext .js,.es6,.jsx ./src/**",
+    "lint": "eslint --ext .js ./src/**",
     "build": "grunt",
     "watch": "grunt watch",
     "publish": "cd ./dist/ && npm publish --access=public"
