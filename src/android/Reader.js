@@ -37,11 +37,11 @@ export default class Reader extends _Reader {
   }
 
   /**
-   * @param {ContentRef[] | HTMLElement[]} ref
+   * @param {ContentRef[] | HTMLElement[]} refs
    * @param {?HTMLElement} wrapper
    */
   setContents(refs, wrapper) {
-    super.setContents(refs.map(ref => {
+    super.setContents(refs.map((ref) => {
       if (!ref.src) {
         return { element: ref, src: '' };
       }
