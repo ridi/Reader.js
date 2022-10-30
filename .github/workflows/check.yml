@@ -84,10 +84,10 @@ jobs:
       working-directory: tests
       run: |
         head -1 node_modules/@ridi/reader.js/android/index.js
-        grunt --platform=android
+        grunt --platform=android --debug
 
     - name: Run ios test
       working-directory: tests
       run: |
         head -1 node_modules/@ridi/reader.js/ios/index.js
-        grunt --platform=ios
+        grunt --platform=ios --debug
