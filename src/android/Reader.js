@@ -29,7 +29,7 @@ export default class Reader extends _Reader {
    * @param {?HTMLElement} wrapper
    */
   setContent(ref, wrapper) {
-    if (!ref.src) {
+    if (typeof ref.src !== 'string') {
       this.setContents([{ element: ref, src: '' }], wrapper);
     } else {
       this.setContents([ref], wrapper);
@@ -42,7 +42,7 @@ export default class Reader extends _Reader {
    */
   setContents(refs, wrapper) {
     super.setContents(refs.map((ref) => {
-      if (!ref.src) {
+      if (typeof ref.src !== 'string') {
         return { element: ref, src: '' };
       }
       return ref;
