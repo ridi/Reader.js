@@ -68,6 +68,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: ridi/Reader.js-TTS-Unit-Test
+        ref: feature/v2
         ssh-key: ${{ secrets.TEST_ACCESS_PRIVATE_KEY }}
         path: tests
 
