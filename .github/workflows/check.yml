@@ -1,0 +1,93 @@
+name: Reader.js CI (Lint & Test)
+
+on:
+  push:
+    paths:
+      - .github/workflows/check.yml
+      - src/**
+
+env:
+  NODE_VERSION: 18
+
+jobs:
+  run-lint:
+    name: Run lint
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Node ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Set up node_modules cache
+      uses: actions/cache@v2
+      id: node-cache
+      with:
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-modules-${{ secrets.CACHE_VERSION }}-${{ hashFiles('yarn.lock') }} }}
+
+    - name: Install node packages
+      if: steps.node-cache.outputs.cache-hit != 'true'
+      run: yarn install --frozen-lockfile
+
+    - name: Run lint
+      run: yarn lint
+
+  run-test:
+    name: Run test
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Node ${{ env.NODE_VERSION }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Set up node_modules cache
+      uses: actions/cache@v2
+      id: node-cache
+      with:
+        path: 'node_modules'
+        key: ${{ runner.os }}-node-modules-${{ secrets.CACHE_VERSION }}-${{ hashFiles('yarn.lock') }} }}
+
+    - name: Install node packages
+      if: steps.node-cache.outputs.cache-hit != 'true'
+      run: yarn install --frozen-lockfile
+
+    - name: Build
+      run: yarn build
+
+    - name: Checkout test repo
+      uses: actions/checkout@v2
+      with:
+        repository: ridi/Reader.js-TTS-Unit-Test
+        ref: feature/v2
+        ssh-key: ${{ secrets.TEST_ACCESS_PRIVATE_KEY }}
+        path: tests
+
+    - name: Install node packages in tests
+      working-directory: tests
+      run: yarn install --frozen-lockfile
+
+    - name: Set up reader.js
+      working-directory: tests
+      run: cp -rf ../dist/** node_modules/@ridi/reader.js
+
+    - name: Run android test
+      working-directory: tests
+      run: |
+        head -1 node_modules/@ridi/reader.js/android/index.js
+        grunt --platform=android
+
+    - name: Run ios test
+      working-directory: tests
+      run: |
+        head -1 node_modules/@ridi/reader.js/ios/index.js
+        grunt --platform=ios

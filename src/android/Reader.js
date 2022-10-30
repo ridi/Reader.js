@@ -25,6 +25,31 @@ export default class Reader extends _Reader {
    * @property {string} src
    */
   /**
+   * @param {ContentRef | HTMLElement} ref
+   * @param {?HTMLElement} wrapper
+   */
+  setContent(ref, wrapper) {
+    if (typeof ref.src !== 'string') {
+      this.setContents([{ element: ref, src: '' }], wrapper);
+    } else {
+      this.setContents([ref], wrapper);
+    }
+  }
+
+  /**
+   * @param {ContentRef[] | HTMLElement[]} refs
+   * @param {?HTMLElement} wrapper
+   */
+  setContents(refs, wrapper) {
+    super.setContents(refs.map((ref) => {
+      if (typeof ref.src !== 'string') {
+        return { element: ref, src: '' };
+      }
+      return ref;
+    }), wrapper);
+  }
+
+  /**
    * @param {ContentRef} ref
    * @returns {Content}
    * @private

@@ -2,13 +2,12 @@
 
 > 리디북스 EPUB 뷰어용(앱/웹) JS 라이브러리
 
-[![Build Status](https://travis-ci.com/ridi/Reader.js.svg?branch=master)](https://travis-ci.com/ridi/Reader.js)
 [![npm version](https://badge.fury.io/js/%40ridi%2Freader.js.svg)](https://badge.fury.io/js/%40ridi%2Freader.js)
 
 ## 설치
 
 ```
-$ npm install @ridi/reader.js
+$ yarn install @ridi/reader.js
 ```
 
 ## 구조
@@ -28,10 +27,10 @@ $ npm install @ridi/reader.js
 
 ## 호환성
 
-- iOS 8-12
-- Android 4-8 (API Level 14-26)
-- Chrome 60~74
-- Safari 9~11
+- iOS 8-16
+- Android 4-13 (API Level 14-33)
+- Chrome 30~89
+- Safari 9~16
 - IE 11
 
 ### 용어 정의
@@ -307,13 +306,13 @@ const page = reader.getContent(spineIndex).getPageFromRect(rect);
 
 ```
 $ git clone git@github.com:ridi/Reader.js.git
-$ make setup
+$ yarn install --frozen-lockfile
 ```
 
 ### 빌드
 
 ```
-$ npm run [build|watch]
+$ yarn [build|watch]
 ```
 
 또는

@@ -121,6 +121,16 @@ export default class Content extends _Content {
     android.onNodeLocationOfCurrentPageFound(location.toString());
   }
 
+  fixColumnCollapseIssue() {
+    const id = 'LayoutNG-last-sentence-missing-error-workaround'; // Chromium 86~89 with LayoutNG Fragment enabled.
+    let div = document.getElementById(id);
+    if (!div) {
+      div = document.createElement('div');
+      div.setAttribute('id', id);
+      document.body.appendChild(div);
+    }
+  }
+
   /**
    * @param {number} index
    * @param {string} serializedRange
