@@ -269,7 +269,7 @@ export default class _Sel {
     }
 
     let offset = range.startOffset;
-    while (offset >= 0) {
+    while (offset > 0) {
       const { textContent } = startContainer;
       const previousSibling = startContainer.previousSibling || startContainer.parentNode.previousSibling;
       if (/^\s/.test(range.toString())) {
