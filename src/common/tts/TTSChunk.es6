@@ -163,7 +163,7 @@ export default class TTSChunk {
       return 0;
     }
 
-    const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
+    const words = (piece.node.nodeValue.substring(this.range.startOffset, this.range.endOffset) || '').split(TTSUtil.getSplitWordRegex());
     let currentWordStartOffset = 0;
     for (let j = 0; j < words.length; j += 1) {
       if (currentWordStartOffset >= offsetBeforeWordInNode) {
@@ -207,7 +207,7 @@ export default class TTSChunk {
     // |-----------------------------------------|-End Word-|--------------------|
     const offsetAfterEndWordInNode = (this.range.endOffset + firstPaddingLeft) - offsetBeforeNode;
 
-    const words = (piece.node.nodeValue || '').split(TTSUtil.getSplitWordRegex());
+    const words = (piece.node.nodeValue.substring(this.range.startOffset, this.range.endOffset) || '').split(TTSUtil.getSplitWordRegex());
     let currentWordEndOffset = 0;
     for (let j = 0; j < words.length; j += 1) {
       currentWordEndOffset += (words[j].length + 1);
