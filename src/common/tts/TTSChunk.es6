@@ -148,6 +148,7 @@ export default class TTSChunk {
     for (let i = 0; i < this._pieces.length; i += 1) {
       const currentPiece = this._pieces[i];
       if (currentPiece.nodeIndex >= piece.nodeIndex) {
+        offsetBeforeNode += currentPiece.text.search(/\S/);
         break;
       } else {
         // piece.length는 piece.text.length와 같다.
@@ -169,7 +170,7 @@ export default class TTSChunk {
       if (currentWordStartOffset >= offsetBeforeWordInNode) {
         return j;
       }
-      currentWordStartOffset += (words[j].length + 1);
+      currentWordStartOffset += (words[j].trim().length + 1);
     }
     return words.length - 1;
   }
