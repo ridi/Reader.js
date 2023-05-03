@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.48 (2023-05-03)]
+
+### Changed
+
+- [공통] 특정 조건 하에 TTSChunk의 startWordIndex가 잘못된 값을 가질 수 있는 문제 수정
+
 ## [1.0.47 (2021-12-28)]
 
 ### Added
@@ -312,7 +318,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.47...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.48...HEAD
+[1.0.48 (2023-05-03)]: https://github.com/ridi/Reader.js/compare/1.0.47...1.0.48
 [1.0.47 (2021-12-28)]: https://github.com/ridi/Reader.js/compare/1.0.46...1.0.47
 [1.0.46 (2021-05-18)]: https://github.com/ridi/Reader.js/compare/1.0.45...1.0.46
 [1.0.45 (2021-02-15)]: https://github.com/ridi/Reader.js/compare/1.0.44...1.0.45
