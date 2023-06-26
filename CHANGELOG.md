@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.49 (2023-06-26)]
+
+### Fixed
+
+- [안드] 스크롤 보기에서의 잘못된 스크롤 상한 보정처리 수정
+
 ## [1.0.48 (2023-05-03)]
 
 ### Changed
