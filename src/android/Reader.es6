@@ -102,11 +102,7 @@ export default class Reader extends _Reader {
       const height = this.context.pageHeightUnit;
       const paddingTop = Util.getStylePropertyIntValue(body, 'padding-top');
       const paddingBottom = Util.getStylePropertyIntValue(body, 'padding-bottom');
-      const maxOffset = this.totalHeight - height - paddingBottom;
-      const diff = maxOffset - adjustOffset;
-      if (adjustOffset > paddingTop && diff < height && diff > 0) {
-        adjustOffset = maxOffset;
-      }
+      const maxOffset = Math.max(this.totalHeight - height - paddingBottom, paddingTop);
       adjustOffset = Math.min(adjustOffset, maxOffset);
     } else if (this.calcPageCount() > -1) {
       const width = this.context.pageWidthUnit;
