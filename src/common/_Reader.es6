@@ -122,6 +122,16 @@ export default class _Reader extends _Object {
   }
 
   /**
+   * @param {number} top
+   * @param {number} bottom
+   */
+  changePadding(top, bottom) {
+    const wrapperStyle = this.content.body.style;
+    wrapperStyle.setProperty('padding-top', `${top}px`, 'important');
+    wrapperStyle.setProperty('padding-bottom', `${bottom}px`, 'important');
+  }
+
+  /**
    * @param {Number} x
    * @param {Number} y
    * @returns {{x: Number, y: Number}}
