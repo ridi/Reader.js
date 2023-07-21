@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.50 (2023-07-21)]
+
+### Added
+
+- [공통] 콘텐츠 상하단 여백을 조정할 수 있는 메소드 추가
+
 ## [1.0.49 (2023-06-26)]
 
 ### Fixed
@@ -325,6 +331,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - 첫 릴리즈
 
 [Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.48...HEAD
+[1.0.50 (2023-07-21)]: https://github.com/ridi/Reader.js/compare/1.0.49...1.0.50
+[1.0.49 (2023-06-26)]: https://github.com/ridi/Reader.js/compare/1.0.48...1.0.49
 [1.0.48 (2023-05-03)]: https://github.com/ridi/Reader.js/compare/1.0.47...1.0.48
 [1.0.47 (2021-12-28)]: https://github.com/ridi/Reader.js/compare/1.0.46...1.0.47
 [1.0.46 (2021-05-18)]: https://github.com/ridi/Reader.js/compare/1.0.45...1.0.46
