@@ -121,6 +121,10 @@ export default class TTSPiece {
             valid = false;
             break;
           }
+          if (el.nodeName.toLocaleLowerCase() === 'script') {
+            valid = false;
+            break;
+          }
           // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
           if (!(valid = (['RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
             break;
