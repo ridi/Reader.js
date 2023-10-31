@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.51 (2023-10-20)]
+
+### Fixed
+
+- [공통] TTS 보정 처리에서 script 태그 안에 있는 텍스트는 무시하도록
+
 ## [1.0.50 (2023-07-21)]
 
 ### Added
@@ -330,7 +336,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.48...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.51...HEAD
+[1.0.51 (2023-10-20)]: https://github.com/ridi/Reader.js/compare/1.0.50...1.0.51
 [1.0.50 (2023-07-21)]: https://github.com/ridi/Reader.js/compare/1.0.49...1.0.50
 [1.0.49 (2023-06-26)]: https://github.com/ridi/Reader.js/compare/1.0.48...1.0.49
 [1.0.48 (2023-05-03)]: https://github.com/ridi/Reader.js/compare/1.0.47...1.0.48
