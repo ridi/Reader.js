@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.52 (2023-10-31)]
+
+### Fixed
+
+- [안드] Chrome 117 부터 발생한 이슈 대응
+
 ## [1.0.51 (2023-10-20)]
 
 ### Fixed
@@ -336,7 +342,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.51...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.52...HEAD
+[1.0.52 (2023-10-31)]: https://github.com/ridi/Reader.js/compare/1.0.51...1.0.52
 [1.0.51 (2023-10-20)]: https://github.com/ridi/Reader.js/compare/1.0.50...1.0.51
 [1.0.50 (2023-07-21)]: https://github.com/ridi/Reader.js/compare/1.0.49...1.0.50
 [1.0.49 (2023-06-26)]: https://github.com/ridi/Reader.js/compare/1.0.48...1.0.49
