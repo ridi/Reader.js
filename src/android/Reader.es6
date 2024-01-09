@@ -246,6 +246,11 @@ export default class Reader extends _Reader {
     }
   }
 
+  getDefaultScale() {
+    const { nativeDenstiy, isScrollMode } = this.context;
+    return isScrollMode ? 1 : nativeDenstiy / window.devicePixelRatio;
+  }
+
   /**
    * @param {Number} width
    * @param {Number} height

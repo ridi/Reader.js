@@ -22,6 +22,11 @@ export default class _Context extends _Object {
   get pageUnit() { return this.isScrollMode ? this.pageHeightUnit : this.pageWidthUnit; }
 
   /**
+   * @returns {Number}
+   */
+  get nativeDenstiy() { return this._nativeDenstiy; }
+
+  /**
    * @returns {Boolean}
    */
   get isDoublePageMode() { return this._doublePageMode; }
@@ -45,16 +50,18 @@ export default class _Context extends _Object {
    * @param {Number} width
    * @param {Number} height
    * @param {Number} gap
+   * @param {Number} nativeDenstiy
    * @param {Boolean} doublePageMode
    * @param {Boolean} scrollMode
    * @param {Number} maxSelectionLength
    * @param {Number} systemMajorVersion
    */
-  constructor(width, height, gap, doublePageMode, scrollMode, maxSelectionLength = 0, systemMajorVersion = 0) {
+  constructor(width, height, gap, nativeDenstiy, doublePageMode, scrollMode, maxSelectionLength = 0, systemMajorVersion = 0) {
     super();
     this._width = width;
     this._height = height;
     this._gap = gap;
+    this._nativeDenstiy = nativeDenstiy;
     this._doublePageMode = doublePageMode;
     this._scrollMode = scrollMode;
     this._maxSelectionLength = maxSelectionLength;
