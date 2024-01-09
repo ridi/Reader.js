@@ -108,9 +108,15 @@ export default class _Reader extends _Object {
     /* eslint-enable no-param-reassign */
   }
 
+  getDefaultScale() {
+    return 1;
+  }
+
   setViewport() {
-    const value = `width=${this.context.pageWidthUnit - this.context.pageGap}, height=${this.context.pageHeightUnit},` +
-      ' initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
+    const scale = this.getDefaultScale();
+    const value = 'width=device-width, height=device-height, ' +
+      `initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, ` +
+      'user-scalable=0';
     let viewport = document.querySelector('meta[name=viewport]');
     if (viewport === null) {
       viewport = document.createElement('meta');
