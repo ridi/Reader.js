@@ -22,6 +22,24 @@ export default class Reader extends _Reader {
   get bodyClientWidth() { return this._bodyClientWidth; }
 
   /**
+   * @returns {Number}
+   */
+  get totalWidth() {
+    const marginLeft = Util.getStylePropertyIntValue(this.content.wrapper, 'margin-left');
+    const marginRight = Util.getStylePropertyIntValue(this.content.wrapper, 'margin-right');
+    return super.totalWidth - (marginLeft + marginRight);
+  }
+
+  /**
+   * @returns {Number}
+   */
+  get totalHeight() {
+    const marginTop = Util.getStylePropertyIntValue(this.content.wrapper, 'margin-top');
+    const marginBottom = Util.getStylePropertyIntValue(this.content.wrapper, 'margin-bottom');
+    return super.totalHeight - (marginTop + marginBottom);
+  }
+
+  /**
    * @param {HTMLElement} wrapper
    * @param {Context} context
    * @param {Number} curPage (zero-base)
