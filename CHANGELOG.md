@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.54 (2024-01-31)]
+
+### Fixed
+
+- [안드] totalSize에서 여백을 무시하도록 보정
+
 ## [1.0.53 (2024-01-09)]
 
 ### Fixed
@@ -348,7 +354,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.53...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.54...HEAD
+[1.0.54 (2024-01-31)]: https://github.com/ridi/Reader.js/compare/1.0.53...1.0.54
 [1.0.53 (2024-01-09)]: https://github.com/ridi/Reader.js/compare/1.0.52...1.0.53
 [1.0.52 (2023-10-31)]: https://github.com/ridi/Reader.js/compare/1.0.51...1.0.52
 [1.0.51 (2023-10-20)]: https://github.com/ridi/Reader.js/compare/1.0.50...1.0.51
