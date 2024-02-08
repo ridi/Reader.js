@@ -220,12 +220,18 @@ export default class _Reader {
     }, true);
   }
 
+  getDefaultScale() {
+    return 1;
+  }
+
   /**
    * @private
    */
   _setViewport() {
-    const value = `width=${this.context.width}, height=${this.context.height},` +
-      ' initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0';
+    const scale = this.getDefaultScale();
+    const value = 'width=device-width, height=device-height, ' +
+      `initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, ` +
+      'user-scalable=0';  
     let viewport = document.querySelector('meta[name=viewport]');
     if (viewport === null) {
       viewport = document.createElement('meta');

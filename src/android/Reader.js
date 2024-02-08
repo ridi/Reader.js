@@ -12,6 +12,24 @@ const RETRY_REQUIRED = -1;
  */
 export default class Reader extends _Reader {
   /**
+   * @returns {Number}
+   */
+  get totalWidth() {
+    const marginLeft = Util.getStylePropertyValue(this.content.wrapper, 'margin-left');
+    const marginRight = Util.getStylePropertyValue(this.content.wrapper, 'margin-right');
+    return super.totalWidth - (marginLeft + marginRight);
+  }
+
+  /**
+   * @returns {Number}
+   */
+  get totalHeight() {
+    const marginTop = Util.getStylePropertyValue(this.content.wrapper, 'margin-top');
+    const marginBottom = Util.getStylePropertyValue(this.content.wrapper, 'margin-bottom');
+    return super.totalHeight - (marginTop + marginBottom);
+  }
+
+  /**
    * @param {Context} context
    */
   constructor(context) {
@@ -90,11 +108,7 @@ export default class Reader extends _Reader {
       const height = this.context.pageHeightUnit;
       const paddingTop = Util.getStylePropertyValue(this._wrapper, 'padding-top');
       const paddingBottom = Util.getStylePropertyValue(this._wrapper, 'padding-bottom');
-      const maxOffset = this.totalHeight - height - paddingBottom;
-      const diff = maxOffset - adjustOffset;
-      if (adjustOffset > paddingTop && diff < height && diff > 0) {
-        adjustOffset = maxOffset;
-      }
+      const maxOffset = Math.max(this.totalHeight - height - paddingBottom, paddingTop);
       adjustOffset = Math.min(adjustOffset, maxOffset);
     } else if (this.calcPageCount() > -1) {
       const width = this.context.pageWidthUnit;
@@ -160,6 +174,11 @@ export default class Reader extends _Reader {
     }
 
     return Math.ceil(this.totalWidth / this.context.pageWidthUnit);
+  }
+
+  getDefaultScale() {
+    const { nativeDenstiy, isScrollMode } = this.context;
+    return isScrollMode ? 1 : nativeDenstiy / window.devicePixelRatio;
   }
 
   /**

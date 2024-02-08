@@ -121,12 +121,17 @@ export default class Content extends _Content {
     android.onNodeLocationOfCurrentPageFound(location.toString());
   }
 
-  fixColumnCollapseIssue() {
-    const id = 'LayoutNG-last-sentence-missing-error-workaround'; // Chromium 86~89 with LayoutNG Fragment enabled.
+  fixColumnCollapseIssue(padding) {
+    // Chromium 86~89 with LayoutNG Fragment enabled.
+    // - 마지막 문장이 유실되는 문제
+    // Chromium 117 ~
+    // - body padding이 문시되는 문제 (두쪽 보기가 홀수로 떨어지는 경우 우측을 빈 페이지로 만들기 위한 패딩이 일부 무시됨)
+    const id = 'LayoutNG-last-sentence-missing-or-body-padding-ignored-error-workaround';
     let div = document.getElementById(id);
     if (!div) {
       div = document.createElement('div');
       div.setAttribute('id', id);
+      div.setAttribute('style', `height: ${padding}px;`);
       document.body.appendChild(div);
     }
   }

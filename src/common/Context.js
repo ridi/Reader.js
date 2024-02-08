@@ -5,6 +5,7 @@ import Logger from './Logger';
  * @property {number} width column 너비
  * @property {number} height column 높이
  * @property {number} gap column 간 여백(두쪽 보기와 무관)
+ * @property {number} nativeDenstiy 네이티브에서의 Denstiy (웹뷰와 다를 수 있음)
  * @property {boolean} isDoublePageMode 두쪽 보기
  * @property {boolean} isScrollMode 스크롤 보기
  * @property {number} maxSelectionLength 셀렉션 최대 길이
@@ -49,6 +50,7 @@ export default class Context {
     this.width = undefined;
     this.height = undefined;
     this.gap = undefined;
+    this.nativeDenstiy = 1;
     this.isDoublePageMode = false;
     this.isScrollMode = false;
     this.maxSelectionLength = 1000;
@@ -67,6 +69,7 @@ export default class Context {
       width: this.width,
       height: this.height,
       gap: this.height,
+      nativeDenstiy: this.nativeDenstiy,
       isDoublePageMode: this.isDoublePageMode,
       isScrollMode: this.isScrollMode,
       maxSelectionLength: this.maxSelectionLength,

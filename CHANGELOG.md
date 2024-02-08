@@ -9,6 +9,48 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - None.
 
+## [1.0.54 (2024-01-31)]
+
+### Fixed
+
+- [안드] totalSize에서 여백을 무시하도록 보정
+
+## [1.0.53 (2024-01-09)]
+
+### Fixed
+
+- [안드] 스케일 이슈 대응
+
+## [1.0.52 (2023-10-31)]
+
+### Fixed
+
+- [안드] Chrome 117 부터 발생한 이슈 대응
+
+## [1.0.51 (2023-10-20)]
+
+### Fixed
+
+- [공통] TTS 보정 처리에서 script 태그 안에 있는 텍스트는 무시하도록
+
+## [1.0.50 (2023-07-21)]
+
+### Added
+
+- [공통] 콘텐츠 상하단 여백을 조정할 수 있는 메소드 추가
+
+## [1.0.49 (2023-06-26)]
+
+### Fixed
+
+- [안드] 스크롤 보기에서의 잘못된 스크롤 상한 보정처리 수정
+
+## [1.0.48 (2023-05-03)]
+
+### Changed
+
+- [공통] 특정 조건 하에 TTSChunk의 startWordIndex가 잘못된 값을 가질 수 있는 문제 수정
+
 ## [1.0.47 (2021-12-28)]
 
 ### Added
@@ -312,7 +354,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.47...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.54...HEAD
+[1.0.54 (2024-01-31)]: https://github.com/ridi/Reader.js/compare/1.0.53...1.0.54
+[1.0.53 (2024-01-09)]: https://github.com/ridi/Reader.js/compare/1.0.52...1.0.53
+[1.0.52 (2023-10-31)]: https://github.com/ridi/Reader.js/compare/1.0.51...1.0.52
+[1.0.51 (2023-10-20)]: https://github.com/ridi/Reader.js/compare/1.0.50...1.0.51
+[1.0.50 (2023-07-21)]: https://github.com/ridi/Reader.js/compare/1.0.49...1.0.50
+[1.0.49 (2023-06-26)]: https://github.com/ridi/Reader.js/compare/1.0.48...1.0.49
+[1.0.48 (2023-05-03)]: https://github.com/ridi/Reader.js/compare/1.0.47...1.0.48
 [1.0.47 (2021-12-28)]: https://github.com/ridi/Reader.js/compare/1.0.46...1.0.47
 [1.0.46 (2021-05-18)]: https://github.com/ridi/Reader.js/compare/1.0.45...1.0.46
 [1.0.45 (2021-02-15)]: https://github.com/ridi/Reader.js/compare/1.0.44...1.0.45
