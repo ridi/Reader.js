@@ -231,7 +231,7 @@ export default class _Reader {
     const scale = this.getDefaultScale();
     const value = 'width=device-width, height=device-height, ' +
       `initial-scale=${scale}, maximum-scale=${scale}, minimum-scale=${scale}, ` +
-      'user-scalable=0';  
+      'user-scalable=0';
     let viewport = document.querySelector('meta[name=viewport]');
     if (viewport === null) {
       viewport = document.createElement('meta');
