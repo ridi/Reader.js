@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.55 (2024-03-12)]
+
+### Fixed
+
+- [안드] 스케일 이슈 재대응
+
 ## [1.0.54 (2024-01-31)]
 
 ### Fixed
@@ -354,7 +360,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.54...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.55...HEAD
+[1.0.55 (2024-03-12)]: https://github.com/ridi/Reader.js/compare/1.0.54...1.0.55
 [1.0.54 (2024-01-31)]: https://github.com/ridi/Reader.js/compare/1.0.53...1.0.54
 [1.0.53 (2024-01-09)]: https://github.com/ridi/Reader.js/compare/1.0.52...1.0.53
 [1.0.52 (2023-10-31)]: https://github.com/ridi/Reader.js/compare/1.0.51...1.0.52
