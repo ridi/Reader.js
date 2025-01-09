@@ -137,18 +137,10 @@ export default class TTSPiece {
               el.parentNode.nodeName.toLowerCase() === 'span' &&
               (el.previousSibling || el.nextSibling);
             // 부모의 자식 노드들 중 유효한 텍스트가 있는지 확인
-            let hasValidSiblingContent = false;
-            if (el.parentNode && el.parentNode.childNodes) {
-              const { childNodes } = el.parentNode;
-              for (let i = 0; i < childNodes.length; i++) {
-                const childNode = childNodes[i];
-                if ((childNode.nodeType === Node.TEXT_NODE && childNode.nodeValue.trim() !== '') ||
-                    (childNode.nodeType === Node.ELEMENT_NODE && childNode.textContent.trim() !== '')) {
-                  hasValidSiblingContent = true;
-                  break;
-                }
-              }
-            }
+            const hasValidSiblingContent = el.parentNode && Array.from(el.parentNode.childNodes || []).some(childNode => (
+              (childNode.nodeType === Node.TEXT_NODE && childNode.nodeValue.trim() !== '') ||
+              (childNode.nodeType === Node.ELEMENT_NODE && childNode.textContent.trim() !== '')
+            ));
 
             if (isEmptyText && (hasNoChildren || (!hasValidParentAndSiblings && !hasValidSiblingContent))) {
               valid = false;
