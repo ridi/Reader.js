@@ -139,34 +139,9 @@ export default class SpeechPiece {
             break;
           }
           // 공백만 있는 span 태그 읽지 않도록
-          if (el.nodeName.toLowerCase() === 'span') {
-            // 텍스트가 공백인 경우
-            const isEmptyText = this._text.trim() === '';
-            // 자식 노드가 없는 경우
-            const hasNoChildren = !el.hasChildNodes();
-            // 부모가 span이고 형제 노드가 있는 경우 유효하다고 판단
-            const hasValidParentAndSiblings =
-              el.parentNode &&
-              el.parentNode.nodeName.toLowerCase() === 'span' &&
-              (el.previousSibling || el.nextSibling);
-            // 부모의 자식 노드들 중 유효한 텍스트가 있는지 확인
-            let hasValidSiblingContent = false;
-            if (el.parentNode && el.parentNode.childNodes) {
-              const { childNodes } = el.parentNode;
-              for (let i = 0; i < childNodes.length; i++) {
-                const childNode = childNodes[i];
-                if ((childNode.nodeType === Node.TEXT_NODE && childNode.nodeValue.trim() !== '') ||
-                    (childNode.nodeType === Node.ELEMENT_NODE && childNode.textContent.trim() !== '')) {
-                  hasValidSiblingContent = true;
-                  break;
-                }
-              }
-            }
-
-            if (isEmptyText && (hasNoChildren || (!hasValidParentAndSiblings && !hasValidSiblingContent))) {
-              valid = false;
-              break;
-            }
+          if (el.nodeName.toLowerCase() === 'span' && el.innerText.trim().length === 0) {
+            valid = false;
+            break;
           }
           // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
           if (!(valid = (['rt', 'rp', 'sub', 'sup', 'img'].indexOf(el.nodeName.toLowerCase()) === -1))) {
