@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * None.
 
+## [1.0.56 (2025-02-18)]
+
+### Fixed
+
+- [안드] TTS에서 공백 무시하도록 추가 대응
+
 ## [1.0.55 (2024-03-12)]
 
 ### Fixed
