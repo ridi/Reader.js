@@ -116,7 +116,7 @@ export default class SpeechPiece {
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
     let valid = true;
 
-    if (this.length === 0 || readable === 'no') {
+    if (this.length === 0 || el.innerText.trim().length === 0 || readable === 'no') {
       valid = false;
     } else if (readable !== 'yes') {
       if (Util.getMatchedCSSValue(el, 'display') === 'none'
@@ -135,11 +135,6 @@ export default class SpeechPiece {
             break;
           }
           if (el.nodeName.toLocaleLowerCase() === 'script') {
-            valid = false;
-            break;
-          }
-          // 공백만 있는 span 태그 읽지 않도록
-          if (el.nodeName.toLowerCase() === 'span' && el.innerText.trim().length === 0) {
             valid = false;
             break;
           }
