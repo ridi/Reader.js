@@ -134,10 +134,6 @@ export default class SpeechPiece {
             valid = false;
             break;
           }
-          if (el.nodeName.toLocaleLowerCase() === 'script') {
-            valid = false;
-            break;
-          }
           if (el && el.nodeType === Node.ELEMENT_NODE && el.textContent.trim().length === 0) {
             valid = false;
             break;
