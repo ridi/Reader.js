@@ -107,7 +107,7 @@ export default class TTSPiece {
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
     let valid = true;
 
-    if (this.length === 0) {
+    if (this.length === 0 || readable === 'no') {
       valid = false;
     } else if (readable !== 'yes') {
       if (_Util.getMatchedCSSValue(el, 'display') === 'none'
