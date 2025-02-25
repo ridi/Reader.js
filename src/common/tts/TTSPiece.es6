@@ -107,7 +107,7 @@ export default class TTSPiece {
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
     let valid = true;
 
-    if (this.length === 0 || el.innerText.trim().length === 0 || readable === 'no') {
+    if (this.length === 0 || readable === 'no') {
       valid = false;
     } else if (readable !== 'yes') {
       if (_Util.getMatchedCSSValue(el, 'display') === 'none'
@@ -121,7 +121,11 @@ export default class TTSPiece {
             valid = false;
             break;
           }
-          if (el.nodeName.toLocaleLowerCase() === 'script') {
+          if (el.nodeName.toLowerCase() === 'script') {
+            valid = false;
+            break;
+          }
+          if (el && el.nodeType === Node.ELEMENT_NODE && el.textContent.trim().length === 0) {
             valid = false;
             break;
           }
