@@ -116,7 +116,7 @@ export default class SpeechPiece {
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
     let valid = true;
 
-    if (this.length === 0 || el.innerText.trim().length === 0 || readable === 'no') {
+    if (this.length === 0) {
       valid = false;
     } else if (readable !== 'yes') {
       if (Util.getMatchedCSSValue(el, 'display') === 'none'
@@ -135,6 +135,10 @@ export default class SpeechPiece {
             break;
           }
           if (el.nodeName.toLocaleLowerCase() === 'script') {
+            valid = false;
+            break;
+          }
+          if (el && el.nodeType === Node.ELEMENT_NODE && el.textContent.trim().length === 0) {
             valid = false;
             break;
           }
