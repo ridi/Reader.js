@@ -121,7 +121,7 @@ export default class TTSPiece {
             valid = false;
             break;
           }
-          if (el.nodeName.toLocaleLowerCase() === 'script') {
+          if (el.nodeName.toLowerCase() === 'script') {
             valid = false;
             break;
           }
