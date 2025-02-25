@@ -116,7 +116,7 @@ export default class SpeechPiece {
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
     let valid = true;
 
-    if (this.length === 0) {
+    if (this.length === 0 || readable === 'no') {
       valid = false;
     } else if (readable !== 'yes') {
       if (Util.getMatchedCSSValue(el, 'display') === 'none'
