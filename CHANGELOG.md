@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - None.
 
+## [1.0.58 (2025-02-27)]
+
+### Fixed
+
+- [공통] 빈 텍스트로 셀렉션을 시작하지 않도록 수정
+
+## [1.0.57 (2025-02-25)]
+
+### Fixed
+
+- [공통] TTS에서 공백 무시하도록 추가 대응
+
+## [1.0.56 (2025-02-18)]
+
+### Fixed
+
+- [공통] TTS에서 공백 무시하도록 추가 대응
+
 ## [1.0.55 (2024-03-12)]
 
 ### Fixed
@@ -360,7 +378,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.55...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.58...HEAD
+[1.0.58 (2025-02-27)]: https://github.com/ridi/Reader.js/compare/1.0.57...1.0.58
+[1.0.57 (2025-02-25)]: https://github.com/ridi/Reader.js/compare/1.0.56...1.0.57
+[1.0.56 (2025-02-18)]: https://github.com/ridi/Reader.js/compare/1.0.55...1.0.56
 [1.0.55 (2024-03-12)]: https://github.com/ridi/Reader.js/compare/1.0.54...1.0.55
 [1.0.54 (2024-01-31)]: https://github.com/ridi/Reader.js/compare/1.0.53...1.0.54
 [1.0.53 (2024-01-09)]: https://github.com/ridi/Reader.js/compare/1.0.52...1.0.53

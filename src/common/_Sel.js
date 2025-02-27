@@ -66,6 +66,10 @@ export default class _Sel {
     // 처음 선택시에는 붙어있는 특수문자까지 모두 포함시킨다.
     this._expandRangeByWord(range);
 
+    if (!range.toString().length) {
+      return false;
+    }
+
     this._startContainer = range.startContainer;
     this._startOffset = range.startOffset;
     this._endContainer = range.endContainer;
