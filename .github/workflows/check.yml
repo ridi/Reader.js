@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v2
@@ -43,7 +43,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v2
@@ -65,7 +65,7 @@ jobs:
       run: yarn build
 
     - name: Checkout test repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: ridi/Reader.js-TTS-Unit-Test
         ssh-key: ${{ secrets.TEST_ACCESS_PRIVATE_KEY }}
