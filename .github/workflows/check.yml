@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v2
@@ -24,7 +24,7 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Set up node_modules cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: node-cache
       with:
         path: 'node_modules'
@@ -43,7 +43,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v2
@@ -51,7 +51,7 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Set up node_modules cache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: node-cache
       with:
         path: 'node_modules'
@@ -65,7 +65,7 @@ jobs:
       run: yarn build
 
     - name: Checkout test repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: ridi/Reader.js-TTS-Unit-Test
         ref: feature/v2
