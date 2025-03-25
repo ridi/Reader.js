@@ -125,24 +125,9 @@ export default class TTSPiece {
             valid = false;
             break;
           }
-          if (el && el.nodeType === Node.ELEMENT_NODE) {
-            if (el._cachedEmptyState !== undefined) {
-              if (el._cachedEmptyState === true) {
-                valid = false;
-                break;
-              }
-            } else {
-              try {
-                const isEmpty = el.innerText.trim().length === 0;
-                el._cachedEmptyState = isEmpty;
-                if (isEmpty) {
-                  valid = false;
-                  break;
-                }
-              } catch (e) {
-                el._cachedEmptyState = false;
-              }
-            }
+          if (el && el.nodeType === Node.ELEMENT_NODE && el.innerText.trim().length === 0) {
+            valid = false;
+            break;
           }
           // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
           if (!(valid = (['RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
