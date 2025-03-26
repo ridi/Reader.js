@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - None.
 
+## [1.0.60 (2025-03-26)]
+
+### Fixed
+
+- [공통] TTS 재생 중 렌더링 크래시 발생할 수 있는 문제 재수정
+
+## [1.0.59 (2025-03-25)]
+
+### Fixed
+
+- [공통] TTS 재생 중 렌더링 크래시 발생할 수 있는 문제 수정
+
 ## [1.0.58 (2025-02-27)]
 
 ### Fixed
@@ -378,7 +390,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - 첫 릴리즈
 
-[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.58...HEAD
+[Unreleased]: https://github.com/ridi/Reader.js/compare/1.0.60...HEAD
+[1.0.60 (2025-03-26)]: https://github.com/ridi/Reader.js/compare/1.0.59...1.0.60
+[1.0.59 (2025-03-25)]: https://github.com/ridi/Reader.js/compare/1.0.58...1.0.59
 [1.0.58 (2025-02-27)]: https://github.com/ridi/Reader.js/compare/1.0.57...1.0.58
 [1.0.57 (2025-02-25)]: https://github.com/ridi/Reader.js/compare/1.0.56...1.0.57
 [1.0.56 (2025-02-18)]: https://github.com/ridi/Reader.js/compare/1.0.55...1.0.56
