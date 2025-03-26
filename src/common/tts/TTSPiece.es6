@@ -62,6 +62,7 @@ export default class TTSPiece {
     this._text = '';
     this._startWordIndex = -1;
     this._endWordIndex = -1;
+    this._isInvalid = false;
 
     if (typeof nodeValue === 'string') {
       if (startWordIndex < 0 && endWordIndex < 0) {
@@ -96,12 +97,15 @@ export default class TTSPiece {
       this._text = this._node.alt || '';
     }
     this._length = this._text.length;
+    this._isInvalid = this._checkIsInvalid();
   }
 
   /**
+   * isInvalid 상태를 확인
+   * @private
    * @returns {Boolean}
    */
-  isInvalid() {
+  _checkIsInvalid() {
     const node = this._node;
     let el = (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
@@ -125,9 +129,24 @@ export default class TTSPiece {
             valid = false;
             break;
           }
-          if (el && el.nodeType === Node.ELEMENT_NODE && el.innerText.trim().length === 0) {
-            valid = false;
-            break;
+          if (el && el.nodeType === Node.ELEMENT_NODE) {
+            if (el._cachedEmptyState !== undefined) {
+              if (el._cachedEmptyState === true) {
+                valid = false;
+                break;
+              }
+            } else {
+              try {
+                const isEmpty = el.innerText.trim().length === 0;
+                el._cachedEmptyState = isEmpty;
+                if (isEmpty) {
+                  valid = false;
+                  break;
+                }
+              } catch (e) {
+                el._cachedEmptyState = false;
+              }
+            }
           }
           // 이미지, 독음(후리가나)과 첨자는 읽지 않는다
           if (!(valid = (['RT', 'RP', 'SUB', 'SUP', 'IMG'].indexOf(el.nodeName) === -1))) {
@@ -137,6 +156,13 @@ export default class TTSPiece {
       }
     }
     return !valid;
+  }
+
+  /**
+   * @returns {Boolean}
+   */
+  isInvalid() {
+    return this._isInvalid;
   }
 
   /**
