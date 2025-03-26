@@ -129,7 +129,7 @@ export default class TTSPiece {
             valid = false;
             break;
           }
-          if (el && el.nodeType === Node.TEXT_NODE && el.innerText.trim().length === 0) {
+          if (el && el.nodeType === Node.ELEMENT_NODE && el.innerText.trim().length === 0) {
             valid = false;
             break;
           }
