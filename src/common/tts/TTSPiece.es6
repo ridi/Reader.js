@@ -62,6 +62,7 @@ export default class TTSPiece {
     this._text = '';
     this._startWordIndex = -1;
     this._endWordIndex = -1;
+    this._isInvalid = false;
 
     if (typeof nodeValue === 'string') {
       if (startWordIndex < 0 && endWordIndex < 0) {
@@ -96,12 +97,15 @@ export default class TTSPiece {
       this._text = this._node.alt || '';
     }
     this._length = this._text.length;
+    this._isInvalid = this._checkIsInvalid();
   }
 
   /**
+   * isInvalid 상태를 확인
+   * @private
    * @returns {Boolean}
    */
-  isInvalid() {
+  _checkIsInvalid() {
     const node = this._node;
     let el = (node.nodeType === Node.TEXT_NODE ? node.parentElement : node);
     const readable = (el.attributes['data-ridi-tts'] || { value: '' }).value.toLowerCase();
@@ -137,6 +141,13 @@ export default class TTSPiece {
       }
     }
     return !valid;
+  }
+
+  /**
+   * @returns {Boolean}
+   */
+  isInvalid() {
+    return this._isInvalid;
   }
 
   /**
