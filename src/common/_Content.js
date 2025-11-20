@@ -488,7 +488,9 @@ class _Content {
    */
   reviseImages(callback) {
     if (this.isImagesRevised) {
-      callback();
+      if (callback) {
+        callback();
+      }
       return;
     }
 
