@@ -327,6 +327,7 @@ export default class _Sel {
   _expandRangeBySentence(range, expandBound = -1) {
     const origin = range.endOffset;
     range.expand('sentence');
+    this._moveRangeEndIntoTextNode(range);
 
     if (expandBound < 0) {
       return;
@@ -341,6 +342,37 @@ export default class _Sel {
       } else {
         range.setEnd(range.endContainer, end -= 1);
       }
+    }
+  }
+
+  /**
+   * range 끝이 요소(예: `<br/>`로 문단을 나눈 문서에서 expand('sentence') 결과인 (div, 자식 인덱스))이면
+   * range 안의 마지막 텍스트 노드 끝으로 옮긴다. 끝 offset을 글자 단위로 줄여 나가는 로직이 요소의 자식 인덱스를
+   * 글자 수로 다루지 않도록 하기 위함이다.
+   *
+   * @param {Range} range
+   * @private
+   */
+  _moveRangeEndIntoTextNode(range) {
+    if (range.endContainer.nodeType === TEXT_NODE) {
+      return;
+    }
+
+    const iterator = Util.createTextNodeIterator(range.commonAncestorContainer);
+    let lastTextNode = null;
+    let node;
+    while ((node = iterator.nextNode())) {
+      if (range.comparePoint(node, 0) > 0) {
+        break;
+      }
+      // 공백뿐인 텍스트 노드(요소 사이 개행 등)에 끝을 두지 않는다.
+      if (range.comparePoint(node, node.length) >= 0 && !/^\s*$/.test(node.nodeValue)) {
+        lastTextNode = node;
+      }
+    }
+
+    if (lastTextNode !== null) {
+      range.setEnd(lastTextNode, lastTextNode.length);
     }
   }
 
