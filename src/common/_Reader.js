@@ -2,7 +2,7 @@ import Rect from './Rect';
 import RectList from './RectList';
 import Util from '../common/Util';
 
-const { DOCUMENT_POSITION_PRECEDING, DOCUMENT_POSITION_FOLLOWING, DOCUMENT_POSITION_CONTAINED_BY } = Node;
+const { DOCUMENT_POSITION_CONTAINED_BY } = Node;
 
 const HIGHLIGHT_ID = 'node-location-highlight';
 const HIGHLIGHT_MIN_WIDTH = 3;
@@ -140,37 +140,37 @@ export default class _Reader {
         return this.getClientRects().toRectList();
       }
 
+      // start/endContainer가 텍스트 노드가 아니라 요소일 수도 있다.
+      // 예: `<br/>`로 문단을 나눈 문서에서 range.expand('sentence')는 문장 끝을 (div, 자식 인덱스)로 돌려준다.
+      // 요소 기준으로 비교하면 그 요소 안의 텍스트 노드가 통째로 들어가므로(형광펜 이어서 남기기 시 다음 페이지 전체 선택),
+      // 텍스트 노드마다 range와 겹치는 부분만 잘라서 rect를 구한다.
       const iterator = Util.createTextNodeIterator(commonAncestorContainer);
-      let range = document.createRange();
-      range.setStart(startContainer, startOffset);
-      range.setEnd(startContainer, startContainer.length);
-      let rectList = range.getClientRects().toRectList();
+      let rectList = new RectList();
 
       let node;
       while ((node = iterator.nextNode())) {
-        // startContainer 보다 node가 앞에 있으면
-        if (startContainer.compareDocumentPosition(node) === DOCUMENT_POSITION_PRECEDING || startContainer === node) {
-          continue;
-        }
-
-        // endContainer 뒤로 넘어가면 멈춤
-        if (endContainer.compareDocumentPosition(node) === DOCUMENT_POSITION_FOLLOWING || endContainer === node) {
+        // range 끝보다 뒤에서 시작하면 멈춤
+        if (this.comparePoint(node, 0) > 0) {
           break;
         }
 
-        range = document.createRange();
-        range.selectNodeContents(node);
-        if (/^\s*$/.test(range.toString())) {
+        // range 시작보다 앞에서 끝나면 건너뜀
+        if (this.comparePoint(node, node.length) < 0) {
           continue;
         }
 
-        rectList = rectList.concat(range.getClientRects().toRectList());
-      }
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        if (node === startContainer) {
+          range.setStart(node, startOffset);
+        }
+        if (node === endContainer) {
+          range.setEnd(node, endOffset);
+        }
+        if (node !== startContainer && /^\s*$/.test(range.toString())) {
+          continue;
+        }
 
-      range = document.createRange();
-      range.setStart(endContainer, 0);
-      range.setEnd(endContainer, endOffset);
-      if (!/^\s*$/.test(range.toString())) {
         rectList = rectList.concat(range.getClientRects().toRectList());
       }
 
