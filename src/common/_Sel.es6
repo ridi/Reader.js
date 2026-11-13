@@ -304,6 +304,7 @@ export default class _Sel extends _Object {
   _expandRangeBySentenceInPage(range, upperBound) {
     const origin = range.endOffset;
     range.expand('sentence');
+    _Sel._moveRangeEndIntoTextNode(range);
 
     let end = range.endOffset;
     while (end > origin) {
@@ -314,6 +315,37 @@ export default class _Sel extends _Object {
       } else {
         range.setEnd(range.endContainer, end -= 1);
       }
+    }
+  }
+
+  /**
+   * range 끝이 요소(예: `<br/>`로 문단을 나눈 문서에서 expand('sentence') 결과인 (div, 자식 인덱스))이면
+   * range 안의 마지막 텍스트 노드 끝으로 옮긴다. 끝 offset을 글자 단위로 줄여 나가는 로직이 요소의 자식 인덱스를
+   * 글자 수로 다루지 않도록 하기 위함이다.
+   *
+   * @param {Range} range
+   * @private
+   */
+  static _moveRangeEndIntoTextNode(range) {
+    if (range.endContainer.nodeType === Node.TEXT_NODE) {
+      return;
+    }
+
+    const iterator = _Util.createTextNodeIterator(range.commonAncestorContainer);
+    let lastTextNode = null;
+    let node;
+    while ((node = iterator.nextNode())) {
+      if (range.comparePoint(node, 0) > 0) {
+        break;
+      }
+      // 공백뿐인 텍스트 노드(요소 사이 개행 등)에 끝을 두지 않는다.
+      if (range.comparePoint(node, node.length) >= 0 && !/^\s*$/.test(node.nodeValue)) {
+        lastTextNode = node;
+      }
+    }
+
+    if (lastTextNode !== null) {
+      range.setEnd(lastTextNode, lastTextNode.length);
     }
   }
 
@@ -478,41 +510,37 @@ export default class _Sel extends _Object {
       return range.getAdjustedClientRects();
     }
 
+    // start/endContainer가 텍스트 노드가 아니라 요소일 수도 있다.
+    // 예: `<br/>`로 문단을 나눈 문서에서 range.expand('sentence')는 문장 끝을 (div, 자식 인덱스)로 돌려준다.
+    // 요소 기준으로 비교하면 그 요소 안의 텍스트 노드가 통째로 들어가므로(형광펜 이어서 남기기 시 다음 페이지 전체 선택),
+    // 텍스트 노드마다 range와 겹치는 부분만 잘라서 rect를 구한다.
     const iterator = _Util.createTextNodeIterator(range.commonAncestorContainer);
     let textNodeRects = [];
 
-    let workRange = document.createRange();
-    workRange.setStart(range.startContainer, range.startOffset);
-    workRange.setEnd(range.startContainer, range.startContainer.length);
-    textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-
     let node;
     while ((node = iterator.nextNode())) {
-      // startContainer 노드보다 el이 앞에 있으면
-      if (range.startContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_PRECEDING ||
-        range.startContainer === node) {
-        continue;
-      }
-
-      // endContainer 뒤로 넘어가면 멈춤
-      if (range.endContainer.compareDocumentPosition(node) === Node.DOCUMENT_POSITION_FOLLOWING ||
-        range.endContainer === node) {
+      // range 끝보다 뒤에서 시작하면 멈춤
+      if (range.comparePoint(node, 0) > 0) {
         break;
       }
 
-      workRange = document.createRange();
-      workRange.selectNodeContents(node);
-      if (this._isWhiteSpaceRange(workRange)) {
+      // range 시작보다 앞에서 끝나면 건너뜀
+      if (range.comparePoint(node, node.length) < 0) {
         continue;
       }
 
-      textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
-    }
+      const workRange = document.createRange();
+      workRange.selectNodeContents(node);
+      if (node === range.startContainer) {
+        workRange.setStart(node, range.startOffset);
+      }
+      if (node === range.endContainer) {
+        workRange.setEnd(node, range.endOffset);
+      }
+      if (node !== range.startContainer && this._isWhiteSpaceRange(workRange)) {
+        continue;
+      }
 
-    workRange = document.createRange();
-    workRange.setStart(range.endContainer, 0);
-    workRange.setEnd(range.endContainer, range.endOffset);
-    if (!this._isWhiteSpaceRange(workRange)) {
       textNodeRects = _Util.concatArray(textNodeRects, workRange.getAdjustedClientRects());
     }
 
